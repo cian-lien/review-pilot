@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "node --env-file-if-exists=../../.env ./node_modules/next/dist/bin/next dev --hostname 127.0.0.1",
+    "dev": "node scripts/next.mjs dev --hostname 127.0.0.1",
     "build": "next build",
-    "start": "node --env-file-if-exists=../../.env ./node_modules/next/dist/bin/next start --hostname 127.0.0.1",
+    "start": "node scripts/next.mjs start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

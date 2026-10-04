@@ -52,7 +52,7 @@ SESSION_SECRET 需要 32 字节随机值的 base64 编码。可在本地生成�
 node -e 'console.log(require("node:crypto").randomBytes(32).toString("base64"))'
 ```
 
-Web 与 Worker 必须使用相同的配置；Web dev/start 从根目录加载 .env。修改后重启。反向代理不要记录 OAuth callback 的查询参数，数据库连接字符串、令牌和私钥也不得进入日志。
+Web 与 Worker 必须使用相同的配置；Web dev/start 通过 `apps/web/scripts/next.mjs` 调用 Node 的 `loadEnvFile()` 加载根目录 .env，避免 Next.js 将 `--env-file-if-exists` 转入不允许该参数的 `NODE_OPTIONS`。根 .env 不存在时仍可启动；修改后重启。反向代理不要记录 OAuth callback 的查询参数，数据库连接字符串、令牌和私钥也不得进入日志。
 
 ## 3. 验证真实接入
 
