@@ -1,0 +1,41 @@
+{
+  "name": "review-pilot",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@12.8.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @reviewpilot/web dev",
+    "build": "pnpm --filter @reviewpilot/web build",
+    "typecheck": "tsc --noEmit && pnpm --filter @reviewpilot/web typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write apps packages scripts tests *.json *.yml *.yaml *.ts *.mjs --log-level warn",
+    "test": "pnpm test:unit && pnpm test:integration",
+    "test:unit": "vitest run --config vitest.config.ts",
+    "test:integration": "tsx scripts/integration-test.ts",
+    "db:migrate": "tsx --env-file-if-exists=.env scripts/migrate.ts",
+    "worker:review": "tsx --env-file-if-exists=.env apps/worker-review/src/main.ts",
+    "worker:evolution": "tsx --env-file-if-exists=.env apps/worker-evolution/src/main.ts"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "@types/pg": "8.23.1",
+    "eslint": "10.12.0",
+    "typescript-eslint": "8.71.0",
+    "typescript": "6.0.3",
+    "vitest": "5.0.3",
+    "tsx": "4.23.15",
+    "embedded-postgres": "18.4.0-beta.17",
+    "prettier": "3.9.9"
+  },
+  "dependencies": {
+    "@reviewpilot/domain": "workspace:*",
+    "@reviewpilot/persistence": "workspace:*",
+    "@reviewpilot/github": "workspace:*",
+    "pg": "8.23.1",
+    "zod": "4.6.5"
+  }
+}

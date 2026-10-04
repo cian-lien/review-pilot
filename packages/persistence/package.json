@@ -1,0 +1,18 @@
+{
+  "name": "@reviewpilot/persistence",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./migrate": "./src/migrate.ts"
+  },
+  "scripts": {
+    "test": "vitest run --root ../../ --config vitest.config.ts"
+  },
+  "dependencies": {
+    "zod": "4.6.5",
+    "pg": "8.23.1",
+    "@reviewpilot/domain": "workspace:*"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@reviewpilot/worker-review",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "@reviewpilot/domain": "workspace:*",
+    "@reviewpilot/persistence": "workspace:*",
+    "@reviewpilot/github": "workspace:*",
+    "pg": "8.23.1"
+  }
+}

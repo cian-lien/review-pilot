@@ -1,0 +1,9 @@
+{
+  "name": "@reviewpilot/worker-evolution",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "@reviewpilot/persistence": "workspace:*"
+  }
+}
