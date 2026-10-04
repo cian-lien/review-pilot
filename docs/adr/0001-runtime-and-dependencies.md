@@ -4,12 +4,13 @@
 
 ## 决策
 
-使用 pnpm 工作区和 TypeScript 模块化单体，Web、Review Worker、Evolution Worker 分进程。共享 PostgreSQL，但每次查询与任务身份都带 Installation/Repository。S1 不调用模型、不执行 PR 代码、不生成问题评论。
+使用 pnpm workspace + Turborepo 和 TypeScript 模块化单体，Web、Review Worker、Evolution Worker 分进程。pnpm 负责依赖，Turbo 负责全部工程任务的依赖图、调度和缓存。共享 PostgreSQL，但每次查询与任务身份都带 Installation/Repository。S1 不调用模型、不执行 PR 代码、不生成问题评论。
 
 | 项目 | 锁定版本或约定 |
 | --- | --- |
 | 目标 Node | Node 24 LTS，记录在 .node-version；本机实际验证为 Node 26.10.0，未运行额外版本矩阵 |
 | pnpm | 12.8.1 |
+| Monorepo / 任务编排 | Turborepo 2.11.7；所有根脚本统一调用 turbo run |
 | Next.js / React | 16.3.8 / 19.3.0 |
 | TypeScript | 6.0.3；未采用最新 7.0.2，因为 typescript-eslint 8.71.0 的 peer 范围小于 6.1 |
 | PostgreSQL | 18.4；开发 Compose 使用 postgres:18.4 |
@@ -19,6 +20,8 @@
 | Playwright / 模型 Provider | 本阶段不安装；分别在界面验收与模型网关阶段引入 |
 
 lockfile 固定完整依赖树。工作区包直接导出 TypeScript；Web 通过 transpilePackages 构建，Worker 用 tsx 运行。相对导入采用无扩展名形式，兼容 Next/Turbopack 与 tsx。
+
+`packages/tooling` 负责跨包集成测试与全仓检查，不承载业务代码。单元测试按包运行；tooling 的完整 test 在依赖包单元测试通过后启动集成测试，保留外层 JSON 结果确认。源码直导包通过 transit 任务参与缓存依赖图，避免共享源码修改后错误复用 Web 构建或类型检查。数据库迁移、服务、Worker、格式化和集成测试关闭缓存；只启用本地缓存，不登录或上传远程缓存。
 
 迁移通过 `@reviewpilot/persistence/migrate` 单独导出，不进入 Web 的数据库运行时入口。迁移在事务与 advisory lock 内运行，并校验已执行文件的内容哈希。
 
@@ -46,6 +49,8 @@ lockfile 固定完整依赖树。工作区包直接导出 TypeScript；Web 通�
 
 ## 官方依据
 
+- [Turborepo 任务配置](https://github.com/vercel/turborepo/blob/main/apps/docs/content/docs/crafting-your-repository/configuring-tasks.mdx)
+- [Turborepo 环境变量与 .env 缓存](https://github.com/vercel/turborepo/blob/main/apps/docs/content/docs/crafting-your-repository/using-environment-variables.mdx)
 - [Node 发布计划](https://github.com/nodejs/Release/blob/main/README.md)
 - [Next.js 安装与系统要求](https://nextjs.org/docs/app/getting-started/installation)
 - [GitHub App 用户令牌与登录](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-user-access-token-for-a-github-app)

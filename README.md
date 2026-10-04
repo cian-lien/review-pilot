@@ -21,19 +21,23 @@ S1 的本地工程与 GitHub 接入代码已实现：中文仓库管理页、OAu
 
 ## 快速开始
 
-建议 Node 24 LTS、pnpm 12.8.1，详情见 [S1 本地运行与 GitHub 接入](docs/runbooks/s1-local-setup.md)。
+建议 Node 24 LTS、pnpm 12.8.1。Monorepo 采用 Turborepo 2.11.7：pnpm 只负责安装依赖和管理 workspace，所有工程任务统一使用 `turbo run`。下方用 `pnpm exec` 调用项目锁定的 Turbo，无需全局安装。详情见 [S1 本地运行与 GitHub 接入](docs/runbooks/s1-local-setup.md)。
 
 ```bash
 pnpm install --frozen-lockfile
 cp .env.example .env
 docker compose -f compose.dev.yml up -d
-pnpm db:migrate
-pnpm dev
+pnpm exec turbo run db:migrate
+pnpm exec turbo run dev
 ```
 
-打开 http://localhost:3000/repositories。未配置 GitHub 时显示配置说明，不显示模拟数据。实际接入需在另一终端启动 `pnpm worker:review`。
+打开 http://localhost:3000/repositories。未配置 GitHub 时显示配置说明，不显示模拟数据。实际接入需在另一终端启动 `pnpm exec turbo run worker:review`。
 
-核心验证：`pnpm test`、`pnpm typecheck`、`pnpm lint`、`pnpm build`。集成测试使用专用临时 PostgreSQL，不操作你的现有数据库。
+核心验证：`pnpm exec turbo run test`、`pnpm exec turbo run typecheck lint`、`pnpm exec turbo run build`。集成测试使用专用临时 PostgreSQL，不操作你的现有数据库。
+
+生产启动：`pnpm exec turbo run start`（先执行 build）。格式化：`pnpm exec turbo run format`。Evolution Worker：`pnpm exec turbo run worker:evolution`（S1 仍未启用学习）。根目录同名脚本全部只是 Turbo 别名，没有独立的旧执行路径。
+
+`apps/*` 保存应用和 Worker，`packages/*` 保存共享模块；`packages/tooling` 承接全仓静态检查、格式化和跨包集成测试。`turbo.json` 定义任务依赖、缓存和环境变量边界。构建及无副作用检查使用本地缓存；开发/生产服务、Worker、迁移、格式化与集成测试始终真实执行。不启用远程缓存。
 
 工程选择及本阶段取舍见 [ADR 0001](docs/adr/0001-runtime-and-dependencies.md)。
 

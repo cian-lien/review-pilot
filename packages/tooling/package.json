@@ -1,0 +1,21 @@
+{
+  "name": "@reviewpilot/tooling",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit --project ../../tsconfig.json",
+    "lint": "eslint ../..",
+    "format": "cd ../.. && prettier --write apps packages scripts tests *.json *.yml *.yaml *.ts *.mjs --log-level warn",
+    "test": "cd ../.. && tsx scripts/integration-test.ts",
+    "test:integration": "cd ../.. && tsx scripts/integration-test.ts"
+  },
+  "devDependencies": {
+    "@reviewpilot/domain": "workspace:*",
+    "@reviewpilot/github": "workspace:*",
+    "@reviewpilot/persistence": "workspace:*",
+    "@reviewpilot/web": "workspace:*",
+    "@reviewpilot/worker-review": "workspace:*",
+    "@reviewpilot/worker-evolution": "workspace:*"
+  }
+}

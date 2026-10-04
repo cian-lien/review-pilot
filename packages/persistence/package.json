@@ -8,7 +8,7 @@
     "./migrate": "./src/migrate.ts"
   },
   "scripts": {
-    "test": "vitest run --root ../../ --config vitest.config.ts"
+    "db:migrate": "cd ../.. && tsx --env-file-if-exists=.env scripts/migrate.ts"
   },
   "dependencies": {
     "zod": "4.6.5",

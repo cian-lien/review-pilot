@@ -7,7 +7,8 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "test": "vitest run --root ../../ --config vitest.config.ts"
+    "test": "cd ../.. && vitest run --config vitest.config.ts packages/github/tests",
+    "test:unit": "cd ../.. && vitest run --config vitest.config.ts packages/github/tests"
   },
   "dependencies": {
     "zod": "4.6.5",

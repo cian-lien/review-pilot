@@ -1,0 +1,139 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "agentGuidance": false,
+  "remoteCache": { "enabled": false },
+  "globalDependencies": ["tsconfig.base.json", "eslint.config.mjs"],
+  "globalEnv": ["NODE_ENV"],
+  "tasks": {
+    "transit": {
+      "dependsOn": ["^transit"]
+    },
+    "build": {
+      "dependsOn": ["^build", "transit"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "$TURBO_ROOT$/.env*"],
+      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"],
+      "env": [
+        "NEXT_PUBLIC_*",
+        "NEXT_TELEMETRY_DISABLED",
+        "APP_URL",
+        "DATABASE_URL",
+        "GITHUB_APP_ID",
+        "GITHUB_APP_SLUG",
+        "GITHUB_CLIENT_ID",
+        "GITHUB_CLIENT_SECRET",
+        "GITHUB_PRIVATE_KEY_PATH",
+        "GITHUB_WEBHOOK_SECRET",
+        "SESSION_SECRET",
+        "REVIEW_PIPELINE_VERSION"
+      ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "APP_URL",
+        "GITHUB_*",
+        "SESSION_SECRET",
+        "REVIEW_PIPELINE_VERSION",
+        "NEXT_TELEMETRY_DISABLED",
+        "PORT"
+      ]
+    },
+    "start": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "APP_URL",
+        "GITHUB_*",
+        "SESSION_SECRET",
+        "REVIEW_PIPELINE_VERSION",
+        "NEXT_TELEMETRY_DISABLED",
+        "PORT"
+      ]
+    },
+    "typecheck": {
+      "dependsOn": ["transit"],
+      "outputs": ["*.tsbuildinfo"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/tsconfig.json",
+        "$TURBO_ROOT$/scripts/**",
+        "$TURBO_ROOT$/tests/**",
+        "$TURBO_ROOT$/vitest*.ts"
+      ]
+    },
+    "lint": {
+      "dependsOn": ["transit"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/scripts/**",
+        "$TURBO_ROOT$/tests/**",
+        "$TURBO_ROOT$/*.ts",
+        "$TURBO_ROOT$/*.mjs"
+      ],
+      "outputs": []
+    },
+    "@reviewpilot/tooling#typecheck": {
+      "dependsOn": ["transit"],
+      "outputs": [],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/tsconfig.json",
+        "$TURBO_ROOT$/scripts/**",
+        "$TURBO_ROOT$/tests/**",
+        "$TURBO_ROOT$/vitest*.ts"
+      ]
+    },
+    "format": {
+      "cache": false
+    },
+    "test": {
+      "dependsOn": ["^test"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/tests/fixtures/**",
+        "$TURBO_ROOT$/vitest.config.ts"
+      ],
+      "outputs": []
+    },
+    "@reviewpilot/tooling#test": {
+      "dependsOn": ["^test"],
+      "cache": false
+    },
+    "test:unit": {
+      "dependsOn": ["transit"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/tests/fixtures/**",
+        "$TURBO_ROOT$/vitest.config.ts"
+      ],
+      "outputs": []
+    },
+    "test:integration": {
+      "cache": false
+    },
+    "db:migrate": {
+      "cache": false,
+      "passThroughEnv": ["DATABASE_URL"]
+    },
+    "worker:review": {
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "APP_URL",
+        "GITHUB_APP_ID",
+        "GITHUB_PRIVATE_KEY_PATH",
+        "REVIEW_PIPELINE_VERSION"
+      ]
+    },
+    "worker:evolution": {
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": ["DATABASE_URL"]
+    }
+  }
+}

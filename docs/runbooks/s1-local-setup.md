@@ -6,12 +6,14 @@
 
 在 review-pilot 目录中运行。建议 Node 24 LTS 和 pnpm 12.8.1；本次本机验证使用 Node 26.10.0。
 
+工程采用 Turborepo 2.11.7。统一使用 `turbo run <任务>`；以下命令的 `pnpm exec` 仅用于查找项目本地的 Turbo 二进制，不是旧的 pnpm 任务编排。无需全局安装 Turbo。
+
 ```bash
 pnpm install --frozen-lockfile
 cp .env.example .env
 docker compose -f compose.dev.yml up -d
-pnpm db:migrate
-pnpm dev
+pnpm exec turbo run db:migrate
+pnpm exec turbo run dev
 ```
 
 Docker 需由你自行启动；也可以将 DATABASE_URL 指向你单独创建的 PostgreSQL 18 数据库，再执行迁移。迁移会创建表，不要连接不属于此项目的现有数据库。Compose 密码只适用于本地开发，生产必须替换。
@@ -58,7 +60,7 @@ Web 与 Worker 必须使用相同的配置；Web dev/start 从根目录加载 .e
 2. 选择你有 maintain/admin 权限的公共测试仓库，安装 App。
 3. 返回仓库页；如安装回调未同步，点击“同步安装”。
 4. 点击“启用连接检查”。安装本身不等于启用。
-5. 另开终端运行 `pnpm worker:review`。
+5. 另开终端运行 `pnpm exec turbo run worker:review`。
 6. 在专用测试仓库打开或更新 PR，确认 GitHub Webhook delivery 返回 202。
 7. 等待仓库页出现真实任务，PR 出现“ReviewPilot · 连接检查”。完成后是 neutral，文字明确没有 AI 审查。
 8. 重投同一 delivery，不应增加 Run。停用仓库后，不再领取该仓库任务。
@@ -68,21 +70,48 @@ Web 与 Worker 必须使用相同的配置；Web dev/start 从根目录加载 .e
 S1 的 Evolution Worker 只是可启动的基础进程，连接数据库后等待退出，不领取学习任务：
 
 ```bash
-pnpm worker:evolution
+pnpm exec turbo run worker:evolution
 ```
 
 ## 4. 少量必要验证
 
 ```bash
-pnpm test
-pnpm typecheck
-pnpm lint
-pnpm build
+pnpm exec turbo run test
+pnpm exec turbo run typecheck lint
+pnpm exec turbo run build
 ```
 
-`pnpm test` 只包含 S1 的核心行为；集成测试启动独立临时 PostgreSQL，不依赖 Docker，不读取 .env 的数据库地址。测试结束清理自己的临时数据库与测试密钥。以 root 身份运行时会拒绝启动，而不是修改系统用户。
+`turbo run test` 只包含 S1 的核心行为：各包单元测试仅执行自己的文件，通过后 tooling 再运行一次跨包集成测试。集成测试启动独立临时 PostgreSQL，不依赖 Docker，不读取 .env 的数据库地址。测试结束清理自己的临时数据库与测试密钥。以 root 身份运行时会拒绝启动，而不是修改系统用户。
 
-生产构建后可运行 `pnpm --filter @reviewpilot/web start`。当前启动脚本默认只监听 127.0.0.1；对外运行应使用 HTTPS 反向代理，并在后续部署阶段完善进程监管、限流、备份与就绪检查。
+生产启动使用 `pnpm exec turbo run start`，任务依赖会先执行 build，已有有效本地构建缓存时直接复用。当前启动脚本默认只监听 127.0.0.1；对外运行应使用 HTTPS 反向代理，并在后续部署阶段完善进程监管、限流、备份与就绪检查。
+
+### Turbo 任务与缓存
+
+| 任务 | 用途 | 缓存 |
+| --- | --- | --- |
+| dev / start | Web 开发 / 生产服务 | 关闭，长期运行 |
+| build | Next 生产构建 | 本地缓存 .next 产物，不缓存 .next/cache 与 .next/dev |
+| typecheck / lint | Web 与全仓类型检查 / 全仓 ESLint | 本地缓存；共享模块变化会使检查失效 |
+| test / test:unit | 完整核心验证 / 仅单元测试 | 单元测试可缓存；完整 test 中的集成测试不可缓存 |
+| test:integration | 仅跨包集成测试 | 关闭，每次创建独立测试数据库 |
+| format | 全仓 Prettier 写入 | 关闭，修改文件必须实际执行 |
+| db:migrate | 项目数据库迁移 | 关闭，不会因命中缓存跳过迁移 |
+| worker:review / worker:evolution | 两个独立 Worker | 关闭，长期运行 |
+
+任务配置在根目录 `turbo.json`。本地 `.turbo` 缓存被 Git 忽略；没有配置远程缓存。Turbo 不自动加载根 .env，Web dev/start、Worker 与迁移仍由各自 Node/tsx 命令加载它。严格环境模式只透传任务声明的运行变量；构建环境及 .env 输入参与缓存哈希。不要把密码、令牌或私钥写入任务输出。
+
+新增 workspace 时补充自身 Turbo 任务，并加入 tooling 的 workspace 依赖，保持全仓检查的缓存依赖完整。Turbo 的自动 AGENTS.md 更新被关闭，不会擅自新增或改写开发指令文件。
+
+仅运行一个包的测试或查看任务计划：
+
+```bash
+pnpm exec turbo run test:unit --filter=@reviewpilot/domain
+pnpm exec turbo run test:integration --filter=@reviewpilot/tooling
+pnpm exec turbo run worker:review -- --check
+pnpm exec turbo run build --dry=json
+```
+
+只把可执行测试参数放在 `--` 后；Turbo 的 `--filter` 放在它之前。根目录 `pnpm dev` 等兼容脚本也全部调用 Turbo，但文档统一使用上述 Turbo 命令。Docker、依赖安装和生成个人凭证属于外部准备步骤，不纳入工程任务编排。
 
 ## 当前未覆盖
 

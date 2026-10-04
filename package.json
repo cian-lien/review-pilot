@@ -8,19 +8,21 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "pnpm --filter @reviewpilot/web dev",
-    "build": "pnpm --filter @reviewpilot/web build",
-    "typecheck": "tsc --noEmit && pnpm --filter @reviewpilot/web typecheck",
-    "lint": "eslint .",
-    "format": "prettier --write apps packages scripts tests *.json *.yml *.yaml *.ts *.mjs --log-level warn",
-    "test": "pnpm test:unit && pnpm test:integration",
-    "test:unit": "vitest run --config vitest.config.ts",
-    "test:integration": "tsx scripts/integration-test.ts",
-    "db:migrate": "tsx --env-file-if-exists=.env scripts/migrate.ts",
-    "worker:review": "tsx --env-file-if-exists=.env apps/worker-review/src/main.ts",
-    "worker:evolution": "tsx --env-file-if-exists=.env apps/worker-evolution/src/main.ts"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "test": "turbo run test",
+    "test:unit": "turbo run test:unit",
+    "test:integration": "turbo run test:integration",
+    "db:migrate": "turbo run db:migrate",
+    "worker:review": "turbo run worker:review",
+    "worker:evolution": "turbo run worker:evolution"
   },
   "devDependencies": {
+    "turbo": "2.11.7",
     "@types/node": "26.6.4",
     "@types/pg": "8.23.1",
     "eslint": "10.12.0",

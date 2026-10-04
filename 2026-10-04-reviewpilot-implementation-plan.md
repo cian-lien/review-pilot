@@ -6,7 +6,7 @@
 
 **架构：** 使用 TypeScript 模块化单体，共享领域模型与 PostgreSQL，Web/API、Review Worker、Evolution Worker 分进程运行。模型与 GitHub 通过适配器隔离，外部发布可对账，审查与 Memory 版本可恢复、可追溯。
 
-**技术方向：** Next.js、React、TypeScript、PostgreSQL、Node.js、pnpm；测试采用 Vitest 与 Playwright；数据库先使用参数化 SQL 与迁移，队列先采用 PostgreSQL 租约任务。依赖具体版本、GitHub 权限和首选模型在任务 01 核实并锁定；这些是待实施的选择，不是已安装环境。
+**技术方向：** Next.js、React、TypeScript、PostgreSQL、Node.js、pnpm workspace + Turborepo；pnpm 只负责依赖安装，全部工程任务采用 turbo run。测试采用 Vitest，Playwright 在后续阶段引入；数据库先使用参数化 SQL 与迁移，队列先采用 PostgreSQL 租约任务。S1 已锁定的依赖见 ADR 0001；模型等后续选择不表示已安装。
 
 **依据：** [ReviewPilot 产品与系统设计文档 v1.1](docs/superpowers/specs/2026-10-04-reviewpilot-design.md)。
 
@@ -36,6 +36,7 @@
 - 延迟与成本目标：支持范围内 P90 ≤ 3 分钟；平均 Review 模型费用 ≤ ¥3/PR；P95 ≤ ¥8/PR。均为验收目标，尚未测得。
 - 默认自动支持不超过 1,500 行变更的 PR；超限采用明确的部分覆盖或手动触发。
 - S1 的 Web、Worker、迁移、单元与集成测试命令已经存在；S2–S6 相关命令仍是未来实施约定。
+- 所有根脚本只调用 Turbo；服务、Worker、数据库迁移、格式化和集成测试关闭缓存，不使用远程缓存。packages/tooling 统一负责全仓静态检查和跨包集成测试。
 
 ## 重点复核的五类输入
 
@@ -73,7 +74,7 @@ flowchart LR
 
 ## 二、拟创建的文件与职责
 
-所有路径均相对于 review-pilot。表中是实施时创建的文件；本次不创建应用骨架。
+所有路径均相对于 review-pilot。下表覆盖已实现的 S1 与后续拟建模块；实际已创建范围以 S1 交付记录为准。
 
 ~~~text
 apps/
@@ -81,6 +82,7 @@ apps/
   worker-review/               审查任务入口
   worker-evolution/            学习与评测任务入口
 packages/
+  tooling/                   全仓类型、lint、格式化与跨包集成测试的 Turbo 任务
   domain/src/                 types、run-policy、scope、memory-policy
   persistence/src/            数据库、任务租约、预算与领域持久化
   github/src/                 验签、授权、读取与发布对账
@@ -160,17 +162,17 @@ scopeIntent 只允许 finding、file、directory、pattern、repository，默认
 测试脚本统一约定：
 
 ~~~text
-pnpm test:unit
-pnpm test:integration
-pnpm test:e2e
-pnpm typecheck
-pnpm lint
-pnpm build
-pnpm eval:run -- --dataset <version> --pipeline <version>
-pnpm eval:compare -- --baseline <report> --candidate <report>
+pnpm exec turbo run test:unit
+pnpm exec turbo run test:integration
+pnpm exec turbo run test:e2e
+pnpm exec turbo run typecheck
+pnpm exec turbo run lint
+pnpm exec turbo run build
+pnpm exec turbo run eval:run -- --dataset <version> --pipeline <version>
+pnpm exec turbo run eval:compare -- --baseline <report> --candidate <report>
 ~~~
 
-各 package 的 test 使用 Vitest run，单任务命令为 pnpm --filter @reviewpilot/<package> test -- <test-path>。预计输出指任务完成后的结果，本次不运行这些尚不存在的脚本。
+所有任务用项目本地 Turbo 执行，pnpm exec 仅用于找到该二进制。各 package 的单元测试使用 Vitest run，单任务命令为 pnpm exec turbo run test:unit --filter=@reviewpilot/<package> -- <仓库根目录相对测试路径>；跨包集成测试用 pnpm exec turbo run test:integration --filter=@reviewpilot/tooling -- <测试路径>。test:e2e 与 eval:* 仍是后续阶段约定，尚未创建；预计输出指对应任务完成后的结果。
 
 ## 四、逐阶段实施任务
 
@@ -184,14 +186,14 @@ pnpm eval:compare -- --baseline <report> --candidate <report>
 
 #### 任务 01：可运行工程、领域契约与选型锁定
 
-**文件：** 新建 package.json、pnpm-workspace.yaml、tsconfig.base.json、apps/web/package.json、apps/web/src/app/api/health/route.ts、packages/domain/src/types.ts、packages/domain/tests/run-policy.test.ts、tests/fixtures/index.ts、docs/adr/0001-runtime-and-dependencies.md。
+**文件：** 新建 package.json、pnpm-workspace.yaml、turbo.json、packages/tooling/package.json、tsconfig.base.json、apps/web/package.json、apps/web/src/app/api/health/route.ts、packages/domain/src/types.ts、packages/domain/tests/run-policy.test.ts、tests/fixtures/index.ts、docs/adr/0001-runtime-and-dependencies.md。
 
 **接口：** canTransitionRun(from: RunStatus, to: RunStatus): boolean；GET /api/health 返回应用存活状态，不包含凭证。输出第三节的共用类型与 Fixture 工厂。
 
 - [ ] 写 canTransitionRun 的失败测试：Queued 可以进入 Indexing；Stale/Cancelled 不能进入 Publishing。Web 健康接口返回 200。
-- [ ] 运行 pnpm --filter @reviewpilot/domain test -- tests/run-policy.test.ts，确认尚无实现导致失败。
-- [ ] 核实并锁定 Node 当前受支持 LTS、pnpm、Next.js/React、PostgreSQL、Vitest/Playwright、参数化 SQL 驱动、Schema 库与模型适配方式；记录官方依据、版本与选择理由，创建最小 Web 与两个 Worker 入口及统一脚本。
-- [ ] 实现契约和状态约束；运行 pnpm test:unit、pnpm typecheck、pnpm build，期望通过；本地健康接口可访问。
+- [ ] 运行 pnpm exec turbo run test:unit --filter=@reviewpilot/domain -- packages/domain/tests/run-policy.test.ts，确认尚无实现导致失败。
+- [ ] 核实并锁定 Node 当前受支持 LTS、pnpm、Turborepo、Next.js/React、PostgreSQL、Vitest/Playwright、参数化 SQL 驱动、Schema 库与模型适配方式；记录官方依据、版本与选择理由，创建最小 Web 与两个 Worker 入口及统一 Turbo 任务。
+- [ ] 实现契约和状态约束；运行 pnpm exec turbo run test:unit、pnpm exec turbo run typecheck、pnpm exec turbo run build，期望通过；本地健康接口可访问。
 - [ ] 初始化项目 Git，按明确文件列表提交工程与 ADR；不提交 .env、缓存和凭证。
 
 **完成条件：** 同一运行时可启动 Web 与空 Worker，领域约束可测试，lockfile 固定依赖。不开通付费服务。
@@ -203,7 +205,7 @@ pnpm eval:compare -- --baseline <report> --candidate <report>
 **接口：** enqueueReview(identity: ReviewIdentity, snapshot: RunSnapshot): Promise<{ runId: string; created: boolean }>；claimJob(workerId: string, now: Date): Promise<JobLease | null>；completeJob(lease: JobLease): Promise<void>。JobLease 包含 jobId、leaseToken、expiresAt。
 
 - [ ] 写事务与租约测试：相同自动键只创建一个 Run；两个 Worker 不同时获得同一有效租约；过期任务可重领，旧 leaseToken 不能完成任务。
-- [ ] 运行 pnpm --filter @reviewpilot/persistence test -- tests/jobs.integration.test.ts，确认失败。
+- [ ] 运行 pnpm exec turbo run test:integration --filter=@reviewpilot/tooling -- tests/integration/s1.test.ts，确认失败；S1 的队列测试实际统一在该跨包文件中。
 - [ ] 创建安装、仓库、PR、Run、stage、delivery、job 基础表；事务内落 Run 与任务；加入重试、心跳、检查点和唯一约束。
 - [ ] 同时注入事务中途失败，期望没有孤立任务；数据库重启后可恢复未完成 Run。运行对应集成测试。
 - [ ] 仅提交迁移、持久化与 Worker 相关文件。
@@ -217,7 +219,7 @@ pnpm eval:compare -- --baseline <report> --candidate <report>
 **接口：** requireRepoAccess(userId: string, tenant: TenantRef, action: "view" | "manage"): Promise<RepoAccess>；getInstallationToken(tenant: TenantRef): Promise<短期服务端令牌>。令牌类型仅在 github 模块内部使用。
 
 - [ ] 写失败测试：伪造安装回调、无效 OAuth state、非维护者修改仓库、非该安装仓库访问均拒绝；公共仓库可启用，私有仓库不可启用。
-- [ ] 运行 pnpm --filter @reviewpilot/github test -- tests/access.test.ts，确认失败。
+- [ ] 运行 pnpm exec turbo run test:unit --filter=@reviewpilot/github -- packages/github/tests/access.test.ts，确认失败。
 - [ ] 实现服务端会话、CSRF 防护、安装归属校验、短期令牌与仓库启用；禁止令牌进入浏览器或持久化日志。
 - [ ] 使用 GitHub fake server 验证授权变化；在用户配置的专用测试安装完成一次登录与仓库启用。
 - [ ] 提交认证、权限和仓库页面；只提交 .env.example 的变量名，不提交实际密钥。
@@ -273,7 +275,7 @@ pnpm eval:compare -- --baseline <report> --candidate <report>
 **接口：** generateCandidates(context: ContextBundle): Promise<Candidate[]>；verifyCandidate(candidate: Candidate, context: ContextBundle): Promise<VerificationResult>；buildPublicationPlan(runId: string, candidates: Candidate[], verified: VerificationResult[], snapshot: RunSnapshot, remainingCommentSlots: number): PublicationPlan。
 
 - [ ] 写失败测试：模型提出不存在的函数、错误 SHA、重复根因、旧问题与空失败场景均不发布；零候选正常 Completed。
-- [ ] 运行 pnpm --filter @reviewpilot/review-engine test -- tests/pipeline.test.ts，确认失败。
+- [ ] 运行 pnpm exec turbo run test:unit --filter=@reviewpilot/review-engine -- packages/review-engine/tests/pipeline.test.ts，确认失败。
 - [ ] 实现候选与独立验证阶段，确定性核验位置/引用/租户并持久化过滤原因；只保留 verified，默认上限 3。
 - [ ] PR 页面能显示已验证结果、失败原因、覆盖范围和模型费用；分数显示可信等级，不冒充准确概率。
 - [ ] 提交引擎、Finding 存储与页面。
@@ -439,7 +441,7 @@ pnpm eval:compare -- --baseline <report> --candidate <report>
 **接口：** 本任务不增加另一套业务接口，使用 02/04/06/08/10/15/18 的现有契约；新增可注入 Clock、GitHub fake server 与故障点。
 
 - [ ] 为重点复核五类输入写跨模块测试，并覆盖 429、模型超时/无效 Schema、租约竞争、Worker 崩溃、PR 乱序更新、预算并发及未授权纠错。
-- [ ] 运行 pnpm test:integration，确认真实集成缺陷对应失败，而不是只验证 mock 被调用。
+- [ ] 运行 pnpm exec turbo run test:integration，确认真实集成缺陷对应失败，而不是只验证 mock 被调用。
 - [ ] 修复所有发现的问题；分析器资源上限、Prompt Injection 与 Secret 输出验证需有确定性断言。
 - [ ] 报告 P90 延迟、平均/P95 成本，标出队列与后台学习开销；未达目标调整额度和覆盖，不跳过验证。
 - [ ] 提交补丁、故障矩阵和恢复手册。
@@ -455,7 +457,7 @@ pnpm eval:compare -- --baseline <report> --candidate <report>
 **接口：** 在 /api/repositories/[repoId] 下提供 overview、memory、memory/[memoryId]、evaluation、activity、settings 的 GET 路由；settings 使用 PATCH。Memory 锁定/暂停/退役使用 POST memory/[memoryId]/actions，纠错沿用任务 13；所有写操作复用 requireRepoAccess 和领域命令，不在页面构造 Prompt。
 
 - [ ] 写 E2E 失败场景：无标签时显示“数据不足”；非维护者不能改规则；纠错范围预览与撤销；锁定后自动版本不覆盖；Partial/Stale 与无 Finding 明确区分。
-- [ ] 运行 pnpm test:e2e -- tests/e2e/console.spec.ts，确认失败。
+- [ ] 运行 pnpm exec turbo run test:e2e -- tests/e2e/console.spec.ts，确认失败。
 - [ ] 实现必要表格、版本 Diff、来源链接、任务状态与费用；Conservative/Balanced/Autonomous 共用不可放宽的权限约束。
 - [ ] 设置可限制 Draft/Bot、目录、评论上限、预算、保存和触发；默认不自动批准/Request Changes，不展示尚未实现的开关。
 - [ ] 提交界面与 E2E；验证键盘操作、基本移动端可读性和明确的删除确认。
@@ -548,7 +550,7 @@ pnpm eval:compare -- --baseline <report> --candidate <report>
 
 推荐先逐阶段直接实施，理由是认证、Run、Evidence、Memory 与评测之间接口依赖较强，当前更适合先稳定契约。若用户希望按任务使用独立实现与审查代理，可在启动实施时明确选择；本次没有派发代理任务。
 
-本次计划自检：已覆盖设计中的 P0、明确 P1、固定共有接口和测试归属，给出了五类重点失败输入的测试任务；版本与模型价格需在任务 01 实测核实。所有复选框维持未完成，文档列出的命令尚未执行。
+计划初稿自检记录：已覆盖设计中的 P0、明确 P1、固定共有接口和测试归属，给出了五类重点失败输入的测试任务。后续已完成 S1 本地交付与 Turborepo 全量接入，具体版本及实测命令见 ADR 和 S1 交付记录；真实 GitHub 验收与 S2–S6 仍未完成，原阶段验收复选框不提前勾选。
 
 ## 附录：关键行为的测试断言
 
