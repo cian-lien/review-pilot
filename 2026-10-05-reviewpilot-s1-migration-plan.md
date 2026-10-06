@@ -131,7 +131,7 @@ if strings.Contains(w.Body.String(), "DATABASE_URL") { t.Fatal("config leaked") 
 
 **接口：** persistence.Open(ctx context.Context,dsn string)(*Store,error)；persistence.ApplyMigrations(ctx context.Context,store *Store,directory string) error；Store.DB() *gorm.DB；testsupport.NewDatabase(t *testing.T) *gorm.DB 只连接 harness 注入的专用数据库。运行器导出 runScenario(name:string):Promise<Record<string,unknown>>，本任务定义 legacy-schema 场景及下方可观测结果字段，后续任务扩展场景。
 
-- [ ] 编写 legacy-schema：用现有 SQL 建表并保存哈希，种入旧 Run、会话和仓库，Go 连续迁移两次，比较旧 ID、密文和表名；篡改已执行迁移副本必须拒绝。断言固定为：
+- [x] 编写 legacy-schema：用现有 SQL 建表并保存哈希，种入旧 Run、会话和仓库，Go 连续迁移两次，比较旧 ID、密文和表名；篡改已执行迁移副本必须拒绝。断言固定为：
 
 ```ts
 expect(await runScenario('legacy-schema')).toMatchObject({
@@ -140,11 +140,11 @@ expect(await runScenario('legacy-schema')).toMatchObject({
 });
 ```
 
-- [ ] 执行 pnpm exec turbo run test:migration --filter=@reviewpilot/tooling -- --case legacy-schema，记录 Go 迁移缺失时的失败。
-- [ ] 实现 Store 与迁移器，沿用 schema_migrations 的 name/hash/applied_at、SHA-256 文件哈希和 advisory lock 782914630；显式映射旧表，不调用 AutoMigrate。此任务即移除 persistence workspace 的旧 db:migrate 脚本，改为唯一 Go 入口，不等到最后才解决双迁移器调度。
-- [ ] 新增 outbox_events：id、task_id、notification_generation、kind、payload、available_at、sent_at、relay_token、relay_expires_at，唯一键为 task_id/kind/notification_generation；新增 job_results（task_id 唯一、result_id/result_hash/input_hash/payload/accepted_at）和 publication_requests（run_id 唯一、状态、租约、attempts、available_at、last_error_code）。扩展 jobs 状态允许 result_ready，新增 notification_generation 和 execution_epoch；新增 runtime_control 单例，mode=legacy/go、epoch，初始 legacy/0；sessions 新增可空 csrf_token。旧列、旧 ID 和状态约束兼容保留。
-- [ ] 重跑 legacy-schema，要求断言通过且重跑不重复迁移；SQL 仍保存在现有目录，Docker 构建显式包含，Go 迁移不依赖 TS 数据库执行器。
-- [ ] 仅提交本任务文件，提交信息 feat: preserve S1 schema with Go persistence and outbox。
+- [x] 执行 pnpm exec turbo run test:migration --filter=@reviewpilot/tooling -- --case legacy-schema，记录 Go 迁移缺失时的失败。
+- [x] 实现 Store 与迁移器，沿用 schema_migrations 的 name/hash/applied_at、SHA-256 文件哈希和 advisory lock 782914630；显式映射旧表，不调用 AutoMigrate。此任务即移除 persistence workspace 的旧 db:migrate 脚本，改为唯一 Go 入口，不等到最后才解决双迁移器调度。
+- [x] 新增 outbox_events：id、task_id、notification_generation、kind、payload、available_at、sent_at、relay_token、relay_expires_at，唯一键为 task_id/kind/notification_generation；新增 job_results（task_id 唯一、result_id/result_hash/input_hash/payload/accepted_at）和 publication_requests（run_id 唯一、状态、租约、attempts、available_at、last_error_code）。扩展 jobs 状态允许 result_ready，新增 notification_generation 和 execution_epoch；新增 runtime_control 单例，mode=legacy/go、epoch，初始 legacy/0；sessions 新增可空 csrf_token。旧列、旧 ID 和状态约束兼容保留。
+- [x] 重跑 legacy-schema，要求断言通过且重跑不重复迁移；SQL 仍保存在现有目录，Docker 构建显式包含，Go 迁移不依赖 TS 数据库执行器。（Dockerfile 包含 SQL 由任务 7 验证。）
+- [x] 仅提交本任务文件，提交信息 feat: preserve S1 schema with Go persistence and outbox。
 
 ## 任务 3 Go 登录与仓库治理
 

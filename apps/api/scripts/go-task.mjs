@@ -14,6 +14,9 @@ const run = (command, args) => {
   if (result.status !== 0) process.exit(result.status ?? 1);
 };
 switch (task) {
+  case 'migrate':
+    run('go', ['run', './cmd/migrate', ...extra]);
+    break;
   case 'build':
     for (const entry of ['api', 'dispatcher', 'migrate']) {
       if (existsSync(root + '/cmd/' + entry))

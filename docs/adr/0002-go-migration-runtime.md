@@ -2,7 +2,7 @@
 
 日期：2026-10-06。状态：实施中，尚未完成 S1 切换。
 
-使用当前已安装 Go 1.27.1（.go-version 与 go.mod），Gin 固定 1.12.0，要求 Go 1.25+。GORM 计划固定 1.31.2，在持久化任务实际接入后记录 go.sum。保留原 pnpm/Turbo/Next 等已锁定依赖，不随迁移升级。
+使用当前已安装 Go 1.27.1（.go-version 与 go.mod），Gin 固定 1.12.0，要求 Go 1.25+。持久化已接入 GORM 1.31.2、PostgreSQL driver 1.6.0，记录于 go.mod/go.sum。保留原 pnpm/Turbo/Next 等已锁定依赖，不随迁移升级。
 
 OpenAPI 使用 3.0.3；生成器固定 oapi-codegen 2.8.0 与 openapi-typescript 7.13.0。消息采用独立 Draft 2020-12 JSON Schema 与 Ajv 8.20.0。消息 Schema 经受限投影写入 OpenAPI，生成文件仅由 codegen 产生，contracts:check 比较生成结果与源文件。
 

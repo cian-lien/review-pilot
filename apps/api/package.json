@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "db:migrate": "node scripts/go-task.mjs migrate",
     "deps": "node scripts/go-task.mjs deps",
     "build": "node scripts/go-task.mjs build",
     "typecheck": "node scripts/go-task.mjs typecheck",

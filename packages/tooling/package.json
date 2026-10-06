@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "format:migration": "cd ../.. && prettier --write scripts/s1-migration-test.ts tests/integration/s1-migration.test.ts vitest.migration.config.ts packages/persistence/package.json packages/persistence/migrations/0003-outbox-and-results.sql --ignore-unknown --log-level warn",
+    "test:migration": "cd ../.. && tsx scripts/s1-migration-test.ts",
     "typecheck": "tsc --noEmit --project ../../tsconfig.json",
     "lint": "eslint ../..",
     "format": "cd ../.. && prettier --write apps packages scripts tests *.json *.yml *.yaml *.ts *.mjs --log-level warn",

@@ -7,9 +7,6 @@
     ".": "./src/index.ts",
     "./migrate": "./src/migrate.ts"
   },
-  "scripts": {
-    "db:migrate": "cd ../.. && tsx --env-file-if-exists=.env scripts/migrate.ts"
-  },
   "dependencies": {
     "zod": "4.6.5",
     "pg": "8.23.1",
