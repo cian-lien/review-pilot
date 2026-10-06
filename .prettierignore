@@ -1,3 +1,5 @@
 pnpm-lock.yaml
 **/next-env.d.ts
 **/.turbo/**
+packages/contracts/src/s1.gen.ts
+apps/api/internal/contracts/s1.gen.go

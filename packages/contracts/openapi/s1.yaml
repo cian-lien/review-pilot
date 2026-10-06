@@ -1,0 +1,284 @@
+openapi: 3.0.3
+info:
+  title: ReviewPilot S1
+  version: 1.0.0
+paths:
+  /api/health:
+    get:
+      operationId: getHealth
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+components:
+  schemas:
+    TenantRef:
+      type: object
+      additionalProperties: false
+      required:
+        - installationId
+        - repositoryId
+      properties:
+        installationId:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        repositoryId:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+    RunSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+        - identity
+        - modelConfigVersion
+        - repositoryConfigVersion
+        - memorySetVersion
+        - trustedRulesSha
+      properties:
+        identity:
+          type: object
+          additionalProperties: false
+          required:
+            - tenant
+            - prNumber
+            - baseSha
+            - headSha
+            - pipelineVersion
+            - generation
+          properties:
+            tenant:
+              $ref: '#/components/schemas/TenantRef'
+            prNumber:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            baseSha:
+              type: string
+              pattern: ^[0-9a-f]{40}$
+            headSha:
+              type: string
+              pattern: ^[0-9a-f]{40}$
+            pipelineVersion:
+              type: string
+              minLength: 1
+              maxLength: 200
+            generation:
+              type: integer
+              minimum: 0
+        modelConfigVersion:
+          type: string
+          minLength: 1
+          maxLength: 200
+        repositoryConfigVersion:
+          type: string
+          minLength: 1
+          maxLength: 200
+        memorySetVersion:
+          type: string
+          minLength: 1
+          maxLength: 200
+        trustedRulesSha:
+          type: string
+          maxLength: 40
+    TaskEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+        - schemaVersion
+        - messageId
+        - taskId
+        - runId
+        - tenant
+        - headSha
+        - kind
+        - notificationGeneration
+      properties:
+        schemaVersion:
+          enum:
+            - 1
+          type: integer
+        messageId:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        taskId:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        runId:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        tenant:
+          $ref: '#/components/schemas/TenantRef'
+        headSha:
+          type: string
+          pattern: ^[0-9a-f]{40}$
+        kind:
+          type: string
+          enum:
+            - connection-check
+            - evolution
+        notificationGeneration:
+          type: integer
+          minimum: 0
+        traceparent:
+          type: string
+          maxLength: 55
+          pattern: ^00-[0-9a-f]{32}-[0-9a-f]{16}-0[01]$
+        tracestate:
+          type: string
+          maxLength: 512
+    TaskLease:
+      type: object
+      additionalProperties: false
+      required:
+        - taskId
+        - runId
+        - leaseToken
+        - attempt
+        - expiresAt
+        - snapshot
+        - inputHash
+        - executionEpoch
+      properties:
+        taskId:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        runId:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        leaseToken:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        attempt:
+          type: integer
+          minimum: 1
+        expiresAt:
+          type: string
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/RunSnapshot'
+        inputHash:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        executionEpoch:
+          type: integer
+          minimum: 0
+    ClaimRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - workerId
+        - envelope
+      properties:
+        workerId:
+          type: string
+          minLength: 1
+          maxLength: 200
+        envelope:
+          $ref: '#/components/schemas/TaskEnvelope'
+    ClaimResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - outcome
+      properties:
+        outcome:
+          type: string
+          enum:
+            - claimed
+            - busy
+            - not-ready
+            - finished
+            - cancelled
+            - exhausted
+            - superseded
+        lease:
+          $ref: '#/components/schemas/TaskLease'
+    ConnectionResult:
+      type: object
+      additionalProperties: false
+      required:
+        - resultId
+        - taskId
+        - runId
+        - leaseToken
+        - executionEpoch
+        - inputHash
+        - resultHash
+        - kind
+      properties:
+        resultId:
+          type: string
+          minLength: 1
+          maxLength: 200
+        taskId:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        runId:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        leaseToken:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        executionEpoch:
+          type: integer
+          minimum: 0
+        inputHash:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        resultHash:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        kind:
+          type: string
+          enum:
+            - connection-check
+    CommitResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - outcome
+      properties:
+        outcome:
+          type: string
+          enum:
+            - accepted
+            - already-accepted
+    APIError:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - message
+        - requestId
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 200
+        message:
+          type: string
+          maxLength: 500
+        requestId:
+          type: string
+          minLength: 1
+          maxLength: 200
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - phase
+        - aiReviewEnabled
+      properties:
+        phase:
+          type: string
+          enum:
+            - foundation
+        aiReviewEnabled:
+          type: boolean
+          enum:
+            - false

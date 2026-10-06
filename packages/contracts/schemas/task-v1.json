@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reviewpilot.local/schemas/task-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "messageId",
+    "taskId",
+    "runId",
+    "tenant",
+    "headSha",
+    "kind",
+    "notificationGeneration"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1,
+      "type": "integer"
+    },
+    "messageId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "taskId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "runId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "tenant": {
+      "$ref": "#/$defs/TenantRef"
+    },
+    "headSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["connection-check", "evolution"]
+    },
+    "notificationGeneration": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "traceparent": {
+      "type": "string",
+      "maxLength": 55,
+      "pattern": "^00-[0-9a-f]{32}-[0-9a-f]{16}-0[01]$"
+    },
+    "tracestate": {
+      "type": "string",
+      "maxLength": 512
+    }
+  },
+  "$defs": {
+    "TenantRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["installationId", "repositoryId"],
+      "properties": {
+        "installationId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "repositoryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      }
+    }
+  }
+}

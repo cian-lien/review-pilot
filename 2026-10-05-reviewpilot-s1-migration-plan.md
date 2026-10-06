@@ -1,6 +1,6 @@
 # ReviewPilot S1 技术栈迁移实现计划
 
-> 面向执行者：使用 superpowers:executing-plans，在当前会话和现有项目逐任务执行。用户已明确禁止 subagent，包括独立审查代理；执行者自行复核。所有步骤以复选框记录，完成本阶段后停止。当前只编写计划，尚未获得本计划的实施批准。
+> 面向执行者：使用 superpowers:executing-plans，在当前会话和现有项目逐任务执行。用户已明确禁止 subagent，包括独立审查代理；执行者自行复核。所有步骤以复选框记录，完成本阶段后停止。用户已于 2026-10-06 批准实施。
 
 **目标：** 保留现有 S1 接入能力，将业务 API 和治理迁到 Go，通过 RabbitMQ 驱动 TS Worker，并接入可运行的完整监控基础。
 
@@ -10,7 +10,7 @@
 
 **设计依据：** [已确认的技术栈与 S1 迁移设计](docs/superpowers/specs/2026-10-05-reviewpilot-tech-stack-design.md)。同时阅读 [原产品设计](docs/superpowers/specs/2026-10-04-reviewpilot-design.md)，但只执行本计划的 S1 迁移范围。
 
-日期：2026-10-05。位置：review-pilot 根目录。状态：待用户审阅；八个任务均未执行。
+日期：2026-10-05。位置：review-pilot 根目录。状态：2026-10-06 获批，实施中；任务记录位于本计划专属执行账本，不提前宣称阶段完成。
 
 ## 全局约束
 
@@ -109,8 +109,8 @@ Go test:unit 包装器透传 package 和 -run 参数，默认 ./...；所有带 
 
 **接口：** httpapi.NewRouter() *gin.Engine；config.Load() (Config,error)，Config 定义 APP_URL、API_BIND_ADDR、INTERNAL_BIND_ADDR、DATABASE_URL、RABBITMQ_URL、INTERNAL_API_URL、REVIEW_WORKER_SERVICE_TOKEN、EVOLUTION_WORKER_SERVICE_TOKEN 和原有 GitHub 配置；后续路由按模块 Register 到 Router。contracts.validateTask(input:unknown):TaskEnvelope 由 src/validate.ts 实现并从 index.ts 导出，使用 Ajv schema，额外字段与未知版本拒绝。
 
-- [ ] 建立最小 Go workspace 包装和契约生成入口；读取现有 Go 版本，核对 Gin、GORM、生成器兼容要求，锁定可用稳定版本并记录，不自动升级整套 JS 依赖。
-- [ ] 编写 router_test.go 的 TestHealthNoSecrets 和 contracts schema 断言：未知 schemaVersion、负数 ID、包含 token 字段的消息均拒绝。HTTP 测试的核心断言如下：
+- [x] 建立最小 Go workspace 包装和契约生成入口；读取现有 Go 版本，核对 Gin、GORM、生成器兼容要求，锁定可用稳定版本并记录，不自动升级整套 JS 依赖。
+- [x] 编写 router_test.go 的 TestHealthNoSecrets 和 contracts schema 断言：未知 schemaVersion、负数 ID、包含 token 字段的消息均拒绝。HTTP 测试的核心断言如下：
 
 ```go
 r := httpapi.NewRouter()
@@ -120,10 +120,10 @@ if w.Code != 200 || !strings.Contains(w.Body.String(), "foundation") { t.Fatal(w
 if strings.Contains(w.Body.String(), "DATABASE_URL") { t.Fatal("config leaked") }
 ```
 
-- [ ] 执行 pnpm exec turbo run test:unit --filter=@reviewpilot/api -- ./internal/httpapi -run TestHealthNoSecrets -count=1，记录健康响应未实现导致的失败；契约检查同样记录实际失败，不用安装失败冒充行为测试失败。
-- [ ] 实现 NewRouter 与 Config 校验，健康响应明确 phase=foundation；构建输出 bin/api、bin/dispatcher、bin/migrate 按入口创建进度逐步加入。生成类型和校验器，缺配置只输出字段名，不输出值。GitHub 配置未齐时仍可启动健康与 bootstrap 路由，登录等操作返回 503，不伪造认证成功。
-- [ ] 执行上述定向测试及 pnpm exec turbo run contracts:check --filter=@reviewpilot/contracts；要求 PASS、生成文件与源契约一致。Go build 缓存包含 Go 版本、go.mod/go.sum、源码、生成契约，服务与副作用任务关闭缓存。
-- [ ] 仅提交本任务文件，提交信息 feat: scaffold Go API and cross-language contracts。
+- [x] 执行 pnpm exec turbo run test:unit --filter=@reviewpilot/api -- ./internal/httpapi -run TestHealthNoSecrets -count=1，记录健康响应未实现导致的失败；契约检查同样记录实际失败，不用安装失败冒充行为测试失败。
+- [x] 实现 NewRouter 与 Config 校验，健康响应明确 phase=foundation；构建输出 bin/api、bin/dispatcher、bin/migrate 按入口创建进度逐步加入。生成类型和校验器，缺配置只输出字段名，不输出值。GitHub 配置未齐时仍可启动健康与 bootstrap 路由，登录等操作返回 503，不伪造认证成功。
+- [x] 执行上述定向测试及 pnpm exec turbo run contracts:check --filter=@reviewpilot/contracts；要求 PASS、生成文件与源契约一致。Go build 缓存包含 Go 版本、go.mod/go.sum、源码、生成契约，服务与副作用任务关闭缓存。
+- [x] 仅提交本任务文件，提交信息 feat: scaffold Go API and cross-language contracts。
 
 ## 任务 2 兼容持久化与新增迁移
 
@@ -293,8 +293,8 @@ expect(await runScenario('cutover')).toMatchObject({
 
 ## 执行交接与审阅
 
-- [ ] 用户确认本计划符合预期，再在当前会话按 executing-plans 自行实施，不安排 subagent 或独立代理复核。
+- [x] 用户确认本计划符合预期，再在当前会话按 executing-plans 自行实施，不安排 subagent 或独立代理复核。
 - [ ] 每个任务提交前自行检查 diff、定向验证证据和与契约的一致性；若需求超出计划或需购买、真实部署、破坏数据，则报告并请求方向。
 - [ ] S1 迁移结束后准确区分本地代码验收与真实 GitHub 验收；真实接入通过前，不宣称具备进入 S2 的全部条件。
 
-本计划不授权立即执行。下一步是用户审阅计划并确认；执行方法沿用已指定的当前会话直接开发，不重新推荐或询问 subagent 方案。
+本计划已获用户批准；执行方法沿用已指定的当前会话直接开发，不重新推荐或询问 subagent 方案。只执行 S1 迁移，完成后停止。

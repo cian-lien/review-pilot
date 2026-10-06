@@ -1,0 +1,16 @@
+{
+  "name": "@reviewpilot/api",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "deps": "node scripts/go-task.mjs deps",
+    "build": "node scripts/go-task.mjs build",
+    "typecheck": "node scripts/go-task.mjs typecheck",
+    "lint": "node scripts/go-task.mjs lint",
+    "format": "node scripts/go-task.mjs format",
+    "test:unit": "node scripts/go-task.mjs test",
+    "dev": "node scripts/go-task.mjs dev",
+    "start": "node scripts/go-task.mjs start"
+  }
+}

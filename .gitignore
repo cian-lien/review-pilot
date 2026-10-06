@@ -2,6 +2,7 @@ node_modules/
 .next/
 .turbo/
 dist/
+apps/api/bin/
 .env
 .env.*
 !.env.example
