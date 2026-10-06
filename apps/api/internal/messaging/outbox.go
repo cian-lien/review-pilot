@@ -6,7 +6,9 @@ import (
 	"errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"reviewpilot.local/api/internal/contracts"
 	"reviewpilot.local/api/internal/jobs"
+	"reviewpilot.local/api/internal/observability"
 	"reviewpilot.local/api/internal/persistence"
 )
 
@@ -14,6 +16,7 @@ type Publisher interface {
 	Publish(context.Context, string, string, []byte) error
 }
 type Relay struct {
+	Observer  *observability.Runtime
 	DB        *gorm.DB
 	Publisher Publisher
 }
@@ -57,7 +60,30 @@ func (r *Relay) Flush(ctx context.Context, limit int) error {
 		return err
 	}
 	for _, e := range events {
-		if err = r.Publisher.Publish(ctx, e.Kind, e.ID, e.Payload); err != nil {
+		var envelope contracts.TaskEnvelope
+		if json.Unmarshal(e.Payload, &envelope) != nil {
+			return errors.New("INVALID_OUTBOX_MESSAGE")
+		}
+		observer := r.Observer
+		if observer == nil {
+			observer = observability.Current()
+		}
+		parent := ""
+		if envelope.Traceparent != nil {
+			parent = *envelope.Traceparent
+		}
+		step, span := observer.Start(observability.Extract(ctx, parent), "outbox.publish", observability.Fields{RunID: envelope.RunId, TaskID: envelope.TaskId})
+		if propagated := observability.Traceparent(step); propagated != "" {
+			envelope.Traceparent = &propagated
+		}
+		body, marshalErr := json.Marshal(envelope)
+		if marshalErr != nil {
+			span.End()
+			return errors.New("INVALID_OUTBOX_MESSAGE")
+		}
+		err = r.Publisher.Publish(step, e.Kind, e.ID, body)
+		span.End()
+		if err != nil {
 			_ = r.DB.WithContext(ctx).Exec("UPDATE outbox_events SET relay_token=NULL,relay_expires_at=NULL,available_at=clock_timestamp()+interval '5 seconds' WHERE id=? AND relay_token=?", e.ID, *e.RelayToken).Error
 			return err
 		}

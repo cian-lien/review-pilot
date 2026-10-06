@@ -7,6 +7,7 @@
     "worker:evolution": "node ../../packages/worker-runtime/scripts/launch.mjs evolution"
   },
   "dependencies": {
+    "@reviewpilot/observability": "workspace:*",
     "@reviewpilot/worker-runtime": "workspace:*"
   }
 }

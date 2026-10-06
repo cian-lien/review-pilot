@@ -1,0 +1,457 @@
+{
+  'name': 'reviewpilot-beta',
+  'services':
+    {
+      'postgres':
+        {
+          'image': 'postgres:18.4',
+          'restart': 'unless-stopped',
+          'environment':
+            {
+              'POSTGRES_USER': 'reviewpilot',
+              'POSTGRES_DB': 'reviewpilot',
+              'POSTGRES_PASSWORD_FILE': '/run/secrets/postgres_password',
+            },
+          'networks': ['data'],
+          'volumes': ['reviewpilot_pg:/var/lib/postgresql'],
+          'healthcheck':
+            {
+              'interval': '15s',
+              'timeout': '5s',
+              'retries': 4,
+              'start_period': '30s',
+              'test': ['CMD-SHELL', 'pg_isready -U reviewpilot -d reviewpilot'],
+            },
+          'mem_limit': '512m',
+          'cpus': '1.0',
+          'secrets': ['postgres_password'],
+        },
+      'rabbitmq':
+        {
+          'image': 'rabbitmq:4.3.6-management-alpine',
+          'restart': 'unless-stopped',
+          'hostname': 'rabbitmq',
+          'environment': { 'RABBITMQ_DEFAULT_USER': 'reviewpilot' },
+          'command':
+            [
+              'sh',
+              '-ec',
+              'export RABBITMQ_DEFAULT_PASS="$$(cat /run/secrets/rabbitmq_password)"; exec docker-entrypoint.sh rabbitmq-server',
+            ],
+          'secrets': ['rabbitmq_password'],
+          'networks': ['tasks', 'monitoring'],
+          'volumes':
+            [
+              'rabbitmq:/var/lib/rabbitmq',
+              './rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro',
+            ],
+          'healthcheck':
+            {
+              'interval': '15s',
+              'timeout': '5s',
+              'retries': 4,
+              'start_period': '30s',
+              'test':
+                [
+                  'CMD',
+                  'su',
+                  'rabbitmq',
+                  '-s',
+                  '/bin/sh',
+                  '-c',
+                  'rabbitmq-diagnostics -q check_port_connectivity',
+                ],
+            },
+          'mem_limit': '512m',
+          'cpus': '1.0',
+        },
+      'api':
+        {
+          'restart': 'unless-stopped',
+          'read_only': true,
+          'tmpfs': ['/tmp:rw,noexec,nosuid,size=64m', '/app/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m'],
+          'cap_drop': ['ALL'],
+          'security_opt': ['no-new-privileges:true'],
+          'mem_limit': '512m',
+          'cpus': '1.0',
+          'logging': { 'driver': 'json-file', 'options': { 'max-size': '10m', 'max-file': '3' } },
+          'build': { 'context': '..', 'dockerfile': 'apps/api/Dockerfile' },
+          'environment':
+            {
+              'NODE_ENV': 'production',
+              'APP_URL': 'https://${APP_HOST:?Set APP_HOST}',
+              'API_BIND_ADDR': '0.0.0.0:4000',
+              'INTERNAL_BIND_ADDR': '0.0.0.0:4001',
+              'REVIEW_PIPELINE_VERSION': 'foundation-v1',
+              'OTEL_EXPORTER_OTLP_ENDPOINT': 'http://collector:4318',
+              'DATABASE_URL_FILE': '/run/secrets/database_url',
+              'RABBITMQ_URL_FILE': '/run/secrets/rabbitmq_url',
+              'GITHUB_CLIENT_SECRET_FILE': '/run/secrets/github_client_secret',
+              'GITHUB_WEBHOOK_SECRET_FILE': '/run/secrets/github_webhook_secret',
+              'SESSION_SECRET_FILE': '/run/secrets/session_secret',
+              'REVIEW_WORKER_SERVICE_TOKEN_FILE': '/run/secrets/review_worker_token',
+              'EVOLUTION_WORKER_SERVICE_TOKEN_FILE': '/run/secrets/evolution_worker_token',
+              'GITHUB_APP_ID': '${GITHUB_APP_ID:?Set GITHUB_APP_ID}',
+              'GITHUB_APP_SLUG': '${GITHUB_APP_SLUG:?Set GITHUB_APP_SLUG}',
+              'GITHUB_CLIENT_ID': '${GITHUB_CLIENT_ID:?Set GITHUB_CLIENT_ID}',
+              'GITHUB_PRIVATE_KEY_PATH': '/run/secrets/github_private_key',
+            },
+          'networks': ['ingress', 'data', 'tasks', 'monitoring', 'egress'],
+          'healthcheck':
+            {
+              'interval': '15s',
+              'timeout': '5s',
+              'retries': 4,
+              'start_period': '30s',
+              'test':
+                ['CMD', 'node', 'scripts/container-health.mjs', 'http://127.0.0.1:4000/api/ready'],
+            },
+          'depends_on':
+            {
+              'postgres': { 'condition': 'service_healthy' },
+              'rabbitmq': { 'condition': 'service_healthy' },
+            },
+          'secrets':
+            [
+              'database_url',
+              'rabbitmq_url',
+              'github_client_secret',
+              'github_webhook_secret',
+              'session_secret',
+              'review_worker_token',
+              'evolution_worker_token',
+              'github_private_key',
+            ],
+        },
+      'dispatcher':
+        {
+          'restart': 'unless-stopped',
+          'read_only': true,
+          'tmpfs': ['/tmp:rw,noexec,nosuid,size=64m', '/app/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m'],
+          'cap_drop': ['ALL'],
+          'security_opt': ['no-new-privileges:true'],
+          'mem_limit': '512m',
+          'cpus': '1.0',
+          'logging': { 'driver': 'json-file', 'options': { 'max-size': '10m', 'max-file': '3' } },
+          'build': { 'context': '..', 'dockerfile': 'apps/api/Dockerfile' },
+          'command': ['pnpm', 'exec', 'turbo', 'run', 'dispatcher', '--filter=@reviewpilot/api'],
+          'environment':
+            {
+              'NODE_ENV': 'production',
+              'APP_URL': 'https://${APP_HOST:?Set APP_HOST}',
+              'API_BIND_ADDR': '0.0.0.0:4000',
+              'INTERNAL_BIND_ADDR': '0.0.0.0:4001',
+              'REVIEW_PIPELINE_VERSION': 'foundation-v1',
+              'OTEL_EXPORTER_OTLP_ENDPOINT': 'http://collector:4318',
+              'DATABASE_URL_FILE': '/run/secrets/database_url',
+              'RABBITMQ_URL_FILE': '/run/secrets/rabbitmq_url',
+              'GITHUB_CLIENT_SECRET_FILE': '/run/secrets/github_client_secret',
+              'GITHUB_WEBHOOK_SECRET_FILE': '/run/secrets/github_webhook_secret',
+              'SESSION_SECRET_FILE': '/run/secrets/session_secret',
+              'REVIEW_WORKER_SERVICE_TOKEN_FILE': '/run/secrets/review_worker_token',
+              'EVOLUTION_WORKER_SERVICE_TOKEN_FILE': '/run/secrets/evolution_worker_token',
+              'GITHUB_APP_ID': '${GITHUB_APP_ID:?Set GITHUB_APP_ID}',
+              'GITHUB_APP_SLUG': '${GITHUB_APP_SLUG:?Set GITHUB_APP_SLUG}',
+              'GITHUB_CLIENT_ID': '${GITHUB_CLIENT_ID:?Set GITHUB_CLIENT_ID}',
+              'GITHUB_PRIVATE_KEY_PATH': '/run/secrets/github_private_key',
+              'HEARTBEAT_FILE': '/tmp/reviewpilot-heartbeat',
+            },
+          'networks': ['data', 'tasks', 'monitoring', 'egress'],
+          'healthcheck':
+            {
+              'interval': '15s',
+              'timeout': '5s',
+              'retries': 4,
+              'start_period': '30s',
+              'test': ['CMD', 'node', 'scripts/container-health.mjs', '--heartbeat'],
+            },
+          'depends_on':
+            {
+              'postgres': { 'condition': 'service_healthy' },
+              'rabbitmq': { 'condition': 'service_healthy' },
+            },
+          'secrets':
+            [
+              'database_url',
+              'rabbitmq_url',
+              'github_client_secret',
+              'github_webhook_secret',
+              'session_secret',
+              'review_worker_token',
+              'evolution_worker_token',
+              'github_private_key',
+            ],
+        },
+      'web':
+        {
+          'restart': 'unless-stopped',
+          'read_only': true,
+          'tmpfs':
+            [
+              '/tmp:rw,noexec,nosuid,size=64m',
+              '/app/apps/web/.next/cache:rw,noexec,nosuid,size=64m',
+              '/app/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/web/.turbo:rw,noexec,nosuid,size=16m',
+            ],
+          'cap_drop': ['ALL'],
+          'security_opt': ['no-new-privileges:true'],
+          'mem_limit': '512m',
+          'cpus': '1.0',
+          'logging': { 'driver': 'json-file', 'options': { 'max-size': '10m', 'max-file': '3' } },
+          'build': { 'context': '..', 'dockerfile': 'apps/web/Dockerfile' },
+          'environment':
+            {
+              'NODE_ENV': 'production',
+              'PORT': '3000',
+              'SERVER_HOSTNAME': '0.0.0.0',
+              'NEXT_TELEMETRY_DISABLED': '1',
+            },
+          'networks': ['ingress'],
+          'healthcheck':
+            {
+              'interval': '15s',
+              'timeout': '5s',
+              'retries': 4,
+              'start_period': '30s',
+              'test':
+                [
+                  'CMD',
+                  'node',
+                  'scripts/container-health.mjs',
+                  'http://127.0.0.1:3000/repositories',
+                ],
+            },
+        },
+      'caddy':
+        {
+          'image': 'caddy:2.11.7-alpine',
+          'restart': 'unless-stopped',
+          'environment': { 'APP_HOST': '${APP_HOST:?Set APP_HOST}' },
+          'ports': ['80:80', '443:443'],
+          'networks': ['ingress', 'egress'],
+          'volumes':
+            [
+              './caddy/Caddyfile:/etc/caddy/Caddyfile:ro',
+              'caddy_data:/data',
+              'caddy_config:/config',
+            ],
+          'depends_on':
+            {
+              'api': { 'condition': 'service_started' },
+              'web': { 'condition': 'service_healthy' },
+            },
+          'mem_limit': '128m',
+          'cpus': '0.5',
+        },
+      'collector':
+        {
+          'image': 'otel/opentelemetry-collector-contrib:0.161.0',
+          'restart': 'unless-stopped',
+          'command': ['--config=/etc/otelcol/config.yaml'],
+          'networks': ['monitoring'],
+          'volumes': ['./otel/collector.yaml:/etc/otelcol/config.yaml:ro'],
+          'read_only': true,
+          'cap_drop': ['ALL'],
+          'security_opt': ['no-new-privileges:true'],
+          'mem_limit': '256m',
+          'cpus': '0.5',
+        },
+      'prometheus':
+        {
+          'image': 'prom/prometheus:v3.14.0',
+          'restart': 'unless-stopped',
+          'command':
+            [
+              '--config.file=/etc/prometheus/prometheus.yml',
+              '--storage.tsdb.path=/prometheus',
+              '--storage.tsdb.retention.time=30d',
+              '--storage.tsdb.retention.size=5GB',
+            ],
+          'networks': ['monitoring'],
+          'volumes':
+            [
+              './prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro',
+              './prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro',
+              'prometheus:/prometheus',
+            ],
+          'healthcheck':
+            {
+              'interval': '15s',
+              'timeout': '5s',
+              'retries': 4,
+              'start_period': '30s',
+              'test': ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://localhost:9090/-/ready'],
+            },
+          'mem_limit': '512m',
+          'cpus': '1.0',
+        },
+      'loki':
+        {
+          'image': 'grafana/loki:3.7.8',
+          'restart': 'unless-stopped',
+          'command': ['-config.file=/etc/loki/loki.yaml'],
+          'networks': ['monitoring'],
+          'volumes': ['./loki/loki.yaml:/etc/loki/loki.yaml:ro', 'loki:/loki'],
+          'mem_limit': '512m',
+          'cpus': '1.0',
+        },
+      'tempo':
+        {
+          'image': 'grafana/tempo:3.1.0',
+          'restart': 'unless-stopped',
+          'command': ['-config.file=/etc/tempo/tempo.yaml'],
+          'networks': ['monitoring'],
+          'volumes': ['./tempo/tempo.yaml:/etc/tempo/tempo.yaml:ro', 'tempo:/var/tempo'],
+          'mem_limit': '1g',
+          'cpus': '1.0',
+        },
+      'grafana':
+        {
+          'image': 'grafana/grafana:13.1.6',
+          'restart': 'unless-stopped',
+          'ports': ['127.0.0.1:3001:3000'],
+          'networks': ['monitoring'],
+          'environment':
+            {
+              'GF_AUTH_ANONYMOUS_ENABLED': 'false',
+              'GF_USERS_ALLOW_SIGN_UP': 'false',
+              'GF_ANALYTICS_REPORTING_ENABLED': 'false',
+              'GF_ANALYTICS_CHECK_FOR_UPDATES': 'false',
+              'GF_SECURITY_ADMIN_USER': 'reviewpilot',
+              'GF_SECURITY_ADMIN_PASSWORD__FILE': '/run/secrets/grafana_password',
+            },
+          'secrets': ['grafana_password'],
+          'volumes':
+            [
+              'grafana:/var/lib/grafana',
+              './grafana/provisioning/datasources.yml:/etc/grafana/provisioning/datasources/reviewpilot.yml:ro',
+              './grafana/provisioning/dashboards.yml:/etc/grafana/provisioning/dashboards/reviewpilot.yml:ro',
+              './grafana/dashboards:/var/lib/grafana/dashboards:ro',
+            ],
+          'healthcheck':
+            {
+              'interval': '15s',
+              'timeout': '5s',
+              'retries': 4,
+              'start_period': '30s',
+              'test': ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://localhost:3000/api/health'],
+            },
+          'mem_limit': '256m',
+          'cpus': '0.5',
+        },
+      'worker-review':
+        {
+          'restart': 'unless-stopped',
+          'read_only': true,
+          'tmpfs': ['/tmp:rw,noexec,nosuid,size=64m', '/app/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m'],
+          'cap_drop': ['ALL'],
+          'security_opt': ['no-new-privileges:true'],
+          'mem_limit': '512m',
+          'cpus': '1.0',
+          'logging': { 'driver': 'json-file', 'options': { 'max-size': '10m', 'max-file': '3' } },
+          'build': { 'context': '..', 'dockerfile': 'apps/worker-review/Dockerfile' },
+          'networks': ['tasks', 'monitoring'],
+          'environment':
+            {
+              'NODE_ENV': 'production',
+              'INTERNAL_API_URL': 'http://api:4001',
+              'OTEL_EXPORTER_OTLP_ENDPOINT': 'http://collector:4318',
+              'HEARTBEAT_FILE': '/tmp/reviewpilot-heartbeat',
+              'RABBITMQ_URL_FILE': '/run/secrets/rabbitmq_url',
+              'REVIEW_WORKER_SERVICE_TOKEN_FILE': '/run/secrets/review_worker_token',
+            },
+          'healthcheck':
+            {
+              'interval': '15s',
+              'timeout': '5s',
+              'retries': 4,
+              'start_period': '30s',
+              'test': ['CMD', 'node', 'scripts/container-health.mjs', '--heartbeat'],
+            },
+          'depends_on':
+            {
+              'api': { 'condition': 'service_started' },
+              'rabbitmq': { 'condition': 'service_healthy' },
+            },
+          'secrets': ['rabbitmq_url', 'review_worker_token'],
+        },
+      'worker-evolution':
+        {
+          'restart': 'unless-stopped',
+          'read_only': true,
+          'tmpfs': ['/tmp:rw,noexec,nosuid,size=64m', '/app/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m'],
+          'cap_drop': ['ALL'],
+          'security_opt': ['no-new-privileges:true'],
+          'mem_limit': '512m',
+          'cpus': '1.0',
+          'logging': { 'driver': 'json-file', 'options': { 'max-size': '10m', 'max-file': '3' } },
+          'build': { 'context': '..', 'dockerfile': 'apps/worker-evolution/Dockerfile' },
+          'networks': ['tasks', 'monitoring'],
+          'environment':
+            {
+              'NODE_ENV': 'production',
+              'INTERNAL_API_URL': 'http://api:4001',
+              'OTEL_EXPORTER_OTLP_ENDPOINT': 'http://collector:4318',
+              'HEARTBEAT_FILE': '/tmp/reviewpilot-heartbeat',
+              'RABBITMQ_URL_FILE': '/run/secrets/rabbitmq_url',
+              'EVOLUTION_WORKER_SERVICE_TOKEN_FILE': '/run/secrets/evolution_worker_token',
+            },
+          'healthcheck':
+            {
+              'interval': '15s',
+              'timeout': '5s',
+              'retries': 4,
+              'start_period': '30s',
+              'test': ['CMD', 'node', 'scripts/container-health.mjs', '--heartbeat'],
+            },
+          'depends_on':
+            {
+              'api': { 'condition': 'service_started' },
+              'rabbitmq': { 'condition': 'service_healthy' },
+            },
+          'secrets': ['rabbitmq_url', 'evolution_worker_token'],
+        },
+    },
+  'volumes':
+    {
+      'reviewpilot_pg': { 'name': 'reviewpilot_beta_pg' },
+      'rabbitmq': { 'name': 'reviewpilot_beta_rabbitmq' },
+      'prometheus': { 'name': 'reviewpilot_beta_prometheus' },
+      'loki': { 'name': 'reviewpilot_beta_loki' },
+      'tempo': { 'name': 'reviewpilot_beta_tempo' },
+      'grafana': { 'name': 'reviewpilot_beta_grafana' },
+      'caddy_data': { 'name': 'reviewpilot_beta_caddy_data' },
+      'caddy_config': { 'name': 'reviewpilot_beta_caddy_config' },
+    },
+  'networks':
+    {
+      'ingress': {},
+      'data': { 'internal': true },
+      'tasks': { 'internal': true },
+      'monitoring': { 'internal': true },
+      'egress': {},
+    },
+  'secrets':
+    {
+      'database_url': { 'file': '${SECRET_DIRECTORY:?Set absolute SECRET_DIRECTORY}/database_url' },
+      'rabbitmq_url': { 'file': '${SECRET_DIRECTORY:?Set absolute SECRET_DIRECTORY}/rabbitmq_url' },
+      'github_client_secret':
+        { 'file': '${SECRET_DIRECTORY:?Set absolute SECRET_DIRECTORY}/github_client_secret' },
+      'github_webhook_secret':
+        { 'file': '${SECRET_DIRECTORY:?Set absolute SECRET_DIRECTORY}/github_webhook_secret' },
+      'session_secret':
+        { 'file': '${SECRET_DIRECTORY:?Set absolute SECRET_DIRECTORY}/session_secret' },
+      'review_worker_token':
+        { 'file': '${SECRET_DIRECTORY:?Set absolute SECRET_DIRECTORY}/review_worker_token' },
+      'evolution_worker_token':
+        { 'file': '${SECRET_DIRECTORY:?Set absolute SECRET_DIRECTORY}/evolution_worker_token' },
+      'github_private_key':
+        { 'file': '${SECRET_DIRECTORY:?Set absolute SECRET_DIRECTORY}/github_private_key' },
+      'postgres_password':
+        { 'file': '${SECRET_DIRECTORY:?Set absolute SECRET_DIRECTORY}/postgres_password' },
+      'rabbitmq_password':
+        { 'file': '${SECRET_DIRECTORY:?Set absolute SECRET_DIRECTORY}/rabbitmq_password' },
+      'grafana_password':
+        { 'file': '${SECRET_DIRECTORY:?Set absolute SECRET_DIRECTORY}/grafana_password' },
+    },
+}

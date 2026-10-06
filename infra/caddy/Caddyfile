@@ -1,0 +1,12 @@
+{$APP_HOST:http://localhost:8080} {
+	@internal path /internal /internal/*
+	respond @internal 404
+	@go path /api/* /auth/* /installations/callback
+	handle @go {
+		reverse_proxy api:4000
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+	header -Server
+}

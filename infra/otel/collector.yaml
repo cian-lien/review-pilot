@@ -1,0 +1,66 @@
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+  hostmetrics:
+    collection_interval: 30s
+    scrapers:
+      filesystem: {}
+      memory: {}
+      cpu: {}
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 192
+    spike_limit_mib: 32
+  batch:
+    timeout: 1s
+    send_batch_size: 64
+    send_batch_max_size: 128
+exporters:
+  otlp_http/loki:
+    endpoint: http://loki:3100/otlp
+    timeout: 1s
+    sending_queue:
+      queue_size: 256
+      num_consumers: 1
+    retry_on_failure:
+      initial_interval: 1s
+      max_interval: 2s
+      max_elapsed_time: 5s
+  otlp_http/tempo:
+    endpoint: http://tempo:4318
+    timeout: 1s
+    sending_queue:
+      queue_size: 256
+      num_consumers: 1
+    retry_on_failure:
+      initial_interval: 1s
+      max_interval: 2s
+      max_elapsed_time: 5s
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    resource_to_telemetry_conversion:
+      enabled: true
+service:
+  extensions: [health_check]
+  telemetry:
+    logs:
+      level: warn
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp_http/tempo]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp_http/loki]
+    metrics:
+      receivers: [otlp, hostmetrics]
+      processors: [memory_limiter, batch]
+      exporters: [prometheus]

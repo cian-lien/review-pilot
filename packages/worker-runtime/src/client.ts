@@ -1,5 +1,6 @@
 import type { components, TaskEnvelope } from '@reviewpilot/contracts';
 import { z } from 'zod';
+import { traceHeaders } from '@reviewpilot/observability';
 export type Lease = components['schemas']['TaskLease'];
 export type Result = components['schemas']['ConnectionResult'];
 export interface InternalClient {
@@ -78,6 +79,7 @@ export class RestClient implements InternalClient {
     const response = await fetch(new URL(path, this.base), {
       method,
       headers: {
+        ...traceHeaders(),
         Authorization: 'Bearer ' + this.token,
         ...(body ? { 'Content-Type': 'application/json' } : {}),
       },

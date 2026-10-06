@@ -2,6 +2,16 @@ import { expect, it } from 'vitest';
 import { runScenario } from '../../scripts/s1-migration-test';
 
 const selected = process.env.MIGRATION_CASE ?? 'all';
+if (selected === 'all' || selected === 'observability') {
+  it('real Collector correlates Go, AMQP and Worker without leaking credentials', async () => {
+    expect(await runScenario('observability')).toMatchObject({
+      linkedServices: ['api', 'dispatcher', 'worker-review'],
+      secretsCaptured: false,
+      completedWithCollectorDown: true,
+      publicInternalRouteStatus: 404,
+    });
+  });
+}
 if (selected === 'all' || selected === 'webhook-check') {
   it('signed events and fenced Check publication preserve S1 semantics', async () => {
     expect(await runScenario('webhook-check')).toMatchObject({

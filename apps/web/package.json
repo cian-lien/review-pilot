@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/next.mjs dev --hostname 127.0.0.1",
+    "dev": "node scripts/next.mjs dev",
     "build": "node scripts/next.mjs build",
-    "start": "node scripts/next.mjs start --hostname 127.0.0.1",
+    "start": "node scripts/next.mjs start",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
     "ui": "pnpm dlx shadcn@4.21.1",

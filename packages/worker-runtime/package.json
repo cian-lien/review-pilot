@@ -12,6 +12,7 @@
     "format": "prettier --write package.json src tests scripts --log-level warn"
   },
   "dependencies": {
+    "@reviewpilot/observability": "workspace:*",
     "@reviewpilot/contracts": "workspace:*",
     "amqplib": "2.2.0",
     "zod": "4.6.5"

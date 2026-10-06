@@ -6,15 +6,21 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"reviewpilot.local/api/internal/contracts"
+	"reviewpilot.local/api/internal/observability"
 	"reviewpilot.local/api/internal/persistence"
 	"time"
 )
 
 // Schedule is transaction-only: the generation and notification become visible together.
 func Schedule(tx *gorm.DB, j persistence.Job, r persistence.Run, available time.Time) error {
+	ctx, span := observability.FromContext(tx.Statement.Context).Start(tx.Statement.Context, "task.created", observability.Fields{RunID: r.ID, TaskID: j.ID})
+	defer span.End()
 	generation := j.NotificationGeneration + 1
 	messageID := UUID()
 	envelope := contracts.TaskEnvelope{SchemaVersion: 1, MessageId: messageID, TaskId: j.ID, RunId: r.ID, Tenant: contracts.TenantRef{InstallationId: int(r.InstallationID), RepositoryId: int(r.RepositoryID)}, HeadSha: r.HeadSHA, Kind: contracts.TaskEnvelopeKindConnectionCheck, NotificationGeneration: generation}
+	if parent := observability.Traceparent(ctx); parent != "" {
+		envelope.Traceparent = &parent
+	}
 	body, err := json.Marshal(envelope)
 	if err != nil {
 		return err

@@ -11,6 +11,7 @@ import (
 	"reviewpilot.local/api/internal/fault"
 	"reviewpilot.local/api/internal/github"
 	"reviewpilot.local/api/internal/jobs"
+	"reviewpilot.local/api/internal/observability"
 	"reviewpilot.local/api/internal/persistence"
 	"reviewpilot.local/api/internal/repositories"
 	"time"
@@ -161,6 +162,10 @@ func (s *Service) guard(ctx context.Context, l lease, token string) error {
 	return s.fence(ctx, l)
 }
 func (s *Service) publish(ctx context.Context, l lease) error {
+	var correlation struct{ TaskID, Traceparent string }
+	_ = s.DB.WithContext(ctx).Raw("SELECT j.id AS task_id,COALESCE((SELECT o.payload->>'traceparent' FROM outbox_events o WHERE o.task_id=j.id ORDER BY notification_generation DESC LIMIT 1),'') AS traceparent FROM jobs j WHERE j.run_id=? AND j.kind='review' LIMIT 1", l.Run.ID).Scan(&correlation).Error
+	ctx, span := observability.FromContext(ctx).Start(observability.Extract(ctx, correlation.Traceparent), "connection.publish", observability.Fields{RunID: l.Run.ID, TaskID: correlation.TaskID, Attempt: l.Attempt})
+	defer span.End()
 	if err := s.fence(ctx, l); err != nil {
 		return err
 	}

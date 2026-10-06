@@ -238,7 +238,7 @@ await expect(toggleRepository(client, input)).rejects.toMatchObject({ code: 'VER
 
 **接口：** Go observability.Setup(ctx context.Context,service string)(shutdown func(context.Context)error,err error)；TS setupObservability(service:string):Promise<()=>Promise<void>>、safeLog(fields:LogFields):void，LogFields 仅允许 service/requestId/runId/taskId/attempt/traceId/stage/code/durationMs；httpapi.RegisterReadiness(r *gin.Engine,check func(context.Context)error)，不展示连接串。
 
-- [ ] 编写 observability 场景与 redaction.test.ts：同一任务跨 Go、AMQP、Worker 带可关联 traceId；字段白名单拒绝 token、源码和完整错误体；Collector 不可用时业务仍完成；未授权访问 internal API 失败。核心断言如下：
+- [x] 编写 observability 场景与 redaction.test.ts：同一任务跨 Go、AMQP、Worker 带可关联 traceId；字段白名单拒绝 token、源码和完整错误体；Collector 不可用时业务仍完成；未授权访问 internal API 失败。核心断言如下：
 
 ```ts
 expect(await runScenario('observability')).toMatchObject({
@@ -247,12 +247,12 @@ expect(await runScenario('observability')).toMatchObject({
 });
 ```
 
-- [ ] 运行 pnpm exec turbo run test:migration --filter=@reviewpilot/tooling -- --case observability，记录追踪尚未贯通的失败。
-- [ ] 接入 OpenTelemetry，Go slog 与 TS JSON 同时保留 stdout 并通过受控 OTLP 日志桥接进入 Collector；Collector 转发 Loki/Tempo，暴露 Prometheus 指标供抓取；显式传播 HTTP 和消息上下文，单次数据发送有超时与队列上限。默认日志和 Trace 7 天、指标 30 天，不以 runId/PR number 作为指标 label。
-- [ ] 配置 Grafana 数据源、S1 实际任务仪表盘和失败/积压/失联/磁盘告警，模型和 Memory 指标不展示假值。开发公开入口为 localhost:8080；页面内部 3000，Go 公网 4000、内网 4001，Caddy 只转发公网 Go 路径，internal 不转发。容器内监听 0.0.0.0，宿主可选调试端口只绑定 loopback。[Caddy 反向代理](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy)。
-- [ ] 建立 Compose 健康、重启、资源与卷配置，保留现有 reviewpilot_pg 开发卷映射，不切换到无数据的新卷冒充成功迁移；prod 使用独立明确卷和 secrets，不使用示例密码。监控 profile 开发可选、Beta 开启；Dockerfile 的应用启动仍经 Turbo，Caddy 不做业务。
-- [ ] 执行 pnpm exec turbo run infra:check --filter=@reviewpilot/tooling 与 observability 场景，要求配置可解析、无公网数据库/Broker/internal 端口、真实 Trace 可关联且 Collector 失效不阻塞。记录生产未部署、TLS、外部探测和异机备份仍需用户环境，不把 Compose 校验写成上线验收。
-- [ ] 仅提交本任务文件，提交信息 feat: add Compose observability and protected service routing。
+- [x] 运行 pnpm exec turbo run test:migration --filter=@reviewpilot/tooling -- --case observability，记录追踪尚未贯通的失败。
+- [x] 接入 OpenTelemetry，Go slog 与 TS JSON 同时保留 stdout 并通过受控 OTLP 日志桥接进入 Collector；Collector 转发 Loki/Tempo，暴露 Prometheus 指标供抓取；显式传播 HTTP 和消息上下文，单次数据发送有超时与队列上限。默认日志和 Trace 7 天、指标 30 天，不以 runId/PR number 作为指标 label。
+- [x] 配置 Grafana 数据源、S1 实际任务仪表盘和失败/积压/失联/磁盘告警，模型和 Memory 指标不展示假值。开发公开入口为 localhost:8080；页面内部 3000，Go 公网 4000、内网 4001，Caddy 只转发公网 Go 路径，internal 不转发。容器内监听 0.0.0.0，宿主可选调试端口只绑定 loopback。[Caddy 反向代理](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy)。
+- [x] 建立 Compose 健康、重启、资源与卷配置，保留现有 reviewpilot_pg 开发卷映射，不切换到无数据的新卷冒充成功迁移；prod 使用独立明确卷和 secrets，不使用示例密码。监控 profile 开发可选、Beta 开启；Dockerfile 的应用启动仍经 Turbo，Caddy 不做业务。
+- [x] 执行 pnpm exec turbo run infra:check --filter=@reviewpilot/tooling 与 observability 场景，要求配置可解析、无公网数据库/Broker/internal 端口、真实 Trace 可关联且 Collector 失效不阻塞。记录生产未部署、TLS、外部探测和异机备份仍需用户环境，不把 Compose 校验写成上线验收。
+- [x] 仅提交本任务文件，提交信息 feat: add Compose observability and protected service routing。
 
 ## 任务 8 切换预检与交付
 

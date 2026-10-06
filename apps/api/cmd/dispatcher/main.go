@@ -9,6 +9,7 @@ import (
 	"reviewpilot.local/api/internal/github"
 	"reviewpilot.local/api/internal/jobs"
 	"reviewpilot.local/api/internal/messaging"
+	"reviewpilot.local/api/internal/observability"
 	"reviewpilot.local/api/internal/persistence"
 	"reviewpilot.local/api/internal/publisher"
 	"syscall"
@@ -16,6 +17,11 @@ import (
 )
 
 func main() {
+	closeTelemetry, telemetryErr := observability.Setup(context.Background(), "dispatcher")
+	if telemetryErr != nil {
+		slog.Warn("TELEMETRY_UNAVAILABLE")
+	}
+	defer closeTelemetry(context.Background())
 	cfg, err := config.Load()
 	if err != nil || cfg.DatabaseURL == "" || cfg.RabbitMQURL == "" {
 		slog.Error("DISPATCHER_CONFIG_MISSING")
@@ -35,11 +41,12 @@ func main() {
 	defer rabbit.Close()
 	service := jobs.New(store.DB())
 	publications := publisher.New(store.DB(), github.New(cfg), cfg)
-	relay := &messaging.Relay{DB: store.DB(), Publisher: rabbit}
+	relay := &messaging.Relay{DB: store.DB(), Publisher: rabbit, Observer: observability.Current()}
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 	for {
 		step, stop := context.WithTimeout(ctx, 20*time.Second)
+		observability.Current().RecordState(step, store.DB())
 		if err = service.Recover(step); err != nil {
 			slog.Warn("RECOVERY_UNAVAILABLE")
 		}
@@ -56,6 +63,9 @@ func main() {
 			}
 		}
 		stop()
+		if path := os.Getenv("HEARTBEAT_FILE"); path != "" {
+			_ = os.WriteFile(path, []byte("alive\n"), 0600)
+		}
 		select {
 		case <-ctx.Done():
 			return

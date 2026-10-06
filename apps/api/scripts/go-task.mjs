@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
 try {
   process.loadEnvFile(new URL('../../../.env', import.meta.url));
 } catch (error) {
@@ -8,17 +9,33 @@ try {
 }
 const root = fileURLToPath(new URL('..', import.meta.url));
 const [task, ...extra] = process.argv.slice(2);
-const run = (command, args) => {
-  const result = spawnSync(command, args, { cwd: root, stdio: 'inherit', env: process.env });
+for (const name of [
+  'DATABASE_URL',
+  'RABBITMQ_URL',
+  'SESSION_SECRET',
+  'GITHUB_CLIENT_SECRET',
+  'GITHUB_WEBHOOK_SECRET',
+  'REVIEW_WORKER_SERVICE_TOKEN',
+  'EVOLUTION_WORKER_SERVICE_TOKEN',
+]) {
+  if (!process.env[name + '_FILE']) continue;
+  const value = readFileSync(process.env[name + '_FILE'], 'utf8').trim();
+  if (!value || value.length > 65536) throw new Error('INVALID_SECRET_FILE');
+  process.env[name] = value;
+}
+const run = (command, args, cwd = root) => {
+  const result = spawnSync(command, args, { cwd, stdio: 'inherit', env: process.env });
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 };
 switch (task) {
   case 'dispatcher':
-    run('go', ['run', './cmd/dispatcher', ...extra]);
+    if (process.env.NODE_ENV === 'production') run(root + '/bin/dispatcher', extra);
+    else run('go', ['run', './cmd/dispatcher', ...extra]);
     break;
   case 'migrate':
-    run('go', ['run', './cmd/migrate', ...extra]);
+    if (process.env.NODE_ENV === 'production') run(root + '/bin/migrate', extra);
+    else run('go', ['run', './cmd/migrate', ...extra]);
     break;
   case 'build':
     for (const entry of ['api', 'dispatcher', 'migrate']) {
@@ -41,6 +58,9 @@ switch (task) {
     break;
   case 'deps':
     run('go', ['mod', 'tidy']);
+    break;
+  case 'deps-info':
+    run('go', ['list', '-m', '-json', ...extra], tmpdir());
     break;
   case 'dev':
     run('go', ['run', './cmd/api', ...extra]);

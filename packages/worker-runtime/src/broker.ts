@@ -3,6 +3,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { connect, type ChannelModel, type ConfirmChannel } from 'amqplib';
 import { RestClient } from './client';
 import { processDelivery } from './consumer';
+import { safeLog } from '@reviewpilot/observability';
 const queue = 'reviewpilot.review.v1',
   quarantine = 'reviewpilot.quarantine.v1';
 export async function runReviewWorker(signal: AbortSignal): Promise<void> {
@@ -26,11 +27,11 @@ export async function runReviewWorker(signal: AbortSignal): Promise<void> {
         signal.addEventListener('abort', abort, { once: true });
       });
       connection.on('error', () => {
-        console.warn('BROKER_CONNECTION_INTERRUPTED');
+        safeLog({ service: 'worker-review', code: 'BROKER_CONNECTION_INTERRUPTED' });
       });
       channel = await connection.createConfirmChannel();
       channel.on('error', () => {
-        console.warn('BROKER_CHANNEL_INTERRUPTED');
+        safeLog({ service: 'worker-review', code: 'BROKER_CHANNEL_INTERRUPTED' });
       });
       channel.once('close', () => {
         void connection?.close().catch(() => {});
@@ -91,16 +92,16 @@ export async function runReviewWorker(signal: AbortSignal): Promise<void> {
             }
             channel!.ack(message);
           })().catch(() => {
-            console.warn('DELIVERY_UNCONFIRMED');
+            safeLog({ service: 'worker-review', code: 'DELIVERY_UNCONFIRMED' });
             void connection?.close().catch(() => {});
           });
         },
         { noAck: false },
       );
-      console.info('REVIEW_WORKER_READY');
+      safeLog({ service: 'worker-review', code: 'REVIEW_WORKER_READY' });
       await closed;
     } catch {
-      console.warn('REVIEW_WORKER_UNAVAILABLE');
+      safeLog({ service: 'worker-review', code: 'REVIEW_WORKER_UNAVAILABLE' });
     } finally {
       if (abort) signal.removeEventListener('abort', abort);
       await channel?.close().catch(() => {});

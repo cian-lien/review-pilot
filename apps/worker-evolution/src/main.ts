@@ -1,13 +1,18 @@
 import { setTimeout as delay } from 'node:timers/promises';
+import { setupObservability, safeLog, workerHeartbeat } from '@reviewpilot/observability';
 if (process.argv.includes('--check'))
   console.info(
     JSON.stringify({ service: 'worker-evolution', phase: 'foundation', enabled: false }),
   );
 else {
+  const shutdown = await setupObservability('worker-evolution').catch(() => async () => {});
   const controller = new AbortController();
   process.once('SIGINT', () => controller.abort());
   process.once('SIGTERM', () => controller.abort());
-  console.info('Evolution Worker 基础进程已启动。S1 不连接业务数据库、不领取学习任务。');
-  while (!controller.signal.aborted)
+  safeLog({ service: 'worker-evolution', code: 'EVOLUTION_DISABLED' });
+  while (!controller.signal.aborted) {
+    workerHeartbeat('worker-evolution');
     await delay(30000, undefined, { signal: controller.signal }).catch(() => {});
+  }
+  await shutdown();
 }

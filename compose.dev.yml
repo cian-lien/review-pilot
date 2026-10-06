@@ -1,18 +1,2 @@
-services:
-  postgres:
-    image: postgres:18.4
-    environment:
-      POSTGRES_USER: reviewpilot
-      POSTGRES_PASSWORD: reviewpilot
-      POSTGRES_DB: reviewpilot
-    ports:
-      - '127.0.0.1:5432:5432'
-    volumes:
-      - reviewpilot_pg:/var/lib/postgresql
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U reviewpilot']
-      interval: 5s
-      timeout: 3s
-      retries: 10
-volumes:
-  reviewpilot_pg:
+include:
+  - infra/compose.dev.yml

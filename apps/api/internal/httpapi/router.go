@@ -5,10 +5,11 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"github.com/gin-gonic/gin"
+	"reviewpilot.local/api/internal/observability"
 	"time"
 )
 
-func NewRouter() *gin.Engine {
+func NewRouter(observers ...*observability.Runtime) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	r.Use(func(c *gin.Context) {
@@ -29,6 +30,13 @@ func NewRouter() *gin.Engine {
 		}()
 		c.Next()
 	})
+	observer := observability.Current()
+	if len(observers) > 0 {
+		observer = observers[0]
+	}
+	if observer != nil {
+		r.Use(observer.Middleware())
+	}
 	r.GET("/api/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"phase": "foundation", "aiReviewEnabled": false})
 	})

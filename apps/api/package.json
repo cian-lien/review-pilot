@@ -7,6 +7,7 @@
     "db:migrate": "node scripts/go-task.mjs migrate",
     "dispatcher": "node scripts/go-task.mjs dispatcher",
     "deps": "node scripts/go-task.mjs deps",
+    "deps:info": "node scripts/go-task.mjs deps-info",
     "build": "node scripts/go-task.mjs build",
     "typecheck": "node scripts/go-task.mjs typecheck",
     "lint": "node scripts/go-task.mjs lint",

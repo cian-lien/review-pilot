@@ -11,6 +11,7 @@ import { z } from 'zod';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const cases: Record<string, { pkg: string; test: string }> = {
+  observability: { pkg: './internal/webhooks', test: 'TestObservability' },
   'webhook-check': { pkg: './internal/webhooks', test: 'TestWebhookCheck' },
   'message-recovery': { pkg: './internal/jobs', test: 'TestMessageRecovery' },
   'legacy-auth': { pkg: './internal/auth', test: 'TestLegacyAuth' },
@@ -46,7 +47,9 @@ export async function runScenario(name: string): Promise<Record<string, unknown>
   if (process.getuid?.() === 0) throw new Error('Non-root test process required');
   const directory = await mkdtemp(join(tmpdir(), 'reviewpilot-migration-'));
   const port = await unusedPort();
-  const brokerPort = name === 'message-recovery' ? await unusedPort() : undefined;
+  const brokerPort = ['message-recovery', 'observability'].includes(name)
+    ? await unusedPort()
+    : undefined;
   const brokerName = 'reviewpilot-migration-' + randomBytes(10).toString('hex');
   let brokerID: string | undefined;
   const brokerPassword = randomBytes(24).toString('hex');

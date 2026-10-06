@@ -4,6 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "infra:check": "cd ../.. && tsx scripts/s1-observability-check.ts",
+    "infra:up": "cd ../.. && node scripts/infra.mjs up",
+    "infra:stop": "cd ../.. && node scripts/infra.mjs stop",
+    "format:infra": "cd ../.. && prettier --write infra scripts/infra.mjs scripts/s1-observability-check.ts turbo.json apps/*/package.json packages/*/package.json packages/worker-runtime/scripts/launch.mjs apps/api/scripts/go-task.mjs apps/web/scripts/next.mjs --ignore-unknown --log-level warn",
     "fixtures:legacy": "cd ../.. && tsx scripts/s1-legacy-fixture.ts",
     "format:migration": "cd ../.. && prettier --write scripts/s1-migration-test.ts scripts/s1-legacy-fixture.ts tests/integration/s1-migration.test.ts tests/fixtures/legacy-process-job.ts vitest.migration.config.ts packages/persistence/package.json packages/persistence/migrations/0003-outbox-and-results.sql apps/worker-review apps/worker-evolution turbo.json --ignore-unknown --log-level warn",
     "test:migration": "cd ../.. && tsx scripts/s1-migration-test.ts",

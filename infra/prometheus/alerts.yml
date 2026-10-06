@@ -1,0 +1,38 @@
+groups:
+  - name: reviewpilot-s1
+    rules:
+      - alert: S1TaskFailures
+        expr: reviewpilot_jobs_failed > 0
+        for: 1m
+        labels: { severity: warning }
+        annotations: { summary: 'S1 存在失败任务，需要查看 Run 和发布事实' }
+      - alert: S1QueueBacklog
+        expr: reviewpilot_jobs_oldest_age > 120
+        for: 2m
+        labels: { severity: warning }
+        annotations: { summary: '任务等待超过 120 秒' }
+      - alert: S1OutboxStalled
+        expr: reviewpilot_outbox_oldest_age > 60
+        for: 2m
+        labels: { severity: critical }
+        annotations: { summary: 'Outbox 确认积压，检查 Broker/dispatcher' }
+      - alert: S1WorkerLost
+        expr: time() - reviewpilot_worker_heartbeat_timestamp_seconds > 90 or absent(reviewpilot_worker_heartbeat_timestamp_seconds{service="worker-review"})
+        for: 2m
+        labels: { severity: critical }
+        annotations: { summary: 'Review Worker 心跳缺失' }
+      - alert: S1DispatcherLost
+        expr: time() - reviewpilot_dispatcher_heartbeat_timestamp_seconds > 60 or absent(reviewpilot_dispatcher_heartbeat_timestamp_seconds)
+        for: 2m
+        labels: { severity: critical }
+        annotations: { summary: 'Dispatcher 心跳缺失' }
+      - alert: S1CollectorLost
+        expr: up{job="collector"} == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations: { summary: 'Collector 不可用，业务应继续但遥测可能丢失' }
+      - alert: S1MonitoringDiskPressure
+        expr: system_filesystem_usage_bytes{state="used"} / ignoring(state) (system_filesystem_usage_bytes{state="used"} + ignoring(state) system_filesystem_usage_bytes{state="free"}) > 0.85
+        for: 5m
+        labels: { severity: critical }
+        annotations: { summary: 'Collector 可见文件系统占用超过 85%；需另设宿主探测' }

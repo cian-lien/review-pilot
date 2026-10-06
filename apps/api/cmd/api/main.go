@@ -17,12 +17,18 @@ import (
 	"reviewpilot.local/api/internal/github"
 	"reviewpilot.local/api/internal/httpapi"
 	"reviewpilot.local/api/internal/jobs"
+	"reviewpilot.local/api/internal/observability"
 	"reviewpilot.local/api/internal/persistence"
 	"reviewpilot.local/api/internal/repositories"
 	"reviewpilot.local/api/internal/webhooks"
 )
 
 func main() {
+	closeTelemetry, telemetryErr := observability.Setup(context.Background(), "api")
+	if telemetryErr != nil {
+		slog.Warn("TELEMETRY_UNAVAILABLE")
+	}
+	defer closeTelemetry(context.Background())
 	cfg, err := config.Load()
 	if err != nil {
 		slog.Error("CONFIG_INVALID", "code", err.Error())
@@ -53,6 +59,19 @@ func main() {
 		}
 	}
 	service := auth.New(store, cfg, github.New(cfg))
+	httpapi.RegisterReadiness(public, func(ctx context.Context) error {
+		if store == nil {
+			return errors.New("NOT_CONFIGURED")
+		}
+		var count int64
+		if err := store.DB().WithContext(ctx).Raw("SELECT count(*) FROM runtime_control WHERE id=1").Scan(&count).Error; err != nil {
+			return err
+		}
+		if count != 1 {
+			return errors.New("NOT_READY")
+		}
+		return nil
+	})
 	auth.Register(public, service)
 	repositories.Register(public, repositories.New(store, service))
 	var webhookService *webhooks.Service

@@ -11,6 +11,8 @@ try {
   if (error.code !== 'ENOENT') throw error;
 }
 
+if (['dev', 'start'].includes(process.argv[2]))
+  process.argv.push('--hostname', process.env.SERVER_HOSTNAME ?? '127.0.0.1');
 // Next is a display process. Never inherit backend, provider, or worker credentials.
 const allowed = new Set([
   'PATH',
