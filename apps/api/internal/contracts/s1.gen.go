@@ -402,5 +402,24 @@ type TenantRef struct {
 	RepositoryId   int `json:"repositoryId"`
 }
 
+// ReadConnectionResultParams defines parameters for ReadConnectionResult.
+type ReadConnectionResultParams struct {
+	RunId      string `form:"runId" json:"runId"`
+	InputHash  string `form:"inputHash" json:"inputHash"`
+	ResultHash string `form:"resultHash" json:"resultHash"`
+}
+
 // SetRepositoryEnabledJSONRequestBody defines body for SetRepositoryEnabled for application/json ContentType.
 type SetRepositoryEnabledJSONRequestBody = SetRepositoryEnabledRequest
+
+// ClaimTaskJSONRequestBody defines body for ClaimTask for application/json ContentType.
+type ClaimTaskJSONRequestBody = ClaimRequest
+
+// CommitConnectionResultJSONRequestBody defines body for CommitConnectionResult for application/json ContentType.
+type CommitConnectionResultJSONRequestBody = ConnectionResult
+
+// FailTaskJSONRequestBody defines body for FailTask for application/json ContentType.
+type FailTaskJSONRequestBody = TaskLease
+
+// HeartbeatTaskJSONRequestBody defines body for HeartbeatTask for application/json ContentType.
+type HeartbeatTaskJSONRequestBody = TaskLease

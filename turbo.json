@@ -5,29 +5,84 @@
   "globalDependencies": ["tsconfig.base.json", "eslint.config.mjs"],
   "globalEnv": ["NODE_ENV"],
   "tasks": {
+    "dispatcher": {
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "RABBITMQ_URL",
+        "APP_URL",
+        "API_BIND_ADDR",
+        "INTERNAL_BIND_ADDR",
+        "INTERNAL_API_URL",
+        "GITHUB_*",
+        "SESSION_SECRET",
+        "REVIEW_PIPELINE_VERSION",
+        "REVIEW_WORKER_SERVICE_TOKEN",
+        "EVOLUTION_WORKER_SERVICE_TOKEN",
+        "OTEL_*"
+      ]
+    },
     "fixtures:legacy": { "cache": false },
     "format:migration": { "cache": false },
     "test:migration": { "cache": false },
     "@reviewpilot/api#typecheck": { "dependsOn": ["transit"], "outputs": [] },
     "@reviewpilot/contracts#typecheck": { "dependsOn": ["transit"], "outputs": [] },
+    "@reviewpilot/worker-runtime#typecheck": { "dependsOn": ["transit"], "outputs": [] },
     "@reviewpilot/api#dev": {
-      "cache": false, "persistent": true,
-      "passThroughEnv": ["APP_URL", "API_BIND_ADDR", "INTERNAL_BIND_ADDR", "DATABASE_URL", "RABBITMQ_URL", "INTERNAL_API_URL", "REVIEW_WORKER_SERVICE_TOKEN", "EVOLUTION_WORKER_SERVICE_TOKEN", "GITHUB_*", "SESSION_SECRET", "REVIEW_PIPELINE_VERSION"]
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": [
+        "APP_URL",
+        "API_BIND_ADDR",
+        "INTERNAL_BIND_ADDR",
+        "DATABASE_URL",
+        "RABBITMQ_URL",
+        "INTERNAL_API_URL",
+        "REVIEW_WORKER_SERVICE_TOKEN",
+        "EVOLUTION_WORKER_SERVICE_TOKEN",
+        "GITHUB_*",
+        "SESSION_SECRET",
+        "REVIEW_PIPELINE_VERSION"
+      ]
     },
     "@reviewpilot/api#start": {
-      "dependsOn": ["build"], "cache": false, "persistent": true,
-      "passThroughEnv": ["APP_URL", "API_BIND_ADDR", "INTERNAL_BIND_ADDR", "DATABASE_URL", "RABBITMQ_URL", "INTERNAL_API_URL", "REVIEW_WORKER_SERVICE_TOKEN", "EVOLUTION_WORKER_SERVICE_TOKEN", "GITHUB_*", "SESSION_SECRET", "REVIEW_PIPELINE_VERSION"]
+      "dependsOn": ["build"],
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": [
+        "APP_URL",
+        "API_BIND_ADDR",
+        "INTERNAL_BIND_ADDR",
+        "DATABASE_URL",
+        "RABBITMQ_URL",
+        "INTERNAL_API_URL",
+        "REVIEW_WORKER_SERVICE_TOKEN",
+        "EVOLUTION_WORKER_SERVICE_TOKEN",
+        "GITHUB_*",
+        "SESSION_SECRET",
+        "REVIEW_PIPELINE_VERSION"
+      ]
     },
     "deps": { "cache": false },
     "codegen": { "cache": false },
     "contracts:check": { "cache": false },
     "@reviewpilot/api#build": {
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/.go-version", "$TURBO_ROOT$/packages/contracts/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/.go-version",
+        "$TURBO_ROOT$/packages/contracts/**"
+      ],
       "outputs": ["bin/**"]
     },
     "@reviewpilot/api#test:unit": {
       "cache": false,
-      "passThroughEnv": ["TEST_DATABASE_URL", "SCENARIO_RESULT_PATH", "MIGRATION_DIRECTORY"]
+      "passThroughEnv": [
+        "TEST_DATABASE_URL",
+        "TEST_RABBITMQ_URL",
+        "SCENARIO_RESULT_PATH",
+        "MIGRATION_DIRECTORY"
+      ]
     },
     "transit": {
       "dependsOn": ["^transit"]
@@ -147,17 +202,21 @@
       "cache": false,
       "persistent": true,
       "passThroughEnv": [
-        "DATABASE_URL",
-        "APP_URL",
-        "GITHUB_APP_ID",
-        "GITHUB_PRIVATE_KEY_PATH",
-        "REVIEW_PIPELINE_VERSION"
+        "RABBITMQ_URL",
+        "INTERNAL_API_URL",
+        "REVIEW_WORKER_SERVICE_TOKEN",
+        "OTEL_*"
       ]
     },
     "worker:evolution": {
       "cache": false,
       "persistent": true,
-      "passThroughEnv": ["DATABASE_URL"]
+      "passThroughEnv": [
+        "RABBITMQ_URL",
+        "INTERNAL_API_URL",
+        "EVOLUTION_WORKER_SERVICE_TOKEN",
+        "OTEL_*"
+      ]
     }
   }
 }

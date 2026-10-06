@@ -23,7 +23,7 @@ import {
   synchronizeRepository,
 } from '@reviewpilot/persistence';
 import { migrate } from '@reviewpilot/persistence/migrate';
-import { processConnectionJob } from '../../apps/worker-review/src/process-job';
+import { processConnectionJob } from '../fixtures/legacy-process-job';
 import { reviewIdentity, runSnapshot } from '../fixtures/index';
 
 let directory: string,

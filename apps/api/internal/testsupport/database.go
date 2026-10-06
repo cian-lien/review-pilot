@@ -11,6 +11,9 @@ import (
 )
 
 func NewDatabase(t *testing.T) *gorm.DB {
+	return NewStore(t).DB()
+}
+func NewStore(t *testing.T) *persistence.Store {
 	t.Helper()
 	dsn := os.Getenv("TEST_DATABASE_URL")
 	u, err := url.Parse(dsn)
@@ -24,5 +27,5 @@ func NewDatabase(t *testing.T) *gorm.DB {
 		t.Fatal("Dedicated database unavailable")
 	}
 	t.Cleanup(func() { _ = store.Close() })
-	return store.DB()
+	return store
 }

@@ -16,6 +16,7 @@ import (
 	"reviewpilot.local/api/internal/contracts"
 	"reviewpilot.local/api/internal/github"
 	"reviewpilot.local/api/internal/httpapi"
+	"reviewpilot.local/api/internal/jobs"
 	"reviewpilot.local/api/internal/persistence"
 	"reviewpilot.local/api/internal/repositories"
 )
@@ -53,8 +54,14 @@ func main() {
 	service := auth.New(store, cfg, github.New(cfg))
 	auth.Register(public, service)
 	repositories.Register(public, repositories.New(store, service))
-	internal := gin.New()
-	internal.NoRoute(func(c *gin.Context) { c.Status(404) })
+	internal := httpapi.NewRouter()
+	var taskService *jobs.Service
+	if store != nil {
+		taskService = jobs.New(store.DB())
+	} else {
+		taskService = jobs.New(nil)
+	}
+	jobs.Register(internal, taskService, cfg)
 	servers := []*http.Server{
 		{Addr: cfg.APIBindAddr, Handler: public, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 64 << 10},
 		{Addr: cfg.InternalBindAddr, Handler: internal, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 64 << 10},

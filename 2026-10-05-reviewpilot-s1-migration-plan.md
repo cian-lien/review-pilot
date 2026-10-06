@@ -173,7 +173,7 @@ expect(await runScenario('legacy-auth')).toMatchObject({
 
 **接口：** jobs.Service.Claim(ctx context.Context,envelope contracts.TaskEnvelope,workerID string)(contracts.ClaimResponse,error)、Heartbeat(ctx context.Context,lease contracts.TaskLease) error、CommitConnection(ctx context.Context,result contracts.ConnectionResult)(contracts.CommitResponse,error)、ReadResult(ctx context.Context,taskID string)(contracts.CommitResponse,error)、Fail(ctx context.Context,lease contracts.TaskLease,code string) error；messaging.Relay.Flush(ctx context.Context,limit int) error；worker-runtime.processDelivery(envelope:TaskEnvelope,client:InternalClient):Promise<'ack'|'retry'|'quarantine'>。InternalClient 对应上述 REST 端点且只持服务身份。
 
-- [ ] 编写 message-recovery 场景：确认丢失后重投、两次领取竞争、旧 token 提交、提交响应丢失后查询、不同 hash 提交冲突。关键断言如下：
+- [x] 编写 message-recovery 场景：确认丢失后重投、两次领取竞争、旧 token 提交、提交响应丢失后查询、不同 hash 提交冲突。关键断言如下：
 
 ```ts
 expect(await runScenario('message-recovery')).toMatchObject({
@@ -182,12 +182,12 @@ expect(await runScenario('message-recovery')).toMatchObject({
 });
 ```
 
-- [ ] 运行 pnpm exec turbo run test:migration --filter=@reviewpilot/tooling -- --case message-recovery，记录尚未实现消息路径的失败。
-- [ ] 建立 reviewpilot.tasks.v1 direct exchange、reviewpilot.review.v1 和 reviewpilot.evolution.v1 持久队列、持久隔离队列；Go 用 publisher confirms 加 mandatory/return 检测，只有确认且可路由才标记 Outbox sent。Broker 中断后重连并重建 channel 状态；TS prefetch 默认 1、手动 ack。
-- [ ] 按 taskId 事务领取并核对消息 tenant/runId/headSha/notificationGeneration，检查 mode=go、安装、仓库、快照与有效期，记录当前 executionEpoch；busy/finished/cancelled/superseded 的重复通知可确认，由每 5 秒恢复扫描保证失联任务重新通知。not-ready 只在数据库安排到 available_at 的通知后确认；临时 API 失败有界延迟重试，不形成立即 requeue 热循环。attempt 最多 5 次，旧 token 或旧 epoch 不可新提交、续租。
-- [ ] 在同一事务保存 job_results、jobs=result_ready、Run=Publishing 和唯一 publication_requests，再响应 accepted；相同结果已提交时先按服务权限、身份和哈希查询确认，允许恢复已失效旧租约的同一已接受结果，但禁止它新写入。Worker 查询确认后才 ack；Evolution S1 不领取。Worker 环境移除业务 DATABASE_URL 和全部 GITHUB_*。
-- [ ] 重跑 message-recovery 及定向 consumer.test.ts；要求真实 Broker 完成一次确认与重投，所有幂等断言通过。
-- [ ] 仅提交本任务文件，提交信息 feat: add outbox delivery and fenced Worker execution。
+- [x] 运行 pnpm exec turbo run test:migration --filter=@reviewpilot/tooling -- --case message-recovery，记录尚未实现消息路径的失败。
+- [x] 建立 reviewpilot.tasks.v1 direct exchange、reviewpilot.review.v1 和 reviewpilot.evolution.v1 持久队列、持久隔离队列；Go 用 publisher confirms 加 mandatory/return 检测，只有确认且可路由才标记 Outbox sent。Broker 中断后重连并重建 channel 状态；TS prefetch 默认 1、手动 ack。
+- [x] 按 taskId 事务领取并核对消息 tenant/runId/headSha/notificationGeneration，检查 mode=go、安装、仓库、快照与有效期，记录当前 executionEpoch；busy/finished/cancelled/superseded 的重复通知可确认，由每 5 秒恢复扫描保证失联任务重新通知。not-ready 只在数据库安排到 available_at 的通知后确认；临时 API 失败有界延迟重试，不形成立即 requeue 热循环。attempt 最多 5 次，旧 token 或旧 epoch 不可新提交、续租。
+- [x] 在同一事务保存 job_results、jobs=result_ready、Run=Publishing 和唯一 publication_requests，再响应 accepted；相同结果已提交时先按服务权限、身份和哈希查询确认，允许恢复已失效旧租约的同一已接受结果，但禁止它新写入。Worker 查询确认后才 ack；Evolution S1 不领取。Worker 环境移除业务 DATABASE_URL 和全部 GITHUB_*。
+- [x] 重跑 message-recovery 及定向 consumer.test.ts；要求真实 Broker 完成一次确认与重投，所有幂等断言通过。
+- [x] 仅提交本任务文件，提交信息 feat: add outbox delivery and fenced Worker execution。
 
 ## 任务 5 Go Webhook 与基础 Check 发布
 

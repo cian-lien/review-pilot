@@ -1,0 +1,19 @@
+{
+  "name": "@reviewpilot/worker-runtime",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test:unit": "cd ../.. && vitest run --config vitest.config.ts packages/worker-runtime/tests",
+    "typecheck": "tsc --noEmit --project ../../tsconfig.json",
+    "format": "prettier --write package.json src tests scripts --log-level warn"
+  },
+  "dependencies": {
+    "@reviewpilot/contracts": "workspace:*",
+    "amqplib": "2.2.0",
+    "zod": "4.6.5"
+  }
+}

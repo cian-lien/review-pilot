@@ -4,12 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "worker:review": "tsx --env-file-if-exists=../../.env src/main.ts"
+    "worker:review": "node ../../packages/worker-runtime/scripts/launch.mjs review"
   },
   "dependencies": {
-    "@reviewpilot/domain": "workspace:*",
-    "@reviewpilot/persistence": "workspace:*",
-    "@reviewpilot/github": "workspace:*",
-    "pg": "8.23.1"
+    "@reviewpilot/worker-runtime": "workspace:*"
   }
 }

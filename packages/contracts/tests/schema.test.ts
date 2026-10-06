@@ -12,6 +12,8 @@ const task = {
   notificationGeneration: 0,
 };
 describe('task notification boundary', () => {
+  it('preserves legacy SHA-256 identifiers', () =>
+    expect(validateTask({ ...task, headSha: 'a'.repeat(64) }).headSha).toHaveLength(64));
   it('accepts a minimal notification', () => expect(validateTask(task)).toEqual(task));
   it('rejects an unknown contract version', () =>
     expect(() => validateTask({ ...task, schemaVersion: 2 })).toThrow());

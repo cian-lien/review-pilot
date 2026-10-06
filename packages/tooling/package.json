@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "fixtures:legacy": "cd ../.. && tsx scripts/s1-legacy-fixture.ts",
-    "format:migration": "cd ../.. && prettier --write scripts/s1-migration-test.ts scripts/s1-legacy-fixture.ts tests/integration/s1-migration.test.ts vitest.migration.config.ts packages/persistence/package.json packages/persistence/migrations/0003-outbox-and-results.sql --ignore-unknown --log-level warn",
+    "format:migration": "cd ../.. && prettier --write scripts/s1-migration-test.ts scripts/s1-legacy-fixture.ts tests/integration/s1-migration.test.ts tests/fixtures/legacy-process-job.ts vitest.migration.config.ts packages/persistence/package.json packages/persistence/migrations/0003-outbox-and-results.sql apps/worker-review apps/worker-evolution turbo.json --ignore-unknown --log-level warn",
     "test:migration": "cd ../.. && tsx scripts/s1-migration-test.ts",
     "typecheck": "tsc --noEmit --project ../../tsconfig.json",
     "lint": "eslint ../..",

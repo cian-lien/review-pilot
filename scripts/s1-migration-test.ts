@@ -1,4 +1,6 @@
-import { spawn } from 'node:child_process';
+import { spawn, execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { setTimeout as delay } from 'node:timers/promises';
 import { createServer } from 'node:net';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -9,6 +11,7 @@ import { z } from 'zod';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const cases: Record<string, { pkg: string; test: string }> = {
+  'message-recovery': { pkg: './internal/jobs', test: 'TestMessageRecovery' },
   'legacy-auth': { pkg: './internal/auth', test: 'TestLegacyAuth' },
   'legacy-schema': { pkg: './internal/persistence', test: 'TestLegacySchema' },
 };
@@ -42,6 +45,11 @@ export async function runScenario(name: string): Promise<Record<string, unknown>
   if (process.getuid?.() === 0) throw new Error('Non-root test process required');
   const directory = await mkdtemp(join(tmpdir(), 'reviewpilot-migration-'));
   const port = await unusedPort();
+  const brokerPort = name === 'message-recovery' ? await unusedPort() : undefined;
+  const brokerName = 'reviewpilot-migration-' + randomBytes(10).toString('hex');
+  let brokerID: string | undefined;
+  const brokerPassword = randomBytes(24).toString('hex');
+  const docker = promisify(execFile);
   const password = randomBytes(24).toString('hex');
   const postgres = new EmbeddedPostgres({
     databaseDir: join(directory, 'data'),
@@ -56,6 +64,55 @@ export async function runScenario(name: string): Promise<Record<string, unknown>
     onError: () => {},
   });
   try {
+    if (brokerPort) {
+      const started = await docker('docker', [
+        'run',
+        '-d',
+        '--name',
+        brokerName,
+        '--label',
+        'reviewpilot.test-owned=true',
+        '-p',
+        '127.0.0.1:' + brokerPort + ':5672',
+        '-e',
+        'RABBITMQ_DEFAULT_USER=reviewpilot_test',
+        '-e',
+        'RABBITMQ_DEFAULT_PASS=' + brokerPassword,
+        'rabbitmq:4.3.6-management-alpine',
+      ]);
+      brokerID = started.stdout.trim();
+      if (!/^[a-f0-9]{64}$/.test(brokerID)) throw new Error('Invalid test container identity');
+      let ready = false;
+      for (let attempt = 0; attempt < 40; attempt++) {
+        try {
+          await docker(
+            'docker',
+            [
+              'exec',
+              '--user',
+              'rabbitmq',
+              brokerID,
+              'rabbitmq-diagnostics',
+              '-q',
+              'check_port_connectivity',
+            ],
+            { timeout: 5000 },
+          );
+          ready = true;
+          break;
+        } catch {
+          await delay(500);
+        }
+      }
+      if (!ready) {
+        const logs = await docker('docker', ['logs', '--tail', '40', brokerID]).catch(() => ({
+          stdout: 'container unavailable',
+          stderr: '',
+        }));
+        console.error((logs.stdout + logs.stderr).replaceAll(brokerPassword, '[test-secret]'));
+        throw new Error('Dedicated RabbitMQ unavailable');
+      }
+    }
     await postgres.initialise();
     await postgres.start();
     await postgres.createDatabase('reviewpilot_migration_test');
@@ -72,6 +129,9 @@ export async function runScenario(name: string): Promise<Record<string, unknown>
         '/reviewpilot_migration_test',
       MIGRATION_DIRECTORY: join(root, 'packages/persistence/migrations'),
       SCENARIO_RESULT_PATH: resultPath,
+      TEST_RABBITMQ_URL: brokerPort
+        ? 'amqp://reviewpilot_test:' + brokerPassword + '@127.0.0.1:' + brokerPort
+        : '',
     };
     await execute(
       'pnpm',
@@ -93,6 +153,10 @@ export async function runScenario(name: string): Promise<Record<string, unknown>
     );
     return z.record(z.string(), z.unknown()).parse(JSON.parse(await readFile(resultPath, 'utf8')));
   } finally {
+    if (brokerID && /^[a-f0-9]{64}$/.test(brokerID)) {
+      await docker('docker', ['stop', '--time', '1', brokerID]).catch(() => {});
+      await docker('docker', ['rm', '-v', brokerID]).catch(() => {});
+    }
     await postgres.stop().catch(() => {});
     await rm(directory, { recursive: true, force: true });
   }

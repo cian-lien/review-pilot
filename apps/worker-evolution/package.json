@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "worker:evolution": "tsx --env-file-if-exists=../../.env src/main.ts"
+    "worker:evolution": "node ../../packages/worker-runtime/scripts/launch.mjs evolution"
   },
   "dependencies": {
-    "@reviewpilot/persistence": "workspace:*"
+    "@reviewpilot/worker-runtime": "workspace:*"
   }
 }

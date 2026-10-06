@@ -14,6 +14,9 @@ const run = (command, args) => {
   if (result.status !== 0) process.exit(result.status ?? 1);
 };
 switch (task) {
+  case 'dispatcher':
+    run('go', ['run', './cmd/dispatcher', ...extra]);
+    break;
   case 'migrate':
     run('go', ['run', './cmd/migrate', ...extra]);
     break;
