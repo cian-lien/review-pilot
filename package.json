@@ -19,7 +19,12 @@
     "test:integration": "turbo run test:integration",
     "db:migrate": "turbo run db:migrate",
     "worker:review": "turbo run worker:review",
-    "worker:evolution": "turbo run worker:evolution"
+    "worker:evolution": "turbo run worker:evolution",
+    "infra:up": "turbo run infra:up --filter=@reviewpilot/tooling",
+    "infra:stop": "turbo run infra:stop --filter=@reviewpilot/tooling",
+    "infra:check": "turbo run infra:check --filter=@reviewpilot/tooling",
+    "cutover:check": "turbo run cutover:check --filter=@reviewpilot/tooling",
+    "verify:migration": "turbo run verify:migration --filter=@reviewpilot/tooling"
   },
   "devDependencies": {
     "turbo": "2.11.7",
@@ -31,9 +36,7 @@
     "vitest": "5.0.3",
     "tsx": "4.23.15",
     "embedded-postgres": "18.4.0-beta.17",
-    "prettier": "3.9.9"
-  },
-  "dependencies": {
+    "prettier": "3.9.9",
     "@reviewpilot/domain": "workspace:*",
     "@reviewpilot/persistence": "workspace:*",
     "@reviewpilot/github": "workspace:*",

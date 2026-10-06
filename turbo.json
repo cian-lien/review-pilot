@@ -7,6 +7,47 @@
   "globalDependencies": ["tsconfig.base.json", "eslint.config.mjs"],
   "globalEnv": ["NODE_ENV"],
   "tasks": {
+    "typegen": { "cache": false },
+    "@reviewpilot/web#typecheck": { "dependsOn": ["typegen"], "outputs": [] },
+    "@reviewpilot/web#build": {
+      "dependsOn": ["typegen", "transit"],
+      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"]
+    },
+    "infra:build": { "cache": false },
+    "infra:migrate": {
+      "cache": false,
+      "passThroughEnv": [
+        "GITHUB_*",
+        "SESSION_SECRET*",
+        "*_WORKER_SERVICE_TOKEN*",
+        "OTEL_*",
+        "COMPOSE_*",
+        "DOCKER_*"
+      ]
+    },
+    "infra:cutover": {
+      "cache": false,
+      "passThroughEnv": [
+        "GITHUB_*",
+        "SESSION_SECRET*",
+        "*_WORKER_SERVICE_TOKEN*",
+        "OTEL_*",
+        "COMPOSE_*",
+        "DOCKER_*"
+      ]
+    },
+    "cutover:check": {
+      "cache": false,
+      "passThroughEnv": [
+        "DATABASE_URL*",
+        "RABBITMQ_URL*",
+        "APP_URL",
+        "GITHUB_*",
+        "SESSION_SECRET*",
+        "*_WORKER_SERVICE_TOKEN*"
+      ]
+    },
+    "verify:migration": { "cache": false },
     "infra:check": {
       "cache": false
     },

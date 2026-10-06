@@ -4,14 +4,14 @@
 
 **目标：** 在接近全职投入下，用 4–6 周交付受控 Beta，跑通“GitHub PR 审查 → 证据发布 → 人工纠错 → 自动学习 → Replay/Shadow → 激活或回滚”。
 
-**架构：** 使用 TypeScript 模块化单体，共享领域模型与 PostgreSQL，Web/API、Review Worker、Evolution Worker 分进程运行。模型与 GitHub 通过适配器隔离，外部发布可对账，审查与 Memory 版本可恢复、可追溯。
+**架构：** Go 模块化业务后端，Next/React Web 无 BFF、同源直连 REST，TypeScript Review/Evolution Worker 通过角色内部 API 和 RabbitMQ 协作。Go 独占数据库、认证、租约、Outbox 和 GitHub 发布，模型通过 Worker 适配器隔离。
 
-**技术方向：** Next.js、React、TypeScript、PostgreSQL、Node.js、pnpm workspace + Turborepo；pnpm 只负责依赖安装，全部工程任务采用 turbo run。测试采用 Vitest，Playwright 在后续阶段引入；数据库先使用参数化 SQL 与迁移，队列先采用 PostgreSQL 租约任务。S1 已锁定的依赖见 ADR 0001；模型等后续选择不表示已安装。
+**技术方向：** Go/Gin/GORM、Next/React/TypeScript、PostgreSQL、RabbitMQ/事务 Outbox、Caddy 与完整 OTel/Prometheus/Loki/Tempo/Grafana；工程任务统一 Turbo。LangChain/LangGraph 在 S2 接入、pgvector 在 S4；此阶段未实现模型或记忆。
 
 **依据：** [ReviewPilot 产品与系统设计文档 v1.1](docs/superpowers/specs/2026-10-04-reviewpilot-design.md)。
 
 **日期：** 2026-10-04。  
-**状态：** S1 本地工程与接入代码已实现；真实 GitHub 安装、Webhook 与 Check 验收待用户配置凭证。S2–S6 尚未执行。详细记录见 [S1 交付记录](docs/reports/s1-implementation.md)。未实际执行的原验收项保持未勾选，不用模拟服务测试替代真实安装验收。
+**状态：** S1 Go 本地代码迁移已实现，真实 App、业务库切换和生产仍待验收；S2–S6 未执行。当前记录见 [S1 Go 交付](docs/reports/s1-go-migration.md)，原 S1 TS 文件步骤仅保留历史，不是当前开发入口。
 
 ## 全局约束
 
@@ -78,14 +78,16 @@ flowchart LR
 
 ~~~text
 apps/
-  web/                         页面、认证与用户 API
+  api/                         Go 认证、REST、任务事实与 GitHub
+  web/                         页面展示，同源调用 Go REST（无 BFF）
   worker-review/               审查任务入口
   worker-evolution/            学习与评测任务入口
 packages/
   tooling/                   全仓类型、lint、格式化与跨包集成测试的 Turbo 任务
   domain/src/                 types、run-policy、scope、memory-policy
-  persistence/src/            数据库、任务租约、预算与领域持久化
-  github/src/                 验签、授权、读取与发布对账
+  persistence/migrations/     Go 使用的 SQL；旧 src/ 仅兼容 Fixture
+  contracts/                  OpenAPI/消息 Schema 与生成 DTO
+  github/src/                 旧 TS 兼容 Fixture（运行职责已迁到 Go）
   repository/src/             固定 SHA 快照、受限读取
   analyzer/src/               JS/TS 符号与 Import 分析
   retrieval/src/              Context Bundle 与规则筛选
@@ -242,6 +244,10 @@ pnpm exec turbo run eval:compare -- --baseline <report> --candidate <report>
 
 ### S2：最小 AI Review
 
+**进入前置条件：** 用户单独批准 S2；真实 App 登录/安装/启用/PR/neutral Check 完成；专用运行环境实际切到 Go 且旧消费者停止；同源入口、内部权限和监控可用。先为 S2 编写新的 Go/Worker 具体计划，再安装 LangChain/LangGraph，补齐模型预算、Schema、证据验证与最低 Golden Case。Worker 继续不持有数据库或 GitHub 写凭证。
+
+后续接口按职责实现：预算/Findings/发布/记忆/人工反馈/删除归 Go，TS 只提供受控计算与 REST DTO。下列早期 TS 算法接口是功能参考，不能据此重建 Next API 或 Worker 直连数据库；新 REST 必须先加入 packages/contracts，并生成双方类型。S1 已占用 0003-outbox-and-results.sql，以下未来 SQL 编号从 0004 开始。
+
 #### 任务 05：Diff、代码位置与受限读取
 
 **文件：** 新建 packages/github/src/pull-requests.ts；packages/repository/src/read-file.ts、src/diff.ts、tests/diff.test.ts、tests/read-file.test.ts；tests/fixtures/pr-diffs/。
@@ -256,7 +262,7 @@ pnpm exec turbo run eval:compare -- --baseline <report> --candidate <report>
 
 #### 任务 06：模型网关、Schema、脱敏与费用预留
 
-**文件：** 新建 packages/model-gateway/src/gateway.ts、src/provider.ts、src/redact.ts、tests/gateway.test.ts；packages/persistence/src/budgets.ts、migrations/0003-model-budgets.sql、tests/budgets.integration.test.ts。
+**文件：** 新建 packages/model-gateway/src/gateway.ts、src/provider.ts、src/redact.ts、tests/gateway.test.ts；apps/api/internal/budgets/service.go、migrations/0004-model-budgets.sql、tests/budgets.integration.test.ts。
 
 **接口：** callModel<T>(request: ModelRequest<T>): Promise<ModelResult<T>>；ModelRequest 包含 tenant、purpose、schema、redactedContext、modelConfigVersion、maxCostMicros。reserveBudget(tenant: TenantRef, purpose: ModelPurpose, maxCostMicros: number, priceVersion: string): Promise<BudgetReservation>；settleBudget(reservationId: string, actualCostMicros: number): Promise<void>。
 
@@ -270,7 +276,7 @@ pnpm exec turbo run eval:compare -- --baseline <report> --candidate <report>
 
 #### 任务 07：候选、基础验证与可查看结果
 
-**文件：** 新建 packages/review-engine/src/generate.ts、src/verify.ts、src/rank.ts、src/pipeline.ts、tests/pipeline.test.ts；packages/persistence/src/findings.ts、migrations/0004-findings.sql；apps/web/src/app/repositories/[repoId]/pulls/[number]/page.tsx。
+**文件：** 新建 packages/review-engine/src/generate.ts、src/verify.ts、src/rank.ts、src/pipeline.ts、tests/pipeline.test.ts；apps/api/internal/findings/service.go、migrations/0005-findings.sql；apps/web/src/app/repositories/[repoId]/pulls/[number]/page.tsx。
 
 **接口：** generateCandidates(context: ContextBundle): Promise<Candidate[]>；verifyCandidate(candidate: Candidate, context: ContextBundle): Promise<VerificationResult>；buildPublicationPlan(runId: string, candidates: Candidate[], verified: VerificationResult[], snapshot: RunSnapshot, remainingCommentSlots: number): PublicationPlan。
 
@@ -282,7 +288,7 @@ pnpm exec turbo run eval:compare -- --baseline <report> --candidate <report>
 
 #### 任务 08：GitHub 发布与远端对账
 
-**文件：** 新建 packages/github/src/publication.ts、tests/publication.test.ts；packages/persistence/src/publication-records.ts、migrations/0005-publications.sql；tests/integration/publication.integration.test.ts。
+**文件：** 新建 apps/api/internal/publisher/review.go、tests/publication.test.ts；apps/api/internal/publisher/records.go、migrations/0006-publications.sql；tests/integration/publication.integration.test.ts。
 
 **接口：** publishReview(plan: PublicationPlan): Promise<PublicationReceipt>；reconcilePublication(runId: string): Promise<PublicationReceipt | null>。Receipt 保存远端 Review/Comment/Check ID 与发布状态。
 
@@ -298,7 +304,7 @@ pnpm exec turbo run eval:compare -- --baseline <report> --candidate <report>
 
 #### 任务 09：增量 Snapshot 与 JS/TS 分析
 
-**文件：** 新建 packages/repository/src/snapshot.ts、tests/snapshot.test.ts；packages/analyzer/src/typescript.ts、src/imports.ts、tests/analyzer.test.ts；packages/persistence/migrations/0006-snapshots.sql。
+**文件：** 新建 packages/repository/src/snapshot.ts、tests/snapshot.test.ts；packages/analyzer/src/typescript.ts、src/imports.ts、tests/analyzer.test.ts；packages/persistence/migrations/0007-snapshots.sql。
 
 **接口：** buildSnapshot(identity: ReviewIdentity): Promise<RepoSnapshot>；analyzeFile(snapshot: RepoSnapshot, path: string): Promise<FileAnalysis>。Analysis 输出符号、Import、类型引用与明确的近似关系。
 
@@ -340,7 +346,7 @@ pnpm exec turbo run eval:compare -- --baseline <report> --candidate <report>
 
 #### 任务 12：Memory 不可变版本、Scope 与优先级
 
-**文件：** 新建 packages/domain/src/scope.ts、src/memory-policy.ts、tests/memory-policy.test.ts；packages/persistence/src/memories.ts、migrations/0007-memories.sql、tests/memories.integration.test.ts。
+**文件：** 新建 packages/domain/src/scope.ts、src/memory-policy.ts、tests/memory-policy.test.ts；apps/api/internal/memories/service.go、migrations/0008-memories.sql、tests/memories.integration.test.ts。
 
 **接口：** matchesScope(memory: MemoryVersion, path: string): boolean；resolveMemories(memories: MemoryVersion[], path: string): Resolution；appendMemoryVersion(input: MemoryVersion, expectedCurrentVersion: number): Promise<MemoryVersion>。Resolution 包含 applicable、conflicts。
 
@@ -352,7 +358,7 @@ pnpm exec turbo run eval:compare -- --baseline <report> --candidate <report>
 
 #### 任务 13：反馈、人工修订与撤销
 
-**文件：** 新建 packages/evolution/src/feedback.ts、src/correction.ts、tests/feedback.test.ts、tests/correction.test.ts；packages/persistence/migrations/0008-feedback.sql；apps/web/src/app/api/findings/[findingId]/feedback/route.ts 与反馈控件。
+**文件：** 新建 packages/evolution/src/feedback.ts、src/correction.ts、tests/feedback.test.ts、tests/correction.test.ts；packages/persistence/migrations/0009-feedback.sql；apps/api/internal/feedback/http.go 与反馈控件。
 
 **接口：** recordFeedback(input: FeedbackInput): Promise<FeedbackEvent>；applyCorrection(input: CorrectionInput, expectedVersion: number): Promise<CorrectionResult>；undoCorrection(eventId: string, actorId: string): Promise<CorrectionResult>。
 
@@ -367,7 +373,7 @@ pnpm exec turbo run eval:compare -- --baseline <report> --candidate <report>
 
 #### 任务 14：自动候选归纳与最小 A/B Replay
 
-**文件：** 新建 packages/evolution/src/propose.ts、tests/propose.test.ts；packages/evaluation/src/replay.ts、tests/replay.test.ts；apps/worker-evolution/src/main.ts；packages/persistence/migrations/0009-evaluation.sql。
+**文件：** 新建 packages/evolution/src/propose.ts、tests/propose.test.ts；packages/evaluation/src/replay.ts、tests/replay.test.ts；apps/worker-evolution/src/main.ts；packages/persistence/migrations/0010-evaluation.sql。
 
 **接口：** proposeMemories(tenant: TenantRef, observations: FeedbackEvent[]): Promise<MemoryVersion[]>；runReplay(spec: ReplaySpec): Promise<{ baseline: EvaluationReport; candidate: EvaluationReport }>。
 
@@ -381,7 +387,7 @@ pnpm exec turbo run eval:compare -- --baseline <report> --candidate <report>
 
 #### 任务 15：Shadow、自动激活、隔离与回滚
 
-**文件：** 新建 packages/evolution/src/lifecycle.ts、src/monitor.ts、tests/lifecycle.test.ts；packages/persistence/src/memory-set.ts、tests/activation.integration.test.ts。
+**文件：** 新建 packages/evolution/src/lifecycle.ts、src/monitor.ts、tests/lifecycle.test.ts；apps/api/internal/memories/activation.go、tests/activation.integration.test.ts。
 
 **接口：** decideActivation(memory: MemoryVersion, metrics: EvolutionMetrics): ActivationDecision；activateVersion(memoryId: string, version: number, expectedVersion: number): Promise<void>；evaluateLiveHealth(memory: MemoryVersion, observations: FeedbackEvent[], now: Date): HealthDecision。
 
@@ -424,7 +430,7 @@ pnpm exec turbo run eval:compare -- --baseline <report> --candidate <report>
 
 #### 任务 18：Artifact 保留、仓库删除与恢复防复活
 
-**文件：** 新建 packages/artifacts/src/retention.ts、src/deletion.ts、tests/deletion.test.ts；packages/persistence/migrations/0010-deletion-ledger.sql；apps/web/src/app/api/repositories/[repoId]/delete/route.ts；docs/runbooks/data-deletion.md。
+**文件：** 新建 packages/artifacts/src/retention.ts、src/deletion.ts、tests/deletion.test.ts；packages/persistence/migrations/0011-deletion-ledger.sql；apps/api/internal/deletion/http.go；docs/runbooks/data-deletion.md。
 
 **接口：** requestRepositoryDeletion(tenant: TenantRef, actorId: string): Promise<{ deletionId: string }>；executeDeletion(deletionId: string): Promise<DeletionReceipt>；applyDeletionLedgerAfterRestore(): Promise<void>。
 
@@ -452,7 +458,7 @@ pnpm exec turbo run eval:compare -- --baseline <report> --candidate <report>
 
 #### 任务 20：基础治理页面与设置
 
-**文件：** 新建 apps/web/src/app/repositories/[repoId]/memory/page.tsx、evaluation/page.tsx、activity/page.tsx、settings/page.tsx、apps/web/src/app/page.tsx；packages/persistence/src/queries.ts；tests/e2e/console.spec.ts。
+**文件：** 新建 apps/web/src/app/repositories/[repoId]/memory/page.tsx、evaluation/page.tsx、activity/page.tsx、settings/page.tsx、apps/web/src/app/page.tsx；apps/api/internal/queries/service.go；tests/e2e/console.spec.ts。
 
 **接口：** 在 /api/repositories/[repoId] 下提供 overview、memory、memory/[memoryId]、evaluation、activity、settings 的 GET 路由；settings 使用 PATCH。Memory 锁定/暂停/退役使用 POST memory/[memoryId]/actions，纠错沿用任务 13；所有写操作复用 requireRepoAccess 和领域命令，不在页面构造 Prompt。
 
@@ -468,7 +474,7 @@ pnpm exec turbo run eval:compare -- --baseline <report> --candidate <report>
 
 **文件：** 新建 Dockerfile.web、Dockerfile.worker、.github/workflows/ci.yml、docs/runbooks/deployment.md、docs/runbooks/budget-alerts.md、tests/e2e/github-smoke.spec.ts。
 
-**接口：** Web readiness 检查数据库可用；Worker 报心跳、队列年龄与失败计数；审查/进化费用分别计量。
+**接口：** Go API readiness 检查数据库及迁移状态；Worker 报心跳、队列年龄与失败计数；审查/进化费用分别计量。
 
 - [ ] 写失败测试：缺必需配置时拒绝启动且日志不含值；数据库不可用 readiness 不健康；预算 80% 预警，100% 不创建新调用。
 - [ ] 运行本地容器健康检查与对应测试，确认失败。

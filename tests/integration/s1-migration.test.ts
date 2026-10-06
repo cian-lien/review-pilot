@@ -2,6 +2,18 @@ import { expect, it } from 'vitest';
 import { runScenario } from '../../scripts/s1-migration-test';
 
 const selected = process.env.MIGRATION_CASE ?? 'all';
+if (selected === 'all' || selected === 'cutover') {
+  it('cutover preserves facts and refuses unconfirmed handover', async () => {
+    expect(await runScenario('cutover')).toMatchObject({
+      switchWithActiveLeaseRejected: true,
+      pendingTaskIdPreserved: true,
+      completedRenotified: false,
+      unreconciledPublishBlocksSwitch: true,
+      staleEpochStatus: 409,
+      rollbackLeavesTwoConsumers: false,
+    });
+  });
+}
 if (selected === 'all' || selected === 'observability') {
   it('real Collector correlates Go, AMQP and Worker without leaking credentials', async () => {
     expect(await runScenario('observability')).toMatchObject({

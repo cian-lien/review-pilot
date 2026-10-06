@@ -11,6 +11,7 @@ import { z } from 'zod';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const cases: Record<string, { pkg: string; test: string }> = {
+  cutover: { pkg: './internal/cutover', test: 'TestCutover' },
   observability: { pkg: './internal/webhooks', test: 'TestObservability' },
   'webhook-check': { pkg: './internal/webhooks', test: 'TestWebhookCheck' },
   'message-recovery': { pkg: './internal/jobs', test: 'TestMessageRecovery' },

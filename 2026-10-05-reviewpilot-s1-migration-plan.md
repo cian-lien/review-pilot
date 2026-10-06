@@ -260,7 +260,7 @@ expect(await runScenario('observability')).toMatchObject({
 
 **接口：** cutover.Service.Preflight(ctx context.Context)(Report,error)、Switch(ctx context.Context,expectedEpoch int64,target string)(Report,error)；Report 明确定义 mode、epoch、activeLeaseCount、unsubmittedCount、publicationPendingCount、unreconciledCheckCount、canSwitch，使用任务 2 的 runtime_control。Go dispatcher、领取和恢复每次核对 mode/epoch；切换 CLI 只通过 Turbo 的 cutover:check 调用 cmd/migrate，不默认执行 Switch。
 
-- [ ] 编写 cutover 场景：旧有效租约阻止切换，过期待迁移任务保持 taskId，已完成任务不重通知，待发布记录先对账，epoch 冲突拒绝。断言如下：
+- [x] 编写 cutover 场景：旧有效租约阻止切换，过期待迁移任务保持 taskId，已完成任务不重通知，待发布记录先对账，epoch 冲突拒绝。断言如下：
 
 ```ts
 expect(await runScenario('cutover')).toMatchObject({
@@ -270,13 +270,15 @@ expect(await runScenario('cutover')).toMatchObject({
 });
 ```
 
-- [ ] 运行 pnpm exec turbo run test:migration --filter=@reviewpilot/tooling -- --case cutover，记录预检与切换缺失的失败。
-- [ ] 实现预检和显式切换，初始 mode=legacy；停旧消费者并确认排空或租约失效后，在事务中核对 epoch，给未完成可执行任务创建唯一 Outbox，切到 go、增加 epoch、作废旧 token，再启动新消费者。预检对所有非终态 Run 按远端 external_id 对账，即使本地 check_id 为空也不能跳过。旧历史版本不理解 mode，因此必须实际停止，不能仅修改数据库就认为它已停。
-- [ ] 编写回退流程：停新消费者、等待或隔离在途写入、对账 publication 和 Outbox、记录切换后新增事实，明确可由旧服务接管的任务再转回 legacy；result_ready 等旧版本不认识的状态只在对账后安全转换。不能盲目恢复旧备份；有无法确认的远端写入就停下请求人工处理。
-- [ ] 运行 cutover 场景后切换本地明确的专用环境；移除旧 Next 业务处理路径和应用侧 TS GitHub/DB 依赖，现有 packages 中需要的兼容 Fixture 和旧 SQL 保留为非应用运行时。db:migrate 只剩 Go workspace，避免 Turbo 同时运行两套迁移器；旧集成断言移植到新路径，旧测试不因导入已删除入口而假绿。
-- [ ] 执行一次 pnpm exec turbo run verify:migration --filter=@reviewpilot/tooling。该任务只汇总契约检查、受影响包构建/静态检查、上面六个固定集成场景和一个手工仓库页检查清单；不重复执行浏览器矩阵、压力或模型评测。报告每项实际结果和受阻项，不将缺服务跳过算通过。
-- [ ] 在用户提供并授权专用 GitHub App 后，按运行手册执行登录、安装、启用、PR、neutral Check；未提供则保持外部待验收，不进行真实写入。切换 APP_URL 到 8080 或生产域名需同步配置真实 App 回调，不自动修改外部设置。
-- [ ] 仅提交已验收实现与文档，提交信息 feat: finish S1 Go migration with reversible cutover；停止并等待用户，不进入 S2。
+- [x] 运行 pnpm exec turbo run test:migration --filter=@reviewpilot/tooling -- --case cutover，记录预检与切换缺失的失败。
+- [x] 实现预检和显式切换，初始 mode=legacy；停旧消费者并确认排空或租约失效后，在事务中核对 epoch，给未完成可执行任务创建唯一 Outbox，切到 go、增加 epoch、作废旧 token，再启动新消费者。预检对所有非终态 Run 按远端 external_id 对账，即使本地 check_id 为空也不能跳过。旧历史版本不理解 mode，因此必须实际停止，不能仅修改数据库就认为它已停。
+- [x] 编写回退流程：停新消费者、等待或隔离在途写入、对账 publication 和 Outbox、记录切换后新增事实，明确可由旧服务接管的任务再转回 legacy；result_ready 等旧版本不认识的状态只在对账后安全转换。不能盲目恢复旧备份；有无法确认的远端写入就停下请求人工处理。
+- [x] 运行 cutover 场景后切换本地明确的专用环境；移除旧 Next 业务处理路径和应用侧 TS GitHub/DB 依赖，现有 packages 中需要的兼容 Fixture 和旧 SQL 保留为非应用运行时。db:migrate 只剩 Go workspace，避免 Turbo 同时运行两套迁移器；旧集成断言移植到新路径，旧测试不因导入已删除入口而假绿。
+- [x] 执行一次 pnpm exec turbo run verify:migration --filter=@reviewpilot/tooling。该任务只汇总契约检查、受影响包构建/静态检查、上面六个固定集成场景和一个手工仓库页检查清单；不重复执行浏览器矩阵、压力或模型评测。报告每项实际结果和受阻项，不将缺服务跳过算通过。
+- [x] 在用户提供并授权专用 GitHub App 后，按运行手册执行登录、安装、启用、PR、neutral Check；未提供则保持外部待验收，不进行真实写入。切换 APP_URL 到 8080 或生产域名需同步配置真实 App 回调，不自动修改外部设置。
+- [x] 仅提交已验收实现与文档，提交信息 feat: finish S1 Go migration with reversible cutover；停止并等待用户，不进入 S2。
+
+任务 8 外部验收仍待用户提供 App/环境；勾选表示已完成本地实现、隔离验收及记录待办，不表示真实接入或生产上线。
 
 ## 设计覆盖与后续边界
 
@@ -294,7 +296,7 @@ expect(await runScenario('cutover')).toMatchObject({
 ## 执行交接与审阅
 
 - [x] 用户确认本计划符合预期，再在当前会话按 executing-plans 自行实施，不安排 subagent 或独立代理复核。
-- [ ] 每个任务提交前自行检查 diff、定向验证证据和与契约的一致性；若需求超出计划或需购买、真实部署、破坏数据，则报告并请求方向。
-- [ ] S1 迁移结束后准确区分本地代码验收与真实 GitHub 验收；真实接入通过前，不宣称具备进入 S2 的全部条件。
+- [x] 每个任务提交前自行检查 diff、定向验证证据和与契约的一致性；若需求超出计划或需购买、真实部署、破坏数据，则报告并请求方向。
+- [x] S1 迁移结束后准确区分本地代码验收与真实 GitHub 验收；真实接入通过前，不宣称具备进入 S2 的全部条件。
 
 本计划已获用户批准；执行方法沿用已指定的当前会话直接开发，不重新推荐或询问 subagent 方案。只执行 S1 迁移，完成后停止。

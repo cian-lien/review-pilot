@@ -135,10 +135,29 @@ execFileSync(
   { stdio: 'inherit' },
 );
 for (const [image, path, args] of [
- ['grafana/loki:3.7.8', 'loki/loki.yaml', ['-config.file=/config.yaml','-verify-config=true']],
- ['grafana/tempo:3.1.0', 'tempo/tempo.yaml', ['-config.file=/config.yaml','-config.verify=true','-config.verify-errors-only=true']]
-] as [string,string,string[]][]) {
- execFileSync('docker',['run','--rm','--network','none','--read-only','--cap-drop=ALL','-v',root+'/infra/'+path+':/config.yaml:ro',image,...args],{stdio:'inherit'});
+  ['grafana/loki:3.7.8', 'loki/loki.yaml', ['-config.file=/config.yaml', '-verify-config=true']],
+  [
+    'grafana/tempo:3.1.0',
+    'tempo/tempo.yaml',
+    ['-config.file=/config.yaml', '-config.verify=true', '-config.verify-errors-only=true'],
+  ],
+] as [string, string, string[]][]) {
+  execFileSync(
+    'docker',
+    [
+      'run',
+      '--rm',
+      '--network',
+      'none',
+      '--read-only',
+      '--cap-drop=ALL',
+      '-v',
+      root + '/infra/' + path + ':/config.yaml:ro',
+      image,
+      ...args,
+    ],
+    { stdio: 'inherit' },
+  );
 }
 console.log(
   'Compose 隔离、旧卷映射、路由、保留期以及 Collector/Prometheus/Caddy 配置校验通过；未部署生产。',

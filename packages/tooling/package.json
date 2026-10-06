@@ -4,9 +4,14 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "cutover:check": "cd ../.. && tsx scripts/s1-cutover-check.ts",
+    "verify:migration": "cd ../.. && tsx scripts/verify-migration.ts",
     "infra:check": "cd ../.. && tsx scripts/s1-observability-check.ts",
     "infra:up": "cd ../.. && node scripts/infra.mjs up",
     "infra:stop": "cd ../.. && node scripts/infra.mjs stop",
+    "infra:build": "cd ../.. && node scripts/infra.mjs build",
+    "infra:migrate": "cd ../.. && node scripts/infra.mjs migrate",
+    "infra:cutover": "cd ../.. && node scripts/infra.mjs cutover",
     "format:infra": "cd ../.. && prettier --write infra scripts/infra.mjs scripts/s1-observability-check.ts turbo.json apps/*/package.json packages/*/package.json packages/worker-runtime/scripts/launch.mjs apps/api/scripts/go-task.mjs apps/web/scripts/next.mjs --ignore-unknown --log-level warn",
     "fixtures:legacy": "cd ../.. && tsx scripts/s1-legacy-fixture.ts",
     "format:migration": "cd ../.. && prettier --write scripts/s1-migration-test.ts scripts/s1-legacy-fixture.ts tests/integration/s1-migration.test.ts tests/fixtures/legacy-process-job.ts vitest.migration.config.ts packages/persistence/package.json packages/persistence/migrations/0003-outbox-and-results.sql apps/worker-review apps/worker-evolution turbo.json --ignore-unknown --log-level warn",
@@ -14,8 +19,8 @@
     "typecheck": "tsc --noEmit --project ../../tsconfig.json",
     "lint": "eslint ../..",
     "format": "cd ../.. && prettier --write apps packages scripts tests *.json *.yml *.yaml *.ts *.mjs --log-level warn",
-    "test": "cd ../.. && tsx scripts/integration-test.ts",
-    "test:integration": "cd ../.. && tsx scripts/integration-test.ts"
+    "test": "cd ../.. && tsx scripts/s1-migration-test.ts",
+    "test:integration": "cd ../.. && tsx scripts/s1-migration-test.ts"
   },
   "devDependencies": {
     "@reviewpilot/contracts": "workspace:*",
