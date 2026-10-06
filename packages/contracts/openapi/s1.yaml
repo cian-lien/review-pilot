@@ -13,6 +13,145 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
+  /api/bootstrap:
+    get:
+      operationId: getBootstrap
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootstrapResponse'
+        '401':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '503':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+  /api/session:
+    get:
+      operationId: getSession
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '503':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+  /api/repositories:
+    get:
+      operationId: listRepositories
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryListResponse'
+        '401':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '503':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+  /api/runs:
+    get:
+      operationId: listRuns
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunListResponse'
+        '401':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '503':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+  /api/repositories/sync:
+    post:
+      operationId: syncRepositories
+      responses:
+        '204':
+          description: Synchronized
+        '403':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+  /api/repositories/{installationId}/{repositoryId}:
+    parameters:
+      - in: path
+        name: installationId
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+      - in: path
+        name: repositoryId
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+    post:
+      operationId: setRepositoryEnabled
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetRepositoryEnabledRequest'
+      responses:
+        '204':
+          description: Updated
+        '403':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '409':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
 components:
   schemas:
     TenantRef:
@@ -282,3 +421,154 @@ components:
           type: boolean
           enum:
             - false
+    BootstrapResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        phase:
+          type: string
+          enum:
+            - foundation
+        aiReviewEnabled:
+          type: boolean
+          enum:
+            - false
+        missingConfiguration:
+          type: array
+          items:
+            type: string
+        installUrl:
+          type: string
+      required:
+        - phase
+        - aiReviewEnabled
+        - missingConfiguration
+    SessionResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        user:
+          type: object
+          additionalProperties: false
+          properties:
+            id:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            login:
+              type: string
+          required:
+            - id
+            - login
+        csrfToken:
+          type: string
+      required:
+        - user
+        - csrfToken
+    RepositorySummary:
+      type: object
+      additionalProperties: false
+      properties:
+        tenant:
+          $ref: '#/components/schemas/TenantRef'
+        fullName:
+          type: string
+        public:
+          type: boolean
+        enabled:
+          type: boolean
+        configVersion:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        canManage:
+          type: boolean
+      required:
+        - tenant
+        - fullName
+        - public
+        - enabled
+        - configVersion
+        - canManage
+    RepositoryListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        repositories:
+          type: array
+          items:
+            $ref: '#/components/schemas/RepositorySummary'
+      required:
+        - repositories
+    RunSummary:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        tenant:
+          $ref: '#/components/schemas/TenantRef'
+        fullName:
+          type: string
+        prNumber:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        headSha:
+          type: string
+        status:
+          type: string
+          enum:
+            - Queued
+            - Indexing
+            - Reviewing
+            - Verifying
+            - Publishing
+            - Completed
+            - Partial
+            - Stale
+            - Cancelled
+            - Failed
+        createdAt:
+          type: string
+          format: date-time
+        checkId:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+      required:
+        - id
+        - tenant
+        - fullName
+        - prNumber
+        - headSha
+        - status
+        - createdAt
+    RunListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        runs:
+          type: array
+          items:
+            $ref: '#/components/schemas/RunSummary'
+        aiReviewEnabled:
+          type: boolean
+          enum:
+            - false
+      required:
+        - runs
+        - aiReviewEnabled
+    SetRepositoryEnabledRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        enabled:
+          type: boolean
+        configVersion:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+      required:
+        - enabled
+        - configVersion

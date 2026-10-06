@@ -11,8 +11,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"reviewpilot.local/api/internal/auth"
 	"reviewpilot.local/api/internal/config"
+	"reviewpilot.local/api/internal/contracts"
+	"reviewpilot.local/api/internal/github"
 	"reviewpilot.local/api/internal/httpapi"
+	"reviewpilot.local/api/internal/persistence"
+	"reviewpilot.local/api/internal/repositories"
 )
 
 func main() {
@@ -23,12 +28,31 @@ func main() {
 	}
 	public := httpapi.NewRouter()
 	public.GET("/api/bootstrap", func(c *gin.Context) {
-		c.JSON(200, gin.H{"phase": "foundation", "aiReviewEnabled": false, "missingConfiguration": cfg.Missing})
+		missing := cfg.Missing
+		if missing == nil {
+			missing = []string{}
+		}
+		response := contracts.BootstrapResponse{Phase: contracts.BootstrapResponsePhaseFoundation, AiReviewEnabled: false, MissingConfiguration: missing}
+		if cfg.GitHubAppSlug != "" {
+			address := "https://github.com/apps/" + cfg.GitHubAppSlug + "/installations/new"
+			response.InstallUrl = &address
+		}
+		c.JSON(200, response)
 	})
-	// Replaced by authenticated business route registration in migration task 3.
-	for _, path := range []string{"/auth/github", "/auth/github/callback", "/installations/callback"} {
-		public.GET(path, func(c *gin.Context) { httpapi.Error(c, 503, "NOT_CONFIGURED", "业务认证迁移尚未启用") })
+	var store *persistence.Store
+	if cfg.DatabaseURL != "" {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		store, err = persistence.Open(ctx, cfg.DatabaseURL)
+		cancel()
+		if err != nil {
+			slog.Error("DATABASE_UNAVAILABLE")
+		} else {
+			defer store.Close()
+		}
 	}
+	service := auth.New(store, cfg, github.New(cfg))
+	auth.Register(public, service)
+	repositories.Register(public, repositories.New(store, service))
 	internal := gin.New()
 	internal.NoRoute(func(c *gin.Context) { c.Status(404) })
 	servers := []*http.Server{

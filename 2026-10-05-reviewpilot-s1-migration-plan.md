@@ -152,7 +152,7 @@ expect(await runScenario('legacy-schema')).toMatchObject({
 
 **接口：** auth.SealToken(token,key string)(string,error)、auth.OpenToken(sealed,key string)(string,error)；auth.Service.RequireSession(ctx context.Context,opaqueToken string)(Session,error)，Session 定义 UserID、Login 和仅服务端可见的 UserToken；github.Gateway.RequireAccess(ctx context.Context,userToken string,tenant contracts.TenantRef,manage bool) error；repositories.Service.SetEnabled(ctx context.Context,session auth.Session,tenant contracts.TenantRef,enabled bool,expectedVersion int64) error；各模块提供 Register(r *gin.Engine,service *Service)。本任务在 OpenAPI 定义 BootstrapResponse、SessionResponse、RepositoryListResponse、RunListResponse 和 SetRepositoryEnabledRequest，后者正文只有 enabled/configVersion，CSRF 由独立请求头或表单字段承载。
 
-- [ ] 使用现有 TS sealToken 创建只含测试密钥与 test-token 的兼容 Fixture，不读用户 .env；编写 legacy-auth 场景。已有 Cookie 可登录、state 再次消费拒绝、非维护者不能启用、他人安装不能同步、过期会话失效。核心断言如下：
+- [x] 使用现有 TS sealToken 创建只含测试密钥与 test-token 的兼容 Fixture，不读用户 .env；编写 legacy-auth 场景。已有 Cookie 可登录、state 再次消费拒绝、非维护者不能启用、他人安装不能同步、过期会话失效。核心断言如下：
 
 ```ts
 expect(await runScenario('legacy-auth')).toMatchObject({
@@ -161,11 +161,11 @@ expect(await runScenario('legacy-auth')).toMatchObject({
 });
 ```
 
-- [ ] 运行 pnpm exec turbo run test:migration --filter=@reviewpilot/tooling -- --case legacy-auth，记录认证迁移尚不可用的失败。
-- [ ] 实现旧密文和 Cookie 兼容、state/PKCE 一次性消费、会话最多 28800 秒；同步前验证 App ID、安装归属、仓库公开状态和当前 maintain/admin。GitHub HTTP 客户端可注入假服务地址、设置超时和 API 版本，不记录原始错误体或凭证。
-- [ ] 实现公开会话、仓库、近期 20 个 Run、同步、配置 bootstrap 与回调；列表按当前可访问安装与仓库过滤。JSON 变更验证 expectedVersion，表单兼容仍校验 Origin 与维护权限；CSRF 为会话绑定的 32 字节随机 base64url token，旧会话首次读取时原子填入 csrf_token，后续不轮询旋转，通过 /api/session 返回并要求 X-CSRF-Token，表单使用隐藏字段。缺 token 的旧页面变更提示刷新，不绕过防护。登录与安装回调不套业务变更 CSRF，但执行各自 state 和归属校验。
-- [ ] 重跑 legacy-auth，确认日志与响应不包含密钥和 UserToken；保存配置缺失、未登录和远端不可用三类不同状态。
-- [ ] 仅提交本任务文件，提交信息 feat: move authentication and repository governance to Go。
+- [x] 运行 pnpm exec turbo run test:migration --filter=@reviewpilot/tooling -- --case legacy-auth，记录认证迁移尚不可用的失败。
+- [x] 实现旧密文和 Cookie 兼容、state/PKCE 一次性消费、会话最多 28800 秒；同步前验证 App ID、安装归属、仓库公开状态和当前 maintain/admin。GitHub HTTP 客户端可注入假服务地址、设置超时和 API 版本，不记录原始错误体或凭证。
+- [x] 实现公开会话、仓库、近期 20 个 Run、同步、配置 bootstrap 与回调；列表按当前可访问安装与仓库过滤。JSON 变更验证 expectedVersion，表单兼容仍校验 Origin 与维护权限；CSRF 为会话绑定的 32 字节随机 base64url token，旧会话首次读取时原子填入 csrf_token，后续不轮询旋转，通过 /api/session 返回并要求 X-CSRF-Token，表单使用隐藏字段。缺 token 的旧页面变更提示刷新，不绕过防护。登录与安装回调不套业务变更 CSRF，但执行各自 state 和归属校验。
+- [x] 重跑 legacy-auth，确认日志与响应不包含密钥和 UserToken；保存配置缺失、未登录和远端不可用三类不同状态。
+- [x] 仅提交本任务文件，提交信息 feat: move authentication and repository governance to Go。
 
 ## 任务 4 Outbox 与 Worker 可靠执行
 

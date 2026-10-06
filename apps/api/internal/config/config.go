@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -71,6 +72,9 @@ func Load() (Config, error) {
 		if err != nil || len(key) != 32 || base64.StdEncoding.EncodeToString(key) != c.SessionSecret {
 			return Config{}, errors.New("Invalid SESSION_SECRET")
 		}
+	}
+	if c.GitHubAppSlug != "" && !regexp.MustCompile(`^[a-zA-Z0-9-]+$`).MatchString(c.GitHubAppSlug) {
+		return Config{}, errors.New("Invalid GITHUB_APP_SLUG")
 	}
 	for _, name := range []string{"DATABASE_URL", "RABBITMQ_URL", "REVIEW_WORKER_SERVICE_TOKEN", "EVOLUTION_WORKER_SERVICE_TOKEN", "GITHUB_APP_ID", "GITHUB_APP_SLUG", "GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "GITHUB_PRIVATE_KEY_PATH", "GITHUB_WEBHOOK_SECRET", "SESSION_SECRET"} {
 		if os.Getenv(name) == "" {

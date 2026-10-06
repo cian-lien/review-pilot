@@ -9,6 +9,7 @@ import { z } from 'zod';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const cases: Record<string, { pkg: string; test: string }> = {
+  'legacy-auth': { pkg: './internal/auth', test: 'TestLegacyAuth' },
   'legacy-schema': { pkg: './internal/persistence', test: 'TestLegacySchema' },
 };
 async function execute(command: string, args: string[], env: NodeJS.ProcessEnv): Promise<void> {

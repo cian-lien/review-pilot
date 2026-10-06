@@ -7,33 +7,63 @@ import (
 	"time"
 )
 
+// Defines values for BootstrapResponseAiReviewEnabled.
+const (
+	BootstrapResponseAiReviewEnabledFalse BootstrapResponseAiReviewEnabled = false
+)
+
+// Valid indicates whether the value is a known member of the BootstrapResponseAiReviewEnabled enum.
+func (e BootstrapResponseAiReviewEnabled) Valid() bool {
+	switch e {
+	case BootstrapResponseAiReviewEnabledFalse:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BootstrapResponsePhase.
+const (
+	BootstrapResponsePhaseFoundation BootstrapResponsePhase = "foundation"
+)
+
+// Valid indicates whether the value is a known member of the BootstrapResponsePhase enum.
+func (e BootstrapResponsePhase) Valid() bool {
+	switch e {
+	case BootstrapResponsePhaseFoundation:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ClaimResponseOutcome.
 const (
-	Busy       ClaimResponseOutcome = "busy"
-	Cancelled  ClaimResponseOutcome = "cancelled"
-	Claimed    ClaimResponseOutcome = "claimed"
-	Exhausted  ClaimResponseOutcome = "exhausted"
-	Finished   ClaimResponseOutcome = "finished"
-	NotReady   ClaimResponseOutcome = "not-ready"
-	Superseded ClaimResponseOutcome = "superseded"
+	ClaimResponseOutcomeBusy       ClaimResponseOutcome = "busy"
+	ClaimResponseOutcomeCancelled  ClaimResponseOutcome = "cancelled"
+	ClaimResponseOutcomeClaimed    ClaimResponseOutcome = "claimed"
+	ClaimResponseOutcomeExhausted  ClaimResponseOutcome = "exhausted"
+	ClaimResponseOutcomeFinished   ClaimResponseOutcome = "finished"
+	ClaimResponseOutcomeNotReady   ClaimResponseOutcome = "not-ready"
+	ClaimResponseOutcomeSuperseded ClaimResponseOutcome = "superseded"
 )
 
 // Valid indicates whether the value is a known member of the ClaimResponseOutcome enum.
 func (e ClaimResponseOutcome) Valid() bool {
 	switch e {
-	case Busy:
+	case ClaimResponseOutcomeBusy:
 		return true
-	case Cancelled:
+	case ClaimResponseOutcomeCancelled:
 		return true
-	case Claimed:
+	case ClaimResponseOutcomeClaimed:
 		return true
-	case Exhausted:
+	case ClaimResponseOutcomeExhausted:
 		return true
-	case Finished:
+	case ClaimResponseOutcomeFinished:
 		return true
-	case NotReady:
+	case ClaimResponseOutcomeNotReady:
 		return true
-	case Superseded:
+	case ClaimResponseOutcomeSuperseded:
 		return true
 	default:
 		return false
@@ -75,13 +105,13 @@ func (e ConnectionResultKind) Valid() bool {
 
 // Defines values for HealthResponseAiReviewEnabled.
 const (
-	False HealthResponseAiReviewEnabled = false
+	HealthResponseAiReviewEnabledFalse HealthResponseAiReviewEnabled = false
 )
 
 // Valid indicates whether the value is a known member of the HealthResponseAiReviewEnabled enum.
 func (e HealthResponseAiReviewEnabled) Valid() bool {
 	switch e {
-	case False:
+	case HealthResponseAiReviewEnabledFalse:
 		return true
 	default:
 		return false
@@ -90,13 +120,70 @@ func (e HealthResponseAiReviewEnabled) Valid() bool {
 
 // Defines values for HealthResponsePhase.
 const (
-	Foundation HealthResponsePhase = "foundation"
+	HealthResponsePhaseFoundation HealthResponsePhase = "foundation"
 )
 
 // Valid indicates whether the value is a known member of the HealthResponsePhase enum.
 func (e HealthResponsePhase) Valid() bool {
 	switch e {
-	case Foundation:
+	case HealthResponsePhaseFoundation:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RunListResponseAiReviewEnabled.
+const (
+	RunListResponseAiReviewEnabledFalse RunListResponseAiReviewEnabled = false
+)
+
+// Valid indicates whether the value is a known member of the RunListResponseAiReviewEnabled enum.
+func (e RunListResponseAiReviewEnabled) Valid() bool {
+	switch e {
+	case RunListResponseAiReviewEnabledFalse:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RunSummaryStatus.
+const (
+	RunSummaryStatusCancelled  RunSummaryStatus = "Cancelled"
+	RunSummaryStatusCompleted  RunSummaryStatus = "Completed"
+	RunSummaryStatusFailed     RunSummaryStatus = "Failed"
+	RunSummaryStatusIndexing   RunSummaryStatus = "Indexing"
+	RunSummaryStatusPartial    RunSummaryStatus = "Partial"
+	RunSummaryStatusPublishing RunSummaryStatus = "Publishing"
+	RunSummaryStatusQueued     RunSummaryStatus = "Queued"
+	RunSummaryStatusReviewing  RunSummaryStatus = "Reviewing"
+	RunSummaryStatusStale      RunSummaryStatus = "Stale"
+	RunSummaryStatusVerifying  RunSummaryStatus = "Verifying"
+)
+
+// Valid indicates whether the value is a known member of the RunSummaryStatus enum.
+func (e RunSummaryStatus) Valid() bool {
+	switch e {
+	case RunSummaryStatusCancelled:
+		return true
+	case RunSummaryStatusCompleted:
+		return true
+	case RunSummaryStatusFailed:
+		return true
+	case RunSummaryStatusIndexing:
+		return true
+	case RunSummaryStatusPartial:
+		return true
+	case RunSummaryStatusPublishing:
+		return true
+	case RunSummaryStatusQueued:
+		return true
+	case RunSummaryStatusReviewing:
+		return true
+	case RunSummaryStatusStale:
+		return true
+	case RunSummaryStatusVerifying:
 		return true
 	default:
 		return false
@@ -142,6 +229,20 @@ type APIError struct {
 	Message   string `json:"message"`
 	RequestId string `json:"requestId"`
 }
+
+// BootstrapResponse defines model for BootstrapResponse.
+type BootstrapResponse struct {
+	AiReviewEnabled      BootstrapResponseAiReviewEnabled `json:"aiReviewEnabled"`
+	InstallUrl           *string                          `json:"installUrl,omitempty"`
+	MissingConfiguration []string                         `json:"missingConfiguration"`
+	Phase                BootstrapResponsePhase           `json:"phase"`
+}
+
+// BootstrapResponseAiReviewEnabled defines model for BootstrapResponse.AiReviewEnabled.
+type BootstrapResponseAiReviewEnabled bool
+
+// BootstrapResponsePhase defines model for BootstrapResponse.Phase.
+type BootstrapResponsePhase string
 
 // ClaimRequest defines model for ClaimRequest.
 type ClaimRequest struct {
@@ -193,6 +294,30 @@ type HealthResponseAiReviewEnabled bool
 // HealthResponsePhase defines model for HealthResponse.Phase.
 type HealthResponsePhase string
 
+// RepositoryListResponse defines model for RepositoryListResponse.
+type RepositoryListResponse struct {
+	Repositories []RepositorySummary `json:"repositories"`
+}
+
+// RepositorySummary defines model for RepositorySummary.
+type RepositorySummary struct {
+	CanManage     bool      `json:"canManage"`
+	ConfigVersion int       `json:"configVersion"`
+	Enabled       bool      `json:"enabled"`
+	FullName      string    `json:"fullName"`
+	Public        bool      `json:"public"`
+	Tenant        TenantRef `json:"tenant"`
+}
+
+// RunListResponse defines model for RunListResponse.
+type RunListResponse struct {
+	AiReviewEnabled RunListResponseAiReviewEnabled `json:"aiReviewEnabled"`
+	Runs            []RunSummary                   `json:"runs"`
+}
+
+// RunListResponseAiReviewEnabled defines model for RunListResponse.AiReviewEnabled.
+type RunListResponseAiReviewEnabled bool
+
 // RunSnapshot defines model for RunSnapshot.
 type RunSnapshot struct {
 	Identity struct {
@@ -207,6 +332,36 @@ type RunSnapshot struct {
 	ModelConfigVersion      string `json:"modelConfigVersion"`
 	RepositoryConfigVersion string `json:"repositoryConfigVersion"`
 	TrustedRulesSha         string `json:"trustedRulesSha"`
+}
+
+// RunSummary defines model for RunSummary.
+type RunSummary struct {
+	CheckId   *int             `json:"checkId,omitempty"`
+	CreatedAt time.Time        `json:"createdAt"`
+	FullName  string           `json:"fullName"`
+	HeadSha   string           `json:"headSha"`
+	Id        string           `json:"id"`
+	PrNumber  int              `json:"prNumber"`
+	Status    RunSummaryStatus `json:"status"`
+	Tenant    TenantRef        `json:"tenant"`
+}
+
+// RunSummaryStatus defines model for RunSummary.Status.
+type RunSummaryStatus string
+
+// SessionResponse defines model for SessionResponse.
+type SessionResponse struct {
+	CsrfToken string `json:"csrfToken"`
+	User      struct {
+		Id    int    `json:"id"`
+		Login string `json:"login"`
+	} `json:"user"`
+}
+
+// SetRepositoryEnabledRequest defines model for SetRepositoryEnabledRequest.
+type SetRepositoryEnabledRequest struct {
+	ConfigVersion int  `json:"configVersion"`
+	Enabled       bool `json:"enabled"`
 }
 
 // TaskEnvelope defines model for TaskEnvelope.
@@ -246,3 +401,6 @@ type TenantRef struct {
 	InstallationId int `json:"installationId"`
 	RepositoryId   int `json:"repositoryId"`
 }
+
+// SetRepositoryEnabledJSONRequestBody defines body for SetRepositoryEnabled for application/json ContentType.
+type SetRepositoryEnabledJSONRequestBody = SetRepositoryEnabledRequest

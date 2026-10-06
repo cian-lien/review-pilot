@@ -1,15 +1,20 @@
 package httpapi
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"github.com/gin-gonic/gin"
+	"time"
 )
 
 func NewRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	r.Use(func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 14*time.Second)
+		defer cancel()
+		c.Request = c.Request.WithContext(ctx)
 		id := make([]byte, 16)
 		if _, err := rand.Read(id); err != nil {
 			c.AbortWithStatus(503)

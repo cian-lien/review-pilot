@@ -1,0 +1,6 @@
+{
+  "description": "TEST ONLY: created by the legacy TypeScript AES-256-GCM implementation",
+  "secret": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=",
+  "sealed": "sJDzk8P-qBogiiY_.ewrnanTjOSg6hTYJj5q1rA.H56HKQ6vMwUrnw",
+  "expectedToken": "test-token"
+}

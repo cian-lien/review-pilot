@@ -5,6 +5,7 @@
   "globalDependencies": ["tsconfig.base.json", "eslint.config.mjs"],
   "globalEnv": ["NODE_ENV"],
   "tasks": {
+    "fixtures:legacy": { "cache": false },
     "format:migration": { "cache": false },
     "test:migration": { "cache": false },
     "@reviewpilot/api#typecheck": { "dependsOn": ["transit"], "outputs": [] },
