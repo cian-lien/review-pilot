@@ -5,6 +5,8 @@
   "globalDependencies": ["tsconfig.base.json", "eslint.config.mjs"],
   "globalEnv": ["NODE_ENV"],
   "tasks": {
+    "ui": { "cache": false },
+    "format:ui": { "cache": false },
     "dispatcher": {
       "cache": false,
       "persistent": true,

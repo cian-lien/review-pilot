@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import './globals.css';
+import { Providers } from '@/components/providers';
 export const metadata: Metadata = {
   title: 'ReviewPilot · 仓库接入',
   description: '公共仓库的 AI 审查与可治理规则记忆。',
@@ -30,7 +31,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               不会调用模型或执行 PR 代码。
             </p>
           </aside>
-          <main>{children}</main>
+          <main>
+            <Providers>{children}</Providers>
+          </main>
         </div>
       </body>
     </html>

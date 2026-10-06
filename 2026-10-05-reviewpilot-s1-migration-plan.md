@@ -217,7 +217,7 @@ expect(await runScenario('webhook-check')).toMatchObject({
 
 **接口：** createAPIClient(fetcher:typeof fetch):APIClient，对接生成 REST 类型、credentials=include 与 X-CSRF-Token；APIClient.getBootstrap/getSession/listRepositories/listRuns 无参数，分别返回 Promise<BootstrapResponse/SessionResponse/RepositoryListResponse/RunListResponse>；syncRepositories(csrfToken:string):Promise<void>、setEnabled(input:SetEnabledInput):Promise<void>；repository-actions.toggleRepository(client:APIClient,input:SetEnabledInput):Promise<void>。SetEnabledInput 在 api-client.ts 定义为 {tenant:TenantRef;enabled:boolean;configVersion:number;csrfToken:string}，正文使用生成的 SetRepositoryEnabledRequest，不把 csrfToken 放进 JSON 正文。
 
-- [ ] 编写 repository-actions.test.ts：启用调用直接到 Go 路径，携带 configVersion/CSRF；409 不更新成功状态；401/403 显示登录或权限提示。最小断言如下：
+- [x] 编写 repository-actions.test.ts：启用调用直接到 Go 路径，携带 configVersion/CSRF；409 不更新成功状态；401/403 显示登录或权限提示。最小断言如下：
 
 ```ts
 expect(request.url).toBe('/api/repositories/1/2');
@@ -226,11 +226,11 @@ expect(request.body).toMatchObject({ enabled: true, configVersion: 3 });
 await expect(toggleRepository(client, input)).rejects.toMatchObject({ code: 'VERSION_CONFLICT' });
 ```
 
-- [ ] 运行 pnpm exec turbo run test:unit --filter=@reviewpilot/web -- src/lib/repository-actions.test.ts，记录客户端未迁移时的失败；本任务新增 Web test:unit 包装，测试数据来自本文件的 fetch stub，不假装端到端。
-- [ ] 把 repositories/page.tsx 改成展示壳与客户端组件，TanStack Query 管理会话、仓库与最近 20 个 Run。继续中文说明、配置缺项、未登录、不可用、空列表和 neutral 连接状态，不加入模拟仓库、虚构指标或未实现治理开关。
-- [ ] 使用 shadcn 与 Tailwind 只完成当前仓库页基础组件，不做整站重设计；保留 next.mjs 的 Node 环境加载修复，前端仅允许展示配置，不注入数据库、GitHub、模型或内部服务凭证。API 使用相对同源 URL，首次轮询默认 5 秒、页面后台暂停或降频。
-- [ ] 重跑定向测试，执行 pnpm exec turbo run typecheck build --filter=@reviewpilot/web；要求 Web 无 persistence/github 运行时依赖，仍保留旧业务路由到任务 8 的切换点，不把保留期作为新架构 BFF。
-- [ ] 仅提交本任务文件，提交信息 feat: connect repository console directly to Go API。
+- [x] 运行 pnpm exec turbo run test:unit --filter=@reviewpilot/web -- src/lib/repository-actions.test.ts，记录客户端未迁移时的失败；本任务新增 Web test:unit 包装，测试数据来自本文件的 fetch stub，不假装端到端。
+- [x] 把 repositories/page.tsx 改成展示壳与客户端组件，TanStack Query 管理会话、仓库与最近 20 个 Run。继续中文说明、配置缺项、未登录、不可用、空列表和 neutral 连接状态，不加入模拟仓库、虚构指标或未实现治理开关。
+- [x] 使用 shadcn 与 Tailwind 只完成当前仓库页基础组件，不做整站重设计；保留 next.mjs 的 Node 环境加载修复，前端仅允许展示配置，不注入数据库、GitHub、模型或内部服务凭证。API 使用相对同源 URL，首次轮询默认 5 秒、页面后台暂停或降频。
+- [x] 重跑定向测试，执行 pnpm exec turbo run typecheck build --filter=@reviewpilot/web；要求 Web 无 persistence/github 运行时依赖，仍保留旧业务路由到任务 8 的切换点，不把保留期作为新架构 BFF。
+- [x] 仅提交本任务文件，提交信息 feat: connect repository console directly to Go API。
 
 ## 任务 7 Compose 与完整监控基础
 
