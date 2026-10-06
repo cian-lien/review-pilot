@@ -189,10 +189,56 @@ func TestObservability(t *testing.T) {
 		return "", ""
 	}
 	runID, taskID := complete("b")
+	// Publication exhaustion retains the accepted job result; it needs a separate failure metric.
+	if err = db.Exec("UPDATE publication_requests SET state='failed' WHERE run_id=?", runID).Error; err != nil {
+		t.Fatal(err)
+	}
+	dispatcherObs.RecordState(ctx, db)
 	if err = apiObs.Flush(ctx); err != nil {
 		t.Fatal(err)
 	}
 	if err = dispatcherObs.Flush(ctx); err != nil {
+		t.Fatal(err)
+	}
+	failedPublicationVisible := false
+	metricDeadline := time.Now().Add(3 * time.Second)
+	for time.Now().Before(metricDeadline) {
+		metrics, _ := os.ReadFile(filepath.Join(directory, "metrics.json"))
+		for _, line := range bytes.Split(metrics, []byte("\n")) {
+			var batch struct {
+				ResourceMetrics []struct {
+					ScopeMetrics []struct {
+						Metrics []struct {
+							Name  string
+							Gauge struct{ DataPoints []struct{ AsDouble float64 } }
+						}
+					}
+				}
+			}
+			if json.Unmarshal(line, &batch) != nil {
+				continue
+			}
+			for _, resource := range batch.ResourceMetrics {
+				for _, scope := range resource.ScopeMetrics {
+					for _, measurement := range scope.Metrics {
+						if measurement.Name == "reviewpilot.publications.failed" {
+							for _, point := range measurement.Gauge.DataPoints {
+								failedPublicationVisible = failedPublicationVisible || point.AsDouble == 1
+							}
+						}
+					}
+				}
+			}
+		}
+		if failedPublicationVisible {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	if !failedPublicationVisible {
+		t.Fatal("failed publication missing from real OTLP metrics")
+	}
+	if err = db.Exec("UPDATE publication_requests SET state='published' WHERE run_id=?", runID).Error; err != nil {
 		t.Fatal(err)
 	}
 	linked := map[string]string{}

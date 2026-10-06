@@ -50,6 +50,8 @@ pnpm exec turbo run infra:up --filter=@reviewpilot/tooling
 
 Switch 在事务中重新核对租约、远端事实与 CAS epoch，保留 taskId、完成任务不重通知、生成唯一 Outbox、作废旧 token/epoch。短锁等待或未知事实导致回滚，不做 GitHub Check POST/PATCH。宿主数据库可用 `pnpm exec turbo run cutover:check --filter=@reviewpilot/api`；默认只读，不执行 SQL 迁移。
 
+切换响应的计数是事务内切换前的预检快照，不是切换后实时数量；需要最新数量时再次只读预检。再次进入 Go 时，已接受且哈希一致的结果直接恢复为 Publishing/result_ready 和 pending 发布，不重复派给 Worker；已经撤销/失效的工作不恢复。
+
 ## 回退
 
 1. 实际停止 Go 消费者和 dispatcher，旧消费者仍停止；排空/隔离在途写入。

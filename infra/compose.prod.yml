@@ -69,7 +69,14 @@
         {
           'restart': 'unless-stopped',
           'read_only': true,
-          'tmpfs': ['/tmp:rw,noexec,nosuid,size=64m', '/app/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m'],
+          'tmpfs':
+            [
+              '/tmp:rw,noexec,nosuid,size=64m',
+              '/app/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m',
+            ],
           'cap_drop': ['ALL'],
           'security_opt': ['no-new-privileges:true'],
           'mem_limit': '512m',
@@ -127,7 +134,14 @@
         {
           'restart': 'unless-stopped',
           'read_only': true,
-          'tmpfs': ['/tmp:rw,noexec,nosuid,size=64m', '/app/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m'],
+          'tmpfs':
+            [
+              '/tmp:rw,noexec,nosuid,size=64m',
+              '/app/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m',
+            ],
           'cap_drop': ['ALL'],
           'security_opt': ['no-new-privileges:true'],
           'mem_limit': '512m',
@@ -343,7 +357,14 @@
         {
           'restart': 'unless-stopped',
           'read_only': true,
-          'tmpfs': ['/tmp:rw,noexec,nosuid,size=64m', '/app/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m'],
+          'tmpfs':
+            [
+              '/tmp:rw,noexec,nosuid,size=64m',
+              '/app/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m',
+            ],
           'cap_drop': ['ALL'],
           'security_opt': ['no-new-privileges:true'],
           'mem_limit': '512m',
@@ -379,7 +400,14 @@
         {
           'restart': 'unless-stopped',
           'read_only': true,
-          'tmpfs': ['/tmp:rw,noexec,nosuid,size=64m', '/app/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m'],
+          'tmpfs':
+            [
+              '/tmp:rw,noexec,nosuid,size=64m',
+              '/app/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m',
+            ],
           'cap_drop': ['ALL'],
           'security_opt': ['no-new-privileges:true'],
           'mem_limit': '512m',

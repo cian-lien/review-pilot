@@ -195,6 +195,7 @@ func (r *Runtime) RecordState(ctx context.Context, db *gorm.DB) {
 		"reviewpilot.outbox.pending":       "SELECT count(*) FROM outbox_events WHERE sent_at IS NULL",
 		"reviewpilot.outbox.oldest.age":    "SELECT COALESCE(GREATEST(EXTRACT(EPOCH FROM clock_timestamp()-min(available_at)),0),0) FROM outbox_events WHERE sent_at IS NULL",
 		"reviewpilot.publications.pending": "SELECT count(*) FROM publication_requests WHERE state IN ('pending','running')",
+		"reviewpilot.publications.failed":  "SELECT count(*) FROM publication_requests WHERE state='failed'",
 	}
 	for name, query := range queries {
 		var value float64

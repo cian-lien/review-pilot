@@ -62,7 +62,14 @@
         {
           'restart': 'unless-stopped',
           'read_only': true,
-          'tmpfs': ['/tmp:rw,noexec,nosuid,size=64m', '/app/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m'],
+          'tmpfs':
+            [
+              '/tmp:rw,noexec,nosuid,size=64m',
+              '/app/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m',
+            ],
           'cap_drop': ['ALL'],
           'security_opt': ['no-new-privileges:true'],
           'mem_limit': '512m',
@@ -90,7 +97,16 @@
               'EVOLUTION_WORKER_SERVICE_TOKEN': '${EVOLUTION_WORKER_SERVICE_TOKEN:-}',
             },
           'networks': ['ingress', 'data', 'tasks', 'monitoring', 'egress'],
-          'volumes': [{ 'type': 'bind', 'source': '${GITHUB_PRIVATE_KEY_PATH:-/dev/null}', 'target': '/run/secrets/github_private_key', 'read_only': true, 'bind': { 'create_host_path': false } }],
+          'volumes':
+            [
+              {
+                'type': 'bind',
+                'source': '${GITHUB_PRIVATE_KEY_PATH:-/dev/null}',
+                'target': '/run/secrets/github_private_key',
+                'read_only': true,
+                'bind': { 'create_host_path': false },
+              },
+            ],
           'healthcheck':
             {
               'interval': '15s',
@@ -110,7 +126,14 @@
         {
           'restart': 'unless-stopped',
           'read_only': true,
-          'tmpfs': ['/tmp:rw,noexec,nosuid,size=64m', '/app/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m'],
+          'tmpfs':
+            [
+              '/tmp:rw,noexec,nosuid,size=64m',
+              '/app/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m',
+            ],
           'cap_drop': ['ALL'],
           'security_opt': ['no-new-privileges:true'],
           'mem_limit': '512m',
@@ -140,7 +163,16 @@
               'HEARTBEAT_FILE': '/tmp/reviewpilot-heartbeat',
             },
           'networks': ['data', 'tasks', 'monitoring', 'egress'],
-          'volumes': [{ 'type': 'bind', 'source': '${GITHUB_PRIVATE_KEY_PATH:-/dev/null}', 'target': '/run/secrets/github_private_key', 'read_only': true, 'bind': { 'create_host_path': false } }],
+          'volumes':
+            [
+              {
+                'type': 'bind',
+                'source': '${GITHUB_PRIVATE_KEY_PATH:-/dev/null}',
+                'target': '/run/secrets/github_private_key',
+                'read_only': true,
+                'bind': { 'create_host_path': false },
+              },
+            ],
           'healthcheck':
             {
               'interval': '15s',
@@ -320,7 +352,14 @@
         {
           'restart': 'unless-stopped',
           'read_only': true,
-          'tmpfs': ['/tmp:rw,noexec,nosuid,size=64m', '/app/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m'],
+          'tmpfs':
+            [
+              '/tmp:rw,noexec,nosuid,size=64m',
+              '/app/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m',
+            ],
           'cap_drop': ['ALL'],
           'security_opt': ['no-new-privileges:true'],
           'mem_limit': '512m',
@@ -355,7 +394,14 @@
         {
           'restart': 'unless-stopped',
           'read_only': true,
-          'tmpfs': ['/tmp:rw,noexec,nosuid,size=64m', '/app/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m', '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m'],
+          'tmpfs':
+            [
+              '/tmp:rw,noexec,nosuid,size=64m',
+              '/app/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/api/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-review/.turbo:rw,noexec,nosuid,size=16m',
+              '/app/apps/worker-evolution/.turbo:rw,noexec,nosuid,size=16m',
+            ],
           'cap_drop': ['ALL'],
           'security_opt': ['no-new-privileges:true'],
           'mem_limit': '512m',

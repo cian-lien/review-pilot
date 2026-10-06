@@ -184,6 +184,49 @@ func (s *Service) Switch(ctx context.Context, expectedEpoch int64, target string
 					return err
 				}
 			} else {
+				// Rollback may have queued a job whose immutable result was already accepted.
+				// Re-enter publication directly; a Worker confirmation cannot recreate its intent.
+				if o.Run.Status == "Cancelled" || o.Run.Status == "Stale" {
+					if err = tx.Exec("UPDATE publication_requests SET state='cancelled',lease_token=NULL,lease_expires_at=NULL WHERE run_id=?", o.Run.ID).Error; err != nil {
+						return err
+					}
+					continue
+				}
+				var accepted []struct{ TaskID, ResultID, InputHash, ResultHash string }
+				if err = tx.Raw("SELECT j.id AS task_id,x.result_id,x.input_hash,x.result_hash FROM jobs j JOIN job_results x ON x.task_id=j.id WHERE j.run_id=? AND j.kind='review' AND j.status IN ('queued','running','result_ready')", o.Run.ID).Scan(&accepted).Error; err != nil {
+					return err
+				}
+				if len(accepted) > 0 {
+					if len(accepted) != 1 || accepted[0].ResultID != accepted[0].TaskID+":connection" || accepted[0].InputHash != jobs.Hash(o.Run.Snapshot) || accepted[0].ResultHash != jobs.ResultHash(accepted[0].TaskID, o.Run.ID, accepted[0].InputHash) {
+						return fault.New(409, "CUTOVER_RESULT_INVALID")
+					}
+					var authorized int64
+					if err = tx.Raw("SELECT count(*) FROM repositories r JOIN installations i ON i.id=r.installation_id WHERE r.installation_id=? AND r.id=? AND r.public AND r.enabled AND i.active", o.Run.InstallationID, o.Run.RepositoryID).Scan(&authorized).Error; err != nil {
+						return err
+					}
+					if authorized != 1 {
+						if err = tx.Exec("UPDATE jobs SET status='cancelled',lease_token=NULL,lease_expires_at=NULL WHERE id=?", accepted[0].TaskID).Error; err != nil {
+							return err
+						}
+						if err = tx.Exec("UPDATE publication_requests SET state='cancelled',lease_token=NULL,lease_expires_at=NULL WHERE run_id=?", o.Run.ID).Error; err != nil {
+							return err
+						}
+						if err = tx.Exec("UPDATE review_runs SET status='Cancelled',updated_at=clock_timestamp() WHERE id=?", o.Run.ID).Error; err != nil {
+							return err
+						}
+						continue
+					}
+					if err = tx.Exec("UPDATE jobs SET status='result_ready',lease_token=NULL,lease_expires_at=NULL WHERE id=?", accepted[0].TaskID).Error; err != nil {
+						return err
+					}
+					if err = tx.Exec("UPDATE review_runs SET status='Publishing',updated_at=clock_timestamp() WHERE id=?", o.Run.ID).Error; err != nil {
+						return err
+					}
+					if err = tx.Exec("INSERT INTO publication_requests(run_id) VALUES(?) ON CONFLICT(run_id) DO UPDATE SET state='pending',attempts=0,lease_token=NULL,lease_expires_at=NULL,last_error_code=NULL,available_at=clock_timestamp()", o.Run.ID).Error; err != nil {
+						return err
+					}
+					continue
+				}
 				if err = tx.Exec("UPDATE publication_requests SET state='pending',attempts=0,lease_token=NULL,lease_expires_at=NULL,available_at=clock_timestamp() WHERE run_id=? AND state IN ('running','failed')", o.Run.ID).Error; err != nil {
 					return err
 				}

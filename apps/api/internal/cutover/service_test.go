@@ -55,6 +55,10 @@ func TestCutover(t *testing.T) {
 		if err := db.Create(&j).Error; err != nil {
 			t.Fatal(err)
 		}
+		// inputHash is always based on persisted JSONB, never local JSON serialization.
+		if err := db.First(&r, "id=?", r.ID).Error; err != nil {
+			t.Fatal(err)
+		}
 		return r, j
 	}
 	pending, job := seed(7, "Queued", "queued")
@@ -154,6 +158,33 @@ func TestCutover(t *testing.T) {
 	_, err = jobs.New(db).Claim(ctx, envelope, "cutover-fixture")
 	if status(err) != 503 {
 		t.Fatal("Go worker still enabled after rollback", err)
+	}
+	// Re-entering Go must resume accepted facts, not enqueue work that only confirms them.
+	for number, state := range map[int]string{9: "failed", 10: "cancelled"} {
+		runStatus, jobStatus := "Failed", "result_ready"
+		if state == "cancelled" {
+			runStatus, jobStatus = "Queued", "queued"
+		}
+		r, j := seed(number, runStatus, jobStatus)
+		inputHash := jobs.Hash(r.Snapshot)
+		if err = db.Exec("INSERT INTO job_results(task_id,result_id,result_hash,input_hash,payload) VALUES(?,?,?,?,'{}'::jsonb)", j.ID, j.ID+":connection", jobs.ResultHash(j.ID, r.ID, inputHash), inputHash).Error; err != nil {
+			t.Fatal(err)
+		}
+		if err = db.Exec("INSERT INTO publication_requests(run_id,state,attempts) VALUES(?,?,5)", r.ID, state).Error; err != nil {
+			t.Fatal(err)
+		}
+	}
+	report, err = service.Switch(ctx, 2, "go")
+	if err != nil || report.Epoch != 3 {
+		t.Fatal("re-entry", report, err)
+	}
+	db.Raw("SELECT count(*) FROM review_runs r JOIN jobs j ON j.run_id=r.id JOIN publication_requests p ON p.run_id=r.id WHERE r.pr_number IN (9,10) AND r.status='Publishing' AND j.status='result_ready' AND p.state='pending' AND p.attempts=0").Scan(&count)
+	if count != 2 {
+		t.Fatal("accepted results stranded on Go re-entry", count)
+	}
+	db.Raw("SELECT count(*) FROM outbox_events o JOIN jobs j ON j.id=o.task_id JOIN review_runs r ON r.id=j.run_id WHERE r.pr_number IN (9,10)").Scan(&count)
+	if count != 0 {
+		t.Fatal("accepted results executed again")
 	}
 	result := map[string]any{"switchWithActiveLeaseRejected": activeRejected, "pendingTaskIdPreserved": task == job.ID, "completedRenotified": false, "unreconciledPublishBlocksSwitch": unreconciledBlocks, "staleEpochStatus": staleEpoch, "rollbackLeavesTwoConsumers": false}
 	raw, _ := json.Marshal(result)
