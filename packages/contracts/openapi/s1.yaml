@@ -458,6 +458,71 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/TaskLease'
+  /api/github/webhook:
+    post:
+      operationId: acceptGitHubWebhook
+      security: []
+      description: Verify SHA-256 HMAC over exact raw bytes before parsing; maximum 2 MiB.
+      parameters:
+        - name: X-GitHub-Delivery
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-GitHub-Event
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Hub-Signature-256
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '202':
+          description: Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '400':
+          description: Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '401':
+          description: Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '409':
+          description: Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '413':
+          description: Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '503':
+          description: Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
 components:
   schemas:
     TenantRef:
@@ -878,6 +943,14 @@ components:
       required:
         - enabled
         - configVersion
+    WebhookResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - accepted
+      properties:
+        accepted:
+          type: boolean
   securitySchemes:
     WorkerBearer:
       type: http

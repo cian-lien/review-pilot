@@ -19,6 +19,7 @@ import (
 	"reviewpilot.local/api/internal/jobs"
 	"reviewpilot.local/api/internal/persistence"
 	"reviewpilot.local/api/internal/repositories"
+	"reviewpilot.local/api/internal/webhooks"
 )
 
 func main() {
@@ -54,6 +55,13 @@ func main() {
 	service := auth.New(store, cfg, github.New(cfg))
 	auth.Register(public, service)
 	repositories.Register(public, repositories.New(store, service))
+	var webhookService *webhooks.Service
+	if store != nil {
+		webhookService = webhooks.New(store.DB(), cfg.PipelineVersion)
+	} else {
+		webhookService = webhooks.New(nil, cfg.PipelineVersion)
+	}
+	webhooks.Register(public, webhookService, cfg)
 	internal := httpapi.NewRouter()
 	var taskService *jobs.Service
 	if store != nil {

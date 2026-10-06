@@ -6,9 +6,11 @@ import (
 	"os"
 	"os/signal"
 	"reviewpilot.local/api/internal/config"
+	"reviewpilot.local/api/internal/github"
 	"reviewpilot.local/api/internal/jobs"
 	"reviewpilot.local/api/internal/messaging"
 	"reviewpilot.local/api/internal/persistence"
+	"reviewpilot.local/api/internal/publisher"
 	"syscall"
 	"time"
 )
@@ -32,6 +34,7 @@ func main() {
 	rabbit := messaging.NewRabbit(cfg.RabbitMQURL)
 	defer rabbit.Close()
 	service := jobs.New(store.DB())
+	publications := publisher.New(store.DB(), github.New(cfg), cfg)
 	relay := &messaging.Relay{DB: store.DB(), Publisher: rabbit}
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
@@ -42,6 +45,15 @@ func main() {
 		}
 		if err = relay.Flush(step, 100); err != nil {
 			slog.Warn("OUTBOX_DELIVERY_UNCONFIRMED")
+		}
+		for count := 0; count < 10; count++ {
+			handled, err := publications.ProcessNext(step)
+			if err != nil {
+				slog.Warn("CONNECTION_PUBLICATION_UNAVAILABLE")
+			}
+			if !handled || step.Err() != nil {
+				break
+			}
 		}
 		stop()
 		select {

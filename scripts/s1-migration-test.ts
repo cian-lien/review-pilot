@@ -11,6 +11,7 @@ import { z } from 'zod';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const cases: Record<string, { pkg: string; test: string }> = {
+  'webhook-check': { pkg: './internal/webhooks', test: 'TestWebhookCheck' },
   'message-recovery': { pkg: './internal/jobs', test: 'TestMessageRecovery' },
   'legacy-auth': { pkg: './internal/auth', test: 'TestLegacyAuth' },
   'legacy-schema': { pkg: './internal/persistence', test: 'TestLegacySchema' },

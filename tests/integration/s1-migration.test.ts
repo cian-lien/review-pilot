@@ -2,6 +2,21 @@ import { expect, it } from 'vitest';
 import { runScenario } from '../../scripts/s1-migration-test';
 
 const selected = process.env.MIGRATION_CASE ?? 'all';
+if (selected === 'all' || selected === 'webhook-check') {
+  it('signed events and fenced Check publication preserve S1 semantics', async () => {
+    expect(await runScenario('webhook-check')).toMatchObject({
+      invalidSignatureStatus: 401,
+      oversizedStatus: 413,
+      deliveryConflictStatus: 409,
+      logicalRunCount: 1,
+      logicalOutboxCount: 1,
+      checkCreateCountAfterLostResponse: 1,
+      staleHeadPublished: false,
+      revokedPublished: false,
+      conclusion: 'neutral',
+    });
+  });
+}
 if (selected === 'all' || selected === 'message-recovery') {
   it('messages recover without duplicate execution or early acknowledgement', async () => {
     expect(await runScenario('message-recovery')).toMatchObject({

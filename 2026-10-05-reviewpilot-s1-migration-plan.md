@@ -195,7 +195,7 @@ expect(await runScenario('message-recovery')).toMatchObject({
 
 **接口：** webhooks.Service.Accept(ctx context.Context,deliveryID,event string,raw []byte)(accepted bool,err error)；publisher.Service.PublishConnection(ctx context.Context,runID string) error；publisher.Service.ProcessNext(ctx context.Context)(handled bool,err error)。Go 发布进程从 publication_requests 领取带租约的待发布意图，该表是业务发布事实，不替代跨语言 RabbitMQ 任务交付。
 
-- [ ] 编写 webhook-check 场景，涵盖原始字节改变、超限、同 ID 不同 body、重复事件、2 秒稳定窗口、相同时间戳乱序、发布响应丢失、执行中私有化或撤销。断言如下：
+- [x] 编写 webhook-check 场景，涵盖原始字节改变、超限、同 ID 不同 body、重复事件、2 秒稳定窗口、相同时间戳乱序、发布响应丢失、执行中私有化或撤销。断言如下：
 
 ```ts
 expect(await runScenario('webhook-check')).toMatchObject({
@@ -205,11 +205,11 @@ expect(await runScenario('webhook-check')).toMatchObject({
 });
 ```
 
-- [ ] 运行 pnpm exec turbo run test:migration --filter=@reviewpilot/tooling -- --case webhook-check，记录当前 Go 接入与发布缺失的失败。
-- [ ] 移植原事件语义：Delivery、Run、job、Outbox 原子提交；严格更旧时间戳不覆盖，相同秒发布前查询当前远端 Head；安装移除、私有化和停用取消在途执行，不自动重新启用仓库。Webhook 按原始字节 HMAC 验证，最多 2 MiB，尽快返回 202。
-- [ ] 发布意图使用独立租约、重试和恢复，不借用已 ack 的 Worker 租约。每次写前检查安装、仓库、PR、Head 和发布租约；保留 Check 名称 ReviewPilot · 连接检查、external_id=reviewpilot:{runId}、neutral 和未分析代码说明。按远端 external_id 对账，返回丢失时不直接再次 POST；全部成功才将 Run 和 job 完成。
-- [ ] 重跑 webhook-check，确认假 GitHub 记录中无 PR 评论、无 Contents 写操作；远端写和数据库仍不原子，交付说明不宣称 exactly-once。
-- [ ] 仅提交本任务文件，提交信息 feat: migrate webhook ingestion and connection Check publishing to Go。
+- [x] 运行 pnpm exec turbo run test:migration --filter=@reviewpilot/tooling -- --case webhook-check，记录当前 Go 接入与发布缺失的失败。
+- [x] 移植原事件语义：Delivery、Run、job、Outbox 原子提交；严格更旧时间戳不覆盖，相同秒发布前查询当前远端 Head；安装移除、私有化和停用取消在途执行，不自动重新启用仓库。Webhook 按原始字节 HMAC 验证，最多 2 MiB，尽快返回 202。
+- [x] 发布意图使用独立租约、重试和恢复，不借用已 ack 的 Worker 租约。每次写前检查安装、仓库、PR、Head 和发布租约；保留 Check 名称 ReviewPilot · 连接检查、external_id=reviewpilot:{runId}、neutral 和未分析代码说明。按远端 external_id 对账，返回丢失时不直接再次 POST；全部成功才将 Run 和 job 完成。
+- [x] 重跑 webhook-check，确认假 GitHub 记录中无 PR 评论、无 Contents 写操作；远端写和数据库仍不原子，交付说明不宣称 exactly-once。
+- [x] 仅提交本任务文件，提交信息 feat: migrate webhook ingestion and connection Check publishing to Go。
 
 ## 任务 6 Web 直连与仓库界面
 

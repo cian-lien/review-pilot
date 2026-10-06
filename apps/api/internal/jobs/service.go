@@ -139,19 +139,8 @@ func (s *Service) Claim(ctx context.Context, e contracts.TaskEnvelope, workerID 
 		if err != nil {
 			return err
 		}
-		var current struct{ HeadSHA string }
-		if err = tx.Raw("SELECT head_sha FROM pull_requests WHERE installation_id=? AND repository_id=? AND number=?", r.InstallationID, r.RepositoryID, r.PrNumber).Scan(&current).Error; err != nil {
-			return err
-		}
-		if current.HeadSHA != r.HeadSHA {
-			if err = tx.Exec("UPDATE jobs SET status='cancelled',lease_token=NULL,lease_expires_at=NULL WHERE id=?", j.ID).Error; err != nil {
-				return err
-			}
-			if err = tx.Exec("UPDATE review_runs SET status='Stale',updated_at=clock_timestamp() WHERE id=?", r.ID).Error; err != nil {
-				return err
-			}
-			return nil
-		}
+		// Equal-second deliveries cannot be ordered by the cached PR row.
+		// The publisher verifies the current remote head before every mutation.
 		now, err := dbNow(tx)
 		if err != nil {
 			return err

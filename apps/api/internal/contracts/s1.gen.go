@@ -402,12 +402,30 @@ type TenantRef struct {
 	RepositoryId   int `json:"repositoryId"`
 }
 
+// WebhookResponse defines model for WebhookResponse.
+type WebhookResponse struct {
+	Accepted bool `json:"accepted"`
+}
+
+// AcceptGitHubWebhookJSONBody defines parameters for AcceptGitHubWebhook.
+type AcceptGitHubWebhookJSONBody map[string]interface{}
+
+// AcceptGitHubWebhookParams defines parameters for AcceptGitHubWebhook.
+type AcceptGitHubWebhookParams struct {
+	XGitHubDelivery  string `json:"X-GitHub-Delivery"`
+	XGitHubEvent     string `json:"X-GitHub-Event"`
+	XHubSignature256 string `json:"X-Hub-Signature-256"`
+}
+
 // ReadConnectionResultParams defines parameters for ReadConnectionResult.
 type ReadConnectionResultParams struct {
 	RunId      string `form:"runId" json:"runId"`
 	InputHash  string `form:"inputHash" json:"inputHash"`
 	ResultHash string `form:"resultHash" json:"resultHash"`
 }
+
+// AcceptGitHubWebhookJSONRequestBody defines body for AcceptGitHubWebhook for application/json ContentType.
+type AcceptGitHubWebhookJSONRequestBody AcceptGitHubWebhookJSONBody
 
 // SetRepositoryEnabledJSONRequestBody defines body for SetRepositoryEnabled for application/json ContentType.
 type SetRepositoryEnabledJSONRequestBody = SetRepositoryEnabledRequest
