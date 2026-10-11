@@ -33,13 +33,14 @@ type Fields struct {
 	DurationMs                            float64
 }
 type Runtime struct {
-	Service  string
-	Logger   *slog.Logger
-	traces   *sdktrace.TracerProvider
-	logs     *sdklog.LoggerProvider
-	meters   *sdkmetric.MeterProvider
-	duration metric.Float64Histogram
-	events   metric.Int64Counter
+	Service                                string
+	Logger                                 *slog.Logger
+	traces                                 *sdktrace.TracerProvider
+	logs                                   *sdklog.LoggerProvider
+	meters                                 *sdkmetric.MeterProvider
+	duration                               metric.Float64Histogram
+	events                                 metric.Int64Counter
+	reviewCalls, reviewUnknown, reviewCost metric.Int64Counter
 }
 type runtimeKey struct{}
 
@@ -111,6 +112,9 @@ func NewRuntime(ctx context.Context, service, endpoint string) (*Runtime, error)
 	r.meters = sdkmetric.NewMeterProvider(metricOptions...)
 	r.duration, _ = r.meters.Meter("reviewpilot").Float64Histogram("reviewpilot.stage.duration", metric.WithUnit("ms"))
 	r.events, _ = r.meters.Meter("reviewpilot").Int64Counter("reviewpilot.events")
+	r.reviewCalls, _ = r.meters.Meter("reviewpilot").Int64Counter("review.model.calls")
+	r.reviewUnknown, _ = r.meters.Meter("reviewpilot").Int64Counter("review.model.unknown")
+	r.reviewCost, _ = r.meters.Meter("reviewpilot").Int64Counter("review.cost.micros")
 	r.Logger = slog.New(&safeHandler{outputs: []slog.Handler{slog.NewJSONHandler(os.Stdout, nil), otelslog.NewHandler("reviewpilot", otelslog.WithLoggerProvider(r.logs))}, service: service})
 	return r, nil
 }
@@ -121,6 +125,25 @@ func (r *Runtime) Close(ctx context.Context) error {
 }
 func (r *Runtime) Flush(ctx context.Context) error {
 	return errors.Join(r.traces.ForceFlush(ctx), r.logs.ForceFlush(ctx), r.meters.ForceFlush(ctx))
+}
+
+// Emit only newly committed accounting transitions; replays never increment money or call counters.
+func RecordModel(ctx context.Context, purpose, mode, state string, cost int64) {
+	r := FromContext(ctx)
+	if r == nil || (purpose != "generate" && purpose != "verify") || (mode != "fake" && mode != "real") {
+		return
+	}
+	options := metric.WithAttributes(attribute.String("purpose", purpose), attribute.String("mode", mode))
+	switch state {
+	case "dispatching":
+		r.reviewCalls.Add(ctx, 1, options)
+	case "uncertain":
+		r.reviewUnknown.Add(ctx, 1, options)
+	case "settled":
+		if cost >= 0 {
+			r.reviewCost.Add(ctx, cost, options)
+		}
+	}
 }
 func Extract(ctx context.Context, parent string) context.Context {
 	if !parentPattern.MatchString(parent) {

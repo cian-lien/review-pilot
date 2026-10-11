@@ -3,7 +3,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 const [task, ...extra] = process.argv.slice(2);
-const isolatedTest = task === 'test' && process.env.REVIEW_TEST_ISOLATED === '1';
+const isolatedTest =
+  ['test', 'typecheck', 'lint', 'build', 'format'].includes(task) &&
+  process.env.REVIEW_TEST_ISOLATED === '1';
 try {
   if (!isolatedTest) process.loadEnvFile(new URL('../../../.env', import.meta.url));
 } catch (error) {

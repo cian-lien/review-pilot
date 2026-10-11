@@ -59,6 +59,10 @@ func ParseMicros(value string) (int64, error) {
 func LoadReview() (ReviewConfig, error) {
 	c := ReviewConfig{Mode: value("REVIEW_MODE", "disabled"), Policy: DefaultReviewPolicy()}
 	var err error
+	c.Policy.RetainContent, err = strconv.ParseBool(value("REVIEW_RETAIN_CONTENT", "true"))
+	if err != nil {
+		return ReviewConfig{}, errors.New("INVALID_REVIEW_GATE")
+	}
 	for name, target := range map[string]*bool{"REVIEW_REAL_ALLOWED": &c.RealAllowed, "GITHUB_REVIEW_PUBLISH_ENABLED": &c.PublishEnabled} {
 		*target, err = strconv.ParseBool(value(name, "false"))
 		if err != nil {

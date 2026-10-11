@@ -68,3 +68,28 @@ it('rejects credentials in model configuration and refuses unowned fake scripts'
     'FIXTURE_ID_MISMATCH',
   );
 });
+it('binds owned runtime evidence without evaluating fixture templates', async () => {
+  vi.stubEnv('REVIEW_TEST_ISOLATED', '1');
+  vi.stubEnv('REVIEW_FIXTURE_ID', configuration.fixtureId);
+  vi.stubEnv('TEST_MODEL_BASE_URL', configuration.baseURL);
+  const ref = { evidenceId: 'owned-evidence' };
+  const provider = new FakeProvider(configuration, {
+    fixtureId: configuration.fixtureId,
+    responses: [
+      {
+        purpose: 'generate',
+        evidenceFromInput: true,
+        data: { candidates: [{ evidence: [] }] },
+        usage: { inputTokens: 1, outputTokens: 1 },
+      },
+    ],
+  });
+  expect(
+    (
+      await provider.invoke(
+        { ...request, input: JSON.stringify({ evidence: [{ ref }] }) },
+        new AbortController().signal,
+      )
+    ).data,
+  ).toEqual({ candidates: [{ evidence: [ref] }] });
+});

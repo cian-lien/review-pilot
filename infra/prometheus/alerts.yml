@@ -1,4 +1,16 @@
 groups:
+  - name: reviewpilot-s2
+    rules:
+      - alert: S2ModelFactsUnknown
+        expr: increase(review_model_unknown_total[5m]) > 0
+        for: 1m
+        labels: { severity: warning }
+        annotations: { summary: '模型发送或用量未知；保留预留额度，先对账，禁止盲目重试' }
+      - alert: S2ReviewBlocked
+        expr: increase(review_blocked_total[5m]) > 0
+        for: 1m
+        labels: { severity: warning }
+        annotations: { summary: '审查已阻断，检查持久化调用事实与阶段产物' }
   - name: reviewpilot-s1
     rules:
       - alert: S1TaskFailures

@@ -10,12 +10,12 @@
 
 **设计依据：** [已确认的 S2 设计](docs/superpowers/specs/2026-10-11-reviewpilot-s2-ai-review-design.md)。执行前同时阅读 [AGENTS.md](AGENTS.md) 和 [S1 交付记录](docs/reports/s1-go-migration.md)。
 
-日期：2026-10-11。状态：用户已批准执行，实施中。真实模型调用、真实 GitHub 写入与业务数据库迁移仍未授权。
+日期：2026-10-11。状态：S2 八项任务本地完成，13 项最终有界汇总通过；仅隔离模拟验收。真实模型调用、真实 GitHub 写入与业务数据库迁移仍未授权。交付与待外部事项见 [S2 报告](docs/reports/s2-ai-review.md)。
 
 ## 全局约束
 
 - 只执行 S2，完成后停止。S3 上下文增强、S4 人工纠错与自进化不提前实现。
-- 在现有 checkout 实施，保留用户已有变更；不合并、不推送，不创建 worktree 或 subagent。当前基线为 6284989 所在 feat/s1-go-migration，执行时重新确认实际 HEAD，计划提交不计为产品实现。
+- 在现有 checkout 实施，保留用户已有变更；不合并、不推送，不创建 worktree 或 subagent。实际执行基线为 4c9cd7c2aea7001036fb169e65f0c85b1386c431，分支 feat/s1-go-migration；计划提交不计为产品实现。
 - 文档中文，代码注释简洁英文，重点解释权限、幂等、预算和并发约束。
 - 工程命令全部通过 pnpm exec turbo run；依赖安装由 pnpm 管理，Go 包装器可透传定向 go test 参数。不启用远程缓存，测试、代码生成和状态变更任务关闭缓存。
 - 仅公共 JS/TS 仓库；不执行 PR 安装脚本、插件、测试或服务。不引入 BFF、gRPC、Redis、多 Agent、pgvector 或对象存储。
@@ -235,7 +235,7 @@ expect(timeout.invokeCount).toBe(1);
 
 **接口：** runReviewPipeline(input: {lease:ReviewLease;client:ReviewInternalClient;gateway:ModelGateway;signal:AbortSignal}): Promise<ReviewPipelineOutcome>；ReviewPipelineOutcome 是 completed（带 ReviewResult）、blocked（reasonCode）或 failed（reasonCode）。ReviewInternalClient 提供任务表全部方法，预算方法遵守 BudgetClient；reviews.Service.Claim(ctx,req contracts.ClaimReviewRequest) (contracts.ClaimReviewResponse,error)、Commit(ctx,req contracts.CommitReviewRequest) (contracts.ReviewCommitResponse,error)、Block(ctx,req contracts.ReviewTaskActionRequest) error，New(db *gorm.DB) 构造。
 
-- [ ] 用六个 Golden Fixture 参数化断言：真实锚点可发布、零候选正常完成且仅一次模型调用、错误引用过滤、旧问题/已有保护过滤、重复根因合并、上下文不足 Abstain。再用恶意注释 Fixture 断言工具与预算不被修改。TestReviewResultFenced 断言跨仓库引用使 Run 失败，普通错行只过滤候选；不同租约或同 resultId 不同内容拒绝。
+- [x] 用六个 Golden Fixture 参数化断言：真实锚点可发布、零候选正常完成且仅一次模型调用、错误引用过滤、旧问题/已有保护过滤、重复根因合并、上下文不足 Abstain。再用恶意注释 Fixture 断言工具与预算不被修改。TestReviewResultFenced 断言跨仓库引用使 Run 失败，普通错行只过滤候选；不同租约或同 resultId 不同内容拒绝。
 
 ```ts
 // empty is the completed outcome for the zero-candidate Golden fixture.
@@ -247,12 +247,12 @@ expect(emptyCalls.map(call => call.purpose)).toEqual(['generate']);
 
 测试中的 emptyCalls 从 fake gateway 的捕获记录读取，不给生产 ReviewPipelineOutcome 增加仅供测试的字段。
 
-- [ ] 安装并锁定 @langchain/langgraph，与任务 4 锁定版本满足 peer；运行 review-engine test:unit、worker-runtime test:unit 和 results 场景，预期新增结果/流程断言失败。
-- [ ] 实现固定 graph：context → candidates → verification → finalize；零有效候选有限分支跳过 verification。generationPromptVersion=review-generation-v1、verificationPromptVersion=review-verification-v1。读取已有完整阶段，再决定调用；阶段输入与输出 hash 均在 Go 校验，不使用 LangGraph DB checkpoint。
-- [ ] 实现租约持续心跳与中止清理，未知调用先 block 且确认后 ack，正常结果先 Commit/Confirm 再 ack。重投已接受任务不再次生成；旧 token 不能保存阶段。新 graph 不复用旧连接结果内容或旧 ModelConfig 条件。
-- [ ] 0006 建立 review_findings、review_filtered_candidates、review_coverage；Go 按 evidence manifest 重新校验引用与结果 Schema，生成可信 Findings 和候选过滤记录，不直接信任 Worker 的 verified 标签。最终结果、job_results、任务 result_ready 与待发布事实同事务保存；零候选/全过滤不一定无需更新 Check，完成规则由任务 6 的 Publisher 按覆盖确定 Completed 或 Partial。新增表纳入任务 3 的清理与删除事务并验证。
-- [ ] 结果正文的业务 hash 验证使用共享 Fixture；模型 key、leaseToken、原始响应不进入持久化内容 hash 或外部 DTO。结构化支持理由不称为证明，引用真实性与是否本次引入分别核验。
-- [ ] 运行同一组定向命令，预期通过。提交 feat: add serial evidence-first review pipeline。
+- [x] 安装并锁定 @langchain/langgraph，与任务 4 锁定版本满足 peer；运行 review-engine test:unit、worker-runtime test:unit 和 results 场景，预期新增结果/流程断言失败。
+- [x] 实现固定 graph：context → candidates → verification → finalize；零有效候选有限分支跳过 verification。generationPromptVersion=review-generation-v1、verificationPromptVersion=review-verification-v1。读取已有完整阶段，再决定调用；阶段输入与输出 hash 均在 Go 校验，不使用 LangGraph DB checkpoint。
+- [x] 实现租约持续心跳与中止清理，未知调用先 block 且确认后 ack，正常结果先 Commit/Confirm 再 ack。重投已接受任务不再次生成；旧 token 不能保存阶段。新 graph 不复用旧连接结果内容或旧 ModelConfig 条件。
+- [x] 0006 建立 review_findings、review_filtered_candidates、review_coverage；Go 按 evidence manifest 重新校验引用与结果 Schema，生成可信 Findings 和候选过滤记录，不直接信任 Worker 的 verified 标签。最终结果、job_results、任务 result_ready 与待发布事实同事务保存；零候选/全过滤不一定无需更新 Check，完成规则由任务 6 的 Publisher 按覆盖确定 Completed 或 Partial。新增表纳入任务 3 的清理与删除事务并验证。
+- [x] 结果正文的业务 hash 验证使用共享 Fixture；模型 key、leaseToken、原始响应不进入持久化内容 hash 或外部 DTO。结构化支持理由不称为证明，引用真实性与是否本次引入分别核验。
+- [x] 运行同一组定向命令，预期通过。提交 feat: add serial evidence-first review pipeline。
 
 ## Task 6 审查投递与 GitHub 发布对账
 
@@ -260,7 +260,7 @@ expect(emptyCalls.map(call => call.purpose)).toEqual(['generate']);
 
 **接口：** jobs.ScheduleReview(tx *gorm.DB,job persistence.Job,run persistence.Run,at time.Time) error；publisher.Service.ProcessNext(ctx context.Context) (bool,error) 沿用现有签名，按 Run Pipeline 选择 connection 或 review；BuildReviewPlan(ctx context.Context,runID string) (contracts.ReviewPublicationPlan,error)；ReconcileReview(ctx context.Context,runID string) (contracts.ReviewPublicationReceipt,error)；github.Gateway.CreateReview(ctx context.Context,token,fullName string,number int,plan contracts.ReviewPublicationPlan) (contracts.ReviewPublicationReceipt,error)。后两项 DTO 在任务 1 一并定义：Plan 含身份、planHash、marker、findings 与 mode，Receipt 含远端 ID、SHA、作者 App、marker 与确定状态。
 
-- [ ] 写 TestReviewSlotRace：同 PR 已用 2 个额度，两个并发新根因最多一份被预留；TestForeignMarkerIgnored：相同文字标记、非本 App 作者不对账为成功。参数化断言已发布后新 Run 根因不重发、SHA/权限变化阻止发布、真实写入成功后丢响应只补记一份远端事实。
+- [x] 写 TestReviewSlotRace：同 PR 已用 2 个额度，两个并发新根因最多一份被预留；TestForeignMarkerIgnored：相同文字标记、非本 App 作者不对账为成功。参数化断言已发布后新 Run 根因不重发、SHA/权限变化阻止发布、真实写入成功后丢响应只补记一份远端事实。
 
 ```go
 // Counts come from the scoped slot table and the fake GitHub's recorded writes.
@@ -268,13 +268,13 @@ if occupiedSlots != 3 || newlyReserved != 1 { t.Fatal("PR slot race exceeded the
 if writesAfterLostResponse != 1 { t.Fatal("reconciliation duplicated a remote review") }
 ```
 
-- [ ] 执行 publication 场景，预期新增审查发布断言失败；S1 connection 用相同模拟端点保持原结果，不能通过删除旧断言实现通过。
-- [ ] 启用 v2 消费时复用持久 exchange reviewpilot.tasks.v1，新 routing key=ai-review、新队列 reviewpilot.review.v2，旧队列仍只绑定 connection-check。Worker 一个共享串行处理器，所有 channel 总 prefetch 约束并以同一执行互斥防止双队列并行；先启用消费能力再开启审查投递。Outbox publisher confirms 与不可路由治理沿用 S1。
-- [ ] Webhook 默认继续 S1 连接任务；仅显式 fake 受控测试或经批准 real 模式生成 ReviewSnapshot 和 ai-review Outbox。保留事件去重、乱序与 generation 规则；Recover 按 Pipeline 构造对应消息并排除阻断，切换回退不将 S2 accepted result 重新通知为连接检查。
-- [ ] 0007 扩展现有 publication_requests 的待对账/内容类型与计划字段，建立 pr_review_slots 和 review_publication_facts；根因唯一键、三槽位占用与计划同事务创建。RootCauseKey 固定 category/path/anchorHash/trigger/consequence，Unicode 规范化及空白折叠，fingerprint-v1 SHA256，不包含行号、SHA 或标题；使用任务 1 的 rootCauseStatement 声明，仅用于 Go 校验后规范化，不信任模型给出的 hash。跨路径重命名暂不宣称语义等价。新表同步纳入清理/删除，已发布事实按保留策略保管。
-- [ ] 发布 COMMENT、固定 commit_id，合法变更新侧优先行级；无行锚点但证据充分时摘要且共用 3 个额度。零问题不发讨论评论。内容再次脱敏；发送前后验证权限和 Head，记录真实事实再决定 Stale。
-- [ ] 稳定 marker 包含 Run 与 planHash，并核对 App、Head、Review 和评论分页事实。写入不确定时保持槽位和 needsReconciliation，只对账不盲目重发；明确未写入才退避，429 遵守 Retry-After/重置时间。租约/epoch 失效不能补写业务状态；撤销或删除不释放未知外部事实并冒险再发。
-- [ ] 运行 publication 场景，另执行一次 pnpm exec turbo run test:migration --filter=@reviewpilot/tooling -- --case webhook-check，预期旧 neutral Check 不回归。提交 feat: publish fenced reviews with root-cause reconciliation。
+- [x] 执行 publication 场景，预期新增审查发布断言失败；S1 connection 用相同模拟端点保持原结果，不能通过删除旧断言实现通过。
+- [x] 启用 v2 消费时复用持久 exchange reviewpilot.tasks.v1，新 routing key=ai-review、新队列 reviewpilot.review.v2，旧队列仍只绑定 connection-check。Worker 一个共享串行处理器，所有 channel 总 prefetch 约束并以同一执行互斥防止双队列并行；先启用消费能力再开启审查投递。Outbox publisher confirms 与不可路由治理沿用 S1。
+- [x] Webhook 默认继续 S1 连接任务；仅显式 fake 受控测试或经批准 real 模式生成 ReviewSnapshot 和 ai-review Outbox。保留事件去重、乱序与 generation 规则；Recover 按 Pipeline 构造对应消息并排除阻断，切换回退不将 S2 accepted result 重新通知为连接检查。
+- [x] 0007 扩展现有 publication_requests 的待对账/内容类型与计划字段，建立 pr_review_slots 和 review_publication_facts；根因唯一键、三槽位占用与计划同事务创建。RootCauseKey 固定 category/path/anchorHash/trigger/consequence，Unicode 规范化及空白折叠，fingerprint-v1 SHA256，不包含行号、SHA 或标题；使用任务 1 的 rootCauseStatement 声明，仅用于 Go 校验后规范化，不信任模型给出的 hash。跨路径重命名暂不宣称语义等价。新表同步纳入清理/删除，已发布事实按保留策略保管。
+- [x] 发布 COMMENT、固定 commit_id，合法变更新侧优先行级；无行锚点但证据充分时摘要且共用 3 个额度。零问题不发讨论评论。内容再次脱敏；发送前后验证权限和 Head，记录真实事实再决定 Stale。
+- [x] 稳定 marker 包含 Run 与 planHash，并核对 App、Head、Review 和评论分页事实。写入不确定时保持槽位和 needsReconciliation，只对账不盲目重发；明确未写入才退避，429 遵守 Retry-After/重置时间。租约/epoch 失效不能补写业务状态；撤销或删除不释放未知外部事实并冒险再发。
+- [x] 运行 publication 场景，另执行一次 pnpm exec turbo run test:migration --filter=@reviewpilot/tooling -- --case webhook-check，预期旧 neutral Check 不回归。提交 feat: publish fenced reviews with root-cause reconciliation。
 
 ## Task 7 中文 PR 结果页
 
@@ -282,7 +282,7 @@ if writesAfterLostResponse != 1 { t.Fatal("reconciliation duplicated a remote re
 
 **接口：** reviews.QueryService.Detail(ctx context.Context,session auth.Session,tenant contracts.TenantRef,prNumber int,runID string) (contracts.ReviewRunDetail,error)，构造函数 NewQuery(db *gorm.DB,authService *auth.Service)；APIClient 新增 listPulls(tenant,cursor?)、listReviewRuns(tenant,prNumber,cursor?)、getReviewRun(tenant,prNumber,runId)，返回任务 1 生成 DTO；reviewView(detail: ReviewRunDetail): ReviewViewModel 只负责文案与安全展示。
 
-- [ ] 写 TestReviewQueryAccess：安装与 PR 不匹配、维护权撤销、过期内容拒绝，cursor 跨仓库复用拒绝。review-view.test.ts 断言 fake 标签、未知费用不显示 0、Partial 不显示完整、零候选文案为“本次覆盖内未发现可发布问题”，排序分不显示准确率百分比。
+- [x] 写 TestReviewQueryAccess：安装与 PR 不匹配、维护权撤销、过期内容拒绝，cursor 跨仓库复用拒绝。review-view.test.ts 断言 fake 标签、未知费用不显示 0、Partial 不显示完整、零候选文案为“本次覆盖内未发现可发布问题”，排序分不显示准确率百分比。
 
 ```ts
 // Fixture inputs contain Partial coverage or an uncertain model call respectively.
@@ -292,11 +292,11 @@ expect(reviewView(unknownCostDetail).costLabel).toBe('费用待对账');
 
 ReviewViewModel 在 review-view.ts 定义 coverageLabel、costLabel、modeLabel、statusLabel、findings 与 filtered；界面不另写一套判断逻辑。
 
-- [ ] 运行 results 场景（加入查询断言）及 pnpm exec turbo run test:unit --filter=@reviewpilot/web，预期新增查询或展示断言失败。
-- [ ] 实现三个公开查询端点与分页，复用 Auth.Session 及 Auth.Gateway.Access(ctx,session.UserToken,tenant,true) 的当前维护权检查；只返回脱敏必要片段。加入仓库的 PR/Run 入口和历史 Run 选择，默认当前版本；没有 Review 时显示尚未审查，不把 S1 连接记录映射为 Finding。
-- [ ] 页面展示 Findings/已过滤、失败条件、证据与验证建议、覆盖、状态/阻断、版本、调用用途、已知费用与未结算预留、发布结果。使用现有 shadcn 与 TanStack Query，保持同源相对 API，不写 Next route handler；不增加未实现按钮。
-- [ ] 按配置轮询最终和阻断状态停止刷新，401/403 处理授权失效；GitHub 外链只接受已知 host 和服务端远端 ID，不渲染模型提供的任意 HTML。运行上述测试及 pnpm exec turbo run typecheck lint build --filter=@reviewpilot/web --filter=@reviewpilot/api，预期通过。
-- [ ] 提交 feat: show Chinese PR findings coverage and review costs。
+- [x] 运行 results 场景（加入查询断言）及 pnpm exec turbo run test:unit --filter=@reviewpilot/web，预期新增查询或展示断言失败。
+- [x] 实现三个公开查询端点与分页，复用 Auth.Session 及 Auth.Gateway.Access(ctx,session.UserToken,tenant,true) 的当前维护权检查；只返回脱敏必要片段。加入仓库的 PR/Run 入口和历史 Run 选择，默认当前版本；没有 Review 时显示尚未审查，不把 S1 连接记录映射为 Finding。
+- [x] 页面展示 Findings/已过滤、失败条件、证据与验证建议、覆盖、状态/阻断、版本、调用用途、已知费用与未结算预留、发布结果。使用现有 shadcn 与 TanStack Query，保持同源相对 API，不写 Next route handler；不增加未实现按钮。
+- [x] 按配置轮询最终和阻断状态停止刷新，401/403 处理授权失效；GitHub 外链只接受已知 host 和服务端远端 ID，不渲染模型提供的任意 HTML。运行上述测试及 pnpm exec turbo run typecheck lint build --filter=@reviewpilot/web --filter=@reviewpilot/api，预期通过。
+- [x] 提交 feat: show Chinese PR findings coverage and review costs。
 
 ## Task 8 隔离联调与阶段交付
 
@@ -304,7 +304,7 @@ ReviewViewModel 在 review-view.ts 定义 coverageLabel、costLabel、modeLabel�
 
 **接口：** runReviewScenario('pipeline') 返回持久化事实 verdict：acceptedResultCount、publishedRootCauseCount、modelCallCount、unknownReservationHeld、stalePublishBlocked、traceLinked、secretSentinelAbsent、simulated=true；verify-review.ts 顺序运行确定任务，无 verdict 或基础设施不可用即失败，不记为跳过成功。
 
-- [ ] 联调断言真实临时 PostgreSQL + RabbitMQ、模拟 GitHub + fake Provider 下：签名事件建立 v2 Run，正常路径生成和验证合计 2 次；重复投递及结果确认丢失仍一份最终结果、0–3 个问题。第二 Run 模拟用量未知，持久化阻断且额度保留；模拟 Head 更新不发布。以上属于同一隔离场景，不新增模型矩阵。
+- [x] 联调断言真实临时 PostgreSQL + RabbitMQ、模拟 GitHub + fake Provider 下：签名事件建立 v2 Run，正常路径生成和验证合计 2 次；重复投递及结果确认丢失仍一份最终结果、0–3 个问题。第二 Run 模拟用量未知，持久化阻断且额度保留；模拟 Head 更新不发布。以上属于同一隔离场景，不新增模型矩阵。
 
 ```ts
 expect(verdict.simulated).toBe(true);
@@ -317,14 +317,14 @@ expect(verdict.traceLinked).toBe(true);
 expect(verdict.secretSentinelAbsent).toBe(true);
 ```
 
-- [ ] 执行 pipeline 场景，先保存当前缺少联调能力的实际失败，随后连接已有模块与必要配置，不重写一份绕过 REST 的全链路实现。
-- [ ] 完善 test harness：随机端口、临时目录、唯一 Broker 容器与资源标签，只清理本次创建的资源；fake host 与 Run provenance 必须一致。Go 子进程通过现有 Turbo 包装器调用，场景必须写出本次 verdict。保证 tests 不启动用户已有 Compose 或读取 .env 里的真实密钥。
-- [ ] 加入 review.model.calls、review.model.unknown、review.cost.micros、review.stage.duration 和失败/阻断指标；bounded purpose/mode/stage 标签，不用 runId/PR 当指标标签。接入现有安全 OTel，sentinel 不进入日志与 Trace；Collector 不可用时业务仍能推进，不采集完整模型输入输出。
-- [ ] 仅更新部署模板、Worker 打包路径、密钥挂载与白名单；Go 进程不挂模型密钥，Web 不挂业务密钥。Compose 配置只读校验，完整应用镜像运行和真实 App/生产环境保留待验收。禁止把模板更新描述为部署完成。
-- [ ] 补充可复现模拟演示说明、operator 对账/清理步骤、默认关闭配置、未知调用处置与恢复限制。报告真实执行命令、失败修正和待外部事项；不展示模拟精度或测试币种的真实成本。
-- [ ] 执行一次 verify:review：契约漂移、受影响包 typecheck/lint/build、定向 TS 单元、API config/retention 定向单元、context/budget/stages/results/publication 场景、一次 pipeline 与 S1 message-recovery/cutover 必要回归、infra 只读配置校验。任务 6 已验证的 webhook-check 不因仪式重复跑；不执行六场景全部迁移矩阵或压力/浏览器/多模型测试。内部各命令仍使用 Turbo，最终退出 0 才写本地模拟通过。
-- [ ] 自行复核从执行基线开始的整个 S2 diff：授权、哈希、价格、阶段恢复、未知事实、累计额度、删除和配置 fail-closed。修正发现的必要问题后只重跑受影响断言与一次最终汇总，保存证据。
-- [ ] 提交 feat: verify and document local S2 review delivery；输出实现、验证、限制和待真实接入事项，停止，不进入 S3，不自动 merge/push。
+- [x] 执行 pipeline 场景，先保存当前缺少联调能力的实际失败，随后连接已有模块与必要配置，不重写一份绕过 REST 的全链路实现。
+- [x] 完善 test harness：随机端口、临时目录、唯一 Broker 容器与资源标签，只清理本次创建的资源；fake host 与 Run provenance 必须一致。Go 子进程通过现有 Turbo 包装器调用，场景必须写出本次 verdict。保证 tests 不启动用户已有 Compose 或读取 .env 里的真实密钥。
+- [x] 加入 review.model.calls、review.model.unknown、review.cost.micros、review.stage.duration 和失败/阻断指标；bounded purpose/mode/stage 标签，不用 runId/PR 当指标标签。接入现有安全 OTel，sentinel 不进入日志与 Trace；Collector 不可用时业务仍能推进，不采集完整模型输入输出。
+- [x] 仅更新部署模板、Worker 打包路径、密钥挂载与白名单；Go 进程不挂模型密钥，Web 不挂业务密钥。Compose 配置只读校验，完整应用镜像运行和真实 App/生产环境保留待验收。禁止把模板更新描述为部署完成。
+- [x] 补充可复现模拟演示说明、operator 对账/清理步骤、默认关闭配置、未知调用处置与恢复限制。报告真实执行命令、失败修正和待外部事项；不展示模拟精度或测试币种的真实成本。
+- [x] 执行一次 verify:review：契约漂移、受影响包 typecheck/lint/build、定向 TS 单元、API config/retention 定向单元、context/budget/stages/results/publication 场景、一次 pipeline 与 S1 message-recovery/cutover 必要回归、infra 只读配置校验。任务 6 已验证的 webhook-check 不因仪式重复跑；不执行六场景全部迁移矩阵或压力/浏览器/多模型测试。内部各命令仍使用 Turbo，最终退出 0 才写本地模拟通过。
+- [x] 自行复核从执行基线开始的整个 S2 diff：授权、哈希、价格、阶段恢复、未知事实、累计额度、删除和配置 fail-closed。修正发现的必要问题后只重跑受影响断言与一次最终汇总，保存证据。
+- [x] 提交 feat: verify and document local S2 review delivery；输出实现、验证、限制和待真实接入事项，停止，不进入 S3，不自动 merge/push。
 
 ## 计划自查与验收清单
 
@@ -341,6 +341,6 @@ expect(verdict.secretSentinelAbsent).toBe(true);
 | 产物保留、到期过滤、删除隔离与最小审计 | 3、7、8 |
 | 业务记录与安全遥测、必要 Golden 和全链路 | 5、8 |
 
-计划批准后实施。仅当定向验证与最终隔离汇总都有证据时，才勾选本地完成；真实 S1/S2 GitHub、模型兼容与质量、实际账单、业务数据库切换、镜像运行及生产恢复未验收时仍保持待办。
+用户批准后已实施。以上勾选仅表示本地实现与隔离验收完成，不表示真实接入；真实 S1/S2 GitHub、模型兼容与质量、实际账单、业务数据库切换、镜像运行及生产恢复未验收时仍保持待办。
 
 S2 结束后向用户报告并停止。自进化、人工纠正、完整 Replay 和更强上下文没有实现前，不在演示、README 或简历中声称已交付这些能力。

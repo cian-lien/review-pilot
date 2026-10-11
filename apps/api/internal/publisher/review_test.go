@@ -32,6 +32,9 @@ func TestReviewSlotRace(t *testing.T) {
 			t.Fatal(err)
 		}
 		store.DB().Exec("UPDATE review_runs SET status='Publishing' WHERE id=?", l.RunId)
+		if e := store.DB().Exec("INSERT INTO job_results(task_id,result_id,result_hash,input_hash,payload) VALUES(?,?,?,?, '{}')", l.TaskId, l.TaskId+":review", strings.Repeat("f", 64), l.InputHash).Error; e != nil {
+			t.Fatal(e)
+		}
 		store.DB().Exec("INSERT INTO publication_requests(run_id) VALUES(?)", l.RunId)
 		if err := store.DB().Exec("INSERT INTO review_findings(id,run_id,fingerprint,root_key,candidate,evidence,expires_at) VALUES(?,?,?, '{}'::jsonb,?::jsonb,'[]',clock_timestamp()+interval '1 day')", jobs.UUID(), l.RunId, strings.Repeat(string(rune('c'+index)), 64), string(body)).Error; err != nil {
 			t.Fatal(err)

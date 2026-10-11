@@ -30,7 +30,11 @@ func (s *Service) reviewGate(snapshot contracts.ReviewSnapshot) error {
 	return nil
 }
 func (s *Service) publishReview(ctx context.Context, l lease) error {
-	ctx, span := observability.FromContext(ctx).Start(ctx, "review.publish", observability.Fields{RunID: l.Run.ID})
+	var correlation struct{ TaskID, Traceparent string }
+	if e := s.DB.WithContext(ctx).Raw("SELECT j.id AS task_id,COALESCE((SELECT o.payload->>'traceparent' FROM outbox_events o WHERE o.task_id=j.id ORDER BY notification_generation DESC LIMIT 1),'') AS traceparent FROM jobs j WHERE j.run_id=? LIMIT 1", l.Run.ID).Scan(&correlation).Error; e != nil {
+		return e
+	}
+	ctx, span := observability.FromContext(ctx).Start(observability.Extract(ctx, correlation.Traceparent), "review.publish", observability.Fields{RunID: l.Run.ID, TaskID: correlation.TaskID})
 	defer span.End()
 	var snapshot contracts.ReviewSnapshot
 	if e := json.Unmarshal(l.Run.Snapshot, &snapshot); e != nil {

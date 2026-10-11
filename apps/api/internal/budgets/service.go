@@ -12,6 +12,7 @@ import (
 	"reviewpilot.local/api/internal/contracts"
 	"reviewpilot.local/api/internal/fault"
 	"reviewpilot.local/api/internal/jobs"
+	"reviewpilot.local/api/internal/observability"
 	"strconv"
 	"time"
 )
@@ -198,7 +199,8 @@ func (s *Service) Reserve(ctx context.Context, req contracts.ReserveModelCallReq
 			return fault.New(409, "BUDGET_CURRENCY_CONFLICT")
 		}
 		for _, key := range scopes {
-			if err := tx.Exec("INSERT INTO budget_limits(scope_type,scope_key,currency,limit_micros) VALUES(?,?,?,?) ON CONFLICT DO NOTHING", key.Type, key.Key, m.Currency, key.Limit).Error; err != nil {
+			// A new configuration can tighten a live UTC window, never silently raise its ceiling.
+			if err := tx.Exec("INSERT INTO budget_limits(scope_type,scope_key,currency,limit_micros) VALUES(?,?,?,?) ON CONFLICT(scope_type,scope_key,currency) DO UPDATE SET limit_micros=LEAST(budget_limits.limit_micros,EXCLUDED.limit_micros)", key.Type, key.Key, m.Currency, key.Limit).Error; err != nil {
 				return err
 			}
 			result := tx.Exec("UPDATE budget_limits SET held_micros=held_micros+? WHERE scope_type=? AND scope_key=? AND currency=? AND limit_micros-spent_micros-held_micros>=?", amount, key.Type, key.Key, m.Currency, amount)
@@ -248,6 +250,9 @@ func (s *Service) Dispatch(ctx context.Context, req contracts.DispatchModelCallR
 		answer.SendAuthorized = true
 		return nil
 	})
+	if err == nil && answer.SendAuthorized {
+		observability.RecordModel(ctx, string(answer.Purpose), string(req.Lease.Snapshot.Provenance.ModelMode), "dispatching", 0)
+	}
 	return answer, err
 }
 
@@ -281,6 +286,8 @@ func Account(tx *gorm.DB, call Call, amount int64, released bool) error {
 
 func (s *Service) Settle(ctx context.Context, req contracts.SettleModelCallRequest) (contracts.ModelCall, error) {
 	answer := contracts.ModelCall{}
+	changed := false
+	var actual int64
 	err := s.runTransaction(ctx, req.Lease, true, func(tx *gorm.DB) error {
 		var call Call
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&call, "call_id=? AND run_id=?", req.CallId, req.Lease.RunId).Error; err != nil {
@@ -349,8 +356,15 @@ func (s *Service) Settle(ctx context.Context, req contracts.SettleModelCallReque
 			return err
 		}
 		answer = call.DTO()
+		changed = true
+		if call.ActualCostMicros != nil {
+			actual = *call.ActualCostMicros
+		}
 		return nil
 	})
+	if err == nil && changed {
+		observability.RecordModel(ctx, string(answer.Purpose), string(req.Lease.Snapshot.Provenance.ModelMode), string(answer.State), actual)
+	}
 	return answer, err
 }
 

@@ -90,6 +90,11 @@
               'API_BIND_ADDR': '0.0.0.0:4000',
               'INTERNAL_BIND_ADDR': '0.0.0.0:4001',
               'REVIEW_PIPELINE_VERSION': 'foundation-v1',
+              'REVIEW_MODE': '${REVIEW_MODE:-disabled}',
+              'REVIEW_RETAIN_CONTENT': '${REVIEW_RETAIN_CONTENT:-true}',
+              'REVIEW_REAL_ALLOWED': '${REVIEW_REAL_ALLOWED:-false}',
+              'GITHUB_REVIEW_PUBLISH_ENABLED': '${GITHUB_REVIEW_PUBLISH_ENABLED:-false}',
+              'REVIEW_MODEL_CONFIG_FILE': '${REVIEW_MODEL_CONFIG_CONTAINER_PATH:-}',
               'OTEL_EXPORTER_OTLP_ENDPOINT': 'http://collector:4318',
               'DATABASE_URL_FILE': '/run/secrets/database_url',
               'RABBITMQ_URL_FILE': '/run/secrets/rabbitmq_url',
@@ -104,6 +109,16 @@
               'GITHUB_PRIVATE_KEY_PATH': '/run/secrets/github_private_key',
             },
           'networks': ['ingress', 'data', 'tasks', 'monitoring', 'egress'],
+          'volumes':
+            [
+              {
+                'type': 'bind',
+                'source': '${REVIEW_MODEL_CONFIG_HOST_PATH:-./review/model-config.example.json}',
+                'target': '/app/config/review-model.json',
+                'read_only': true,
+                'bind': { 'create_host_path': false },
+              },
+            ],
           'healthcheck':
             {
               'interval': '15s',
@@ -156,6 +171,11 @@
               'API_BIND_ADDR': '0.0.0.0:4000',
               'INTERNAL_BIND_ADDR': '0.0.0.0:4001',
               'REVIEW_PIPELINE_VERSION': 'foundation-v1',
+              'REVIEW_MODE': '${REVIEW_MODE:-disabled}',
+              'REVIEW_RETAIN_CONTENT': '${REVIEW_RETAIN_CONTENT:-true}',
+              'REVIEW_REAL_ALLOWED': '${REVIEW_REAL_ALLOWED:-false}',
+              'GITHUB_REVIEW_PUBLISH_ENABLED': '${GITHUB_REVIEW_PUBLISH_ENABLED:-false}',
+              'REVIEW_MODEL_CONFIG_FILE': '${REVIEW_MODEL_CONFIG_CONTAINER_PATH:-}',
               'OTEL_EXPORTER_OTLP_ENDPOINT': 'http://collector:4318',
               'DATABASE_URL_FILE': '/run/secrets/database_url',
               'RABBITMQ_URL_FILE': '/run/secrets/rabbitmq_url',
@@ -171,6 +191,16 @@
               'HEARTBEAT_FILE': '/tmp/reviewpilot-heartbeat',
             },
           'networks': ['data', 'tasks', 'monitoring', 'egress'],
+          'volumes':
+            [
+              {
+                'type': 'bind',
+                'source': '${REVIEW_MODEL_CONFIG_HOST_PATH:-./review/model-config.example.json}',
+                'target': '/app/config/review-model.json',
+                'read_only': true,
+                'bind': { 'create_host_path': false },
+              },
+            ],
           'healthcheck':
             {
               'interval': '15s',
@@ -371,7 +401,17 @@
           'cpus': '1.0',
           'logging': { 'driver': 'json-file', 'options': { 'max-size': '10m', 'max-file': '3' } },
           'build': { 'context': '..', 'dockerfile': 'apps/worker-review/Dockerfile' },
-          'networks': ['tasks', 'monitoring'],
+          'networks': ['tasks', 'monitoring', 'egress'],
+          'volumes':
+            [
+              {
+                'type': 'bind',
+                'source': '${REVIEW_MODEL_CONFIG_HOST_PATH:-./review/model-config.example.json}',
+                'target': '/app/config/review-model.json',
+                'read_only': true,
+                'bind': { 'create_host_path': false },
+              },
+            ],
           'environment':
             {
               'NODE_ENV': 'production',
@@ -380,6 +420,10 @@
               'HEARTBEAT_FILE': '/tmp/reviewpilot-heartbeat',
               'RABBITMQ_URL_FILE': '/run/secrets/rabbitmq_url',
               'REVIEW_WORKER_SERVICE_TOKEN_FILE': '/run/secrets/review_worker_token',
+              'REVIEW_MODE': '${REVIEW_MODE:-disabled}',
+              'REVIEW_REAL_ALLOWED': '${REVIEW_REAL_ALLOWED:-false}',
+              'REVIEW_MODEL_CONFIG_FILE': '${REVIEW_MODEL_CONFIG_CONTAINER_PATH:-}',
+              'MODEL_API_KEY_FILE': '${MODEL_API_KEY_CONTAINER_PATH:-}',
             },
           'healthcheck':
             {
@@ -394,7 +438,7 @@
               'api': { 'condition': 'service_started' },
               'rabbitmq': { 'condition': 'service_healthy' },
             },
-          'secrets': ['rabbitmq_url', 'review_worker_token'],
+          'secrets': ['rabbitmq_url', 'review_worker_token', 'model_api_key'],
         },
       'worker-evolution':
         {
@@ -461,6 +505,8 @@
     },
   'secrets':
     {
+      'model_api_key':
+        { 'file': '${SECRET_DIRECTORY:?Set absolute SECRET_DIRECTORY}/model_api_key' },
       'database_url': { 'file': '${SECRET_DIRECTORY:?Set absolute SECRET_DIRECTORY}/database_url' },
       'rabbitmq_url': { 'file': '${SECRET_DIRECTORY:?Set absolute SECRET_DIRECTORY}/rabbitmq_url' },
       'github_client_secret':

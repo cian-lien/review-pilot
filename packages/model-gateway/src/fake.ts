@@ -19,6 +19,7 @@ const scriptSchema = z.strictObject({
       z.strictObject({
         purpose: z.enum(['generate', 'verify']),
         data: z.unknown().optional(),
+        evidenceFromInput: z.boolean().optional(),
         usage: usage.optional(),
         truncated: z.boolean().optional(),
         error: z
@@ -76,11 +77,23 @@ export class FakeProvider implements ModelProvider {
       });
     signal.throwIfAborted();
     if (entry.error) throw new ProviderFault(entry.error, entry.usage);
+    const data = structuredClone(entry.data);
+    // Only isolated fixtures can bind runtime evidence IDs; no templates or tools are evaluated.
+    if (entry.evidenceFromInput) {
+      const input = JSON.parse(request.input) as { evidence?: { ref: unknown }[] };
+      const value = data as {
+        candidates?: { evidence: unknown[] }[];
+        decisions?: { evidence: unknown[] }[];
+      };
+      const ref = input.evidence?.[0]?.ref;
+      if (!ref) throw new ProviderFault('FAKE_EVIDENCE_MISSING');
+      for (const item of value.candidates ?? value.decisions ?? []) item.evidence = [ref];
+    }
     return {
-      data: entry.data,
+      data,
       usage: entry.usage,
       truncated: entry.truncated,
-      safeResponseHash: safeHash(JSON.stringify(entry.data) ?? 'null'),
+      safeResponseHash: safeHash(JSON.stringify(data) ?? 'null'),
     };
   }
 }

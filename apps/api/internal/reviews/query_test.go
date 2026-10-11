@@ -55,15 +55,21 @@ func TestReviewQueryAccess(t *testing.T) {
 	if _, e = service.readCursor(cursor, l.Tenant, 2, "runs"); e == nil {
 		t.Fatal("cursor crossed PR scope")
 	}
-	if _,e=service.readCursor(cursor,contracts.TenantRef{InstallationId:101,RepositoryId:303},1,"runs");e==nil{t.Fatal("cursor crossed repository scope")}
-	result:=preparedResult(t,store,server.URL,"valid")
-	if _,e=New(store.DB()).Commit(context.Background(),contracts.CommitReviewRequest{Result:result});e!=nil{t.Fatal(e)}
-	l=result.Lease
+	if _, e = service.readCursor(cursor, contracts.TenantRef{InstallationId: 101, RepositoryId: 303}, 1, "runs"); e == nil {
+		t.Fatal("cursor crossed repository scope")
+	}
+	result := preparedResult(t, store, server.URL, "valid")
+	if _, e = New(store.DB()).Commit(context.Background(), contracts.CommitReviewRequest{Result: result}); e != nil {
+		t.Fatal(e)
+	}
+	l = result.Lease
 	store.DB().Exec("UPDATE review_runs SET snapshot=jsonb_set(snapshot,'{provenance,contentExpiresAt}',to_jsonb('2000-01-01T00:00:00Z'::text)) WHERE id=?", l.RunId)
 	detail, e := service.Detail(context.Background(), session, l.Tenant, 1, l.RunId)
 	if e != nil || !detail.ContentExpired {
 		t.Fatalf("expired content not distinguished: %+v %v", detail, e)
 	}
-	if len(detail.Findings)!=1||!detail.Findings[0].ContentExpired||len(detail.Findings[0].Evidence)!=0{t.Fatal("expiry erased finding count or exposed source")}
+	if len(detail.Findings) != 1 || !detail.Findings[0].ContentExpired || len(detail.Findings[0].Evidence) != 0 {
+		t.Fatal("expiry erased finding count or exposed source")
+	}
 	testsupport.ReviewVerdict(t, "results", map[string]any{"currentMaintainRequired": true, "expiredContentHidden": true, "scopedCursor": true})
 }

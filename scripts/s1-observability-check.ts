@@ -65,6 +65,24 @@ for (const mode of ['dev', 'prod']) {
     mode === 'dev' ? 'review-pilot_reviewpilot_pg' : 'reviewpilot_beta_pg',
   );
   if (mode === 'prod') assert(config.services.api.secrets.length >= 6);
+  for (const name of ['api', 'dispatcher', 'worker-review']) {
+    assert.equal(config.services[name].environment.REVIEW_MODE, 'disabled');
+    assert.equal(config.services[name].environment.REVIEW_REAL_ALLOWED, 'false');
+  }
+  for (const name of ['api', 'dispatcher', 'web', 'worker-evolution']) {
+    const service = config.services[name];
+    assert(!Object.keys(service.environment ?? {}).some((key) => key.startsWith('MODEL_API_KEY')));
+    assert(
+      !(service.secrets ?? []).some(
+        (secret: { source?: string }) => secret.source === 'model_api_key',
+      ),
+    );
+    assert(
+      !(service.volumes ?? []).some(
+        (volume: { target?: string }) => volume.target === '/run/secrets/model_api_key',
+      ),
+    );
+  }
 }
 const caddy = readFileSync(root + '/infra/caddy/Caddyfile', 'utf8');
 assert(caddy.includes('respond @internal 404'));

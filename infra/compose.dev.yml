@@ -83,6 +83,11 @@
               'API_BIND_ADDR': '0.0.0.0:4000',
               'INTERNAL_BIND_ADDR': '0.0.0.0:4001',
               'REVIEW_PIPELINE_VERSION': 'foundation-v1',
+              'REVIEW_MODE': '${REVIEW_MODE:-disabled}',
+              'REVIEW_RETAIN_CONTENT': '${REVIEW_RETAIN_CONTENT:-true}',
+              'REVIEW_REAL_ALLOWED': '${REVIEW_REAL_ALLOWED:-false}',
+              'GITHUB_REVIEW_PUBLISH_ENABLED': '${GITHUB_REVIEW_PUBLISH_ENABLED:-false}',
+              'REVIEW_MODEL_CONFIG_FILE': '${REVIEW_MODEL_CONFIG_CONTAINER_PATH:-}',
               'OTEL_EXPORTER_OTLP_ENDPOINT': '${OTEL_EXPORTER_OTLP_ENDPOINT:-}',
               'DATABASE_URL': 'postgresql://reviewpilot:reviewpilot@postgres:5432/reviewpilot',
               'RABBITMQ_URL': 'amqp://reviewpilot:reviewpilot@rabbitmq:5672',
@@ -99,6 +104,13 @@
           'networks': ['ingress', 'data', 'tasks', 'monitoring', 'egress'],
           'volumes':
             [
+              {
+                'type': 'bind',
+                'source': '${REVIEW_MODEL_CONFIG_HOST_PATH:-./review/model-config.example.json}',
+                'target': '/app/config/review-model.json',
+                'read_only': true,
+                'bind': { 'create_host_path': false },
+              },
               {
                 'type': 'bind',
                 'source': '${GITHUB_PRIVATE_KEY_PATH:-/dev/null}',
@@ -148,6 +160,11 @@
               'API_BIND_ADDR': '0.0.0.0:4000',
               'INTERNAL_BIND_ADDR': '0.0.0.0:4001',
               'REVIEW_PIPELINE_VERSION': 'foundation-v1',
+              'REVIEW_MODE': '${REVIEW_MODE:-disabled}',
+              'REVIEW_RETAIN_CONTENT': '${REVIEW_RETAIN_CONTENT:-true}',
+              'REVIEW_REAL_ALLOWED': '${REVIEW_REAL_ALLOWED:-false}',
+              'GITHUB_REVIEW_PUBLISH_ENABLED': '${GITHUB_REVIEW_PUBLISH_ENABLED:-false}',
+              'REVIEW_MODEL_CONFIG_FILE': '${REVIEW_MODEL_CONFIG_CONTAINER_PATH:-}',
               'OTEL_EXPORTER_OTLP_ENDPOINT': '${OTEL_EXPORTER_OTLP_ENDPOINT:-}',
               'DATABASE_URL': 'postgresql://reviewpilot:reviewpilot@postgres:5432/reviewpilot',
               'RABBITMQ_URL': 'amqp://reviewpilot:reviewpilot@rabbitmq:5672',
@@ -165,6 +182,13 @@
           'networks': ['data', 'tasks', 'monitoring', 'egress'],
           'volumes':
             [
+              {
+                'type': 'bind',
+                'source': '${REVIEW_MODEL_CONFIG_HOST_PATH:-./review/model-config.example.json}',
+                'target': '/app/config/review-model.json',
+                'read_only': true,
+                'bind': { 'create_host_path': false },
+              },
               {
                 'type': 'bind',
                 'source': '${GITHUB_PRIVATE_KEY_PATH:-/dev/null}',
@@ -366,7 +390,24 @@
           'cpus': '1.0',
           'logging': { 'driver': 'json-file', 'options': { 'max-size': '10m', 'max-file': '3' } },
           'build': { 'context': '..', 'dockerfile': 'apps/worker-review/Dockerfile' },
-          'networks': ['tasks', 'monitoring'],
+          'networks': ['tasks', 'monitoring', 'egress'],
+          'volumes':
+            [
+              {
+                'type': 'bind',
+                'source': '${REVIEW_MODEL_CONFIG_HOST_PATH:-./review/model-config.example.json}',
+                'target': '/app/config/review-model.json',
+                'read_only': true,
+                'bind': { 'create_host_path': false },
+              },
+              {
+                'type': 'bind',
+                'source': '${MODEL_API_KEY_HOST_PATH:-/dev/null}',
+                'target': '/run/secrets/model_api_key',
+                'read_only': true,
+                'bind': { 'create_host_path': false },
+              },
+            ],
           'environment':
             {
               'NODE_ENV': 'production',
@@ -375,6 +416,10 @@
               'HEARTBEAT_FILE': '/tmp/reviewpilot-heartbeat',
               'RABBITMQ_URL': 'amqp://reviewpilot:reviewpilot@rabbitmq:5672',
               'REVIEW_WORKER_SERVICE_TOKEN': '${REVIEW_WORKER_SERVICE_TOKEN:-}',
+              'REVIEW_MODE': '${REVIEW_MODE:-disabled}',
+              'REVIEW_REAL_ALLOWED': '${REVIEW_REAL_ALLOWED:-false}',
+              'REVIEW_MODEL_CONFIG_FILE': '${REVIEW_MODEL_CONFIG_CONTAINER_PATH:-}',
+              'MODEL_API_KEY_FILE': '${MODEL_API_KEY_CONTAINER_PATH:-}',
             },
           'healthcheck':
             {

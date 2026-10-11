@@ -13,6 +13,7 @@
     "format": "prettier --write package.json tsconfig.json src tests --log-level warn"
   },
   "dependencies": {
+    "@reviewpilot/observability": "workspace:*",
     "@langchain/core": "1.2.17",
     "@langchain/langgraph": "1.4.21",
     "@reviewpilot/contracts": "workspace:*",

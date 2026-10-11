@@ -9,6 +9,7 @@ import type { PipelineInput, ReviewPipelineOutcome } from './types';
 import { loadContext } from './context';
 import { generate, PipelineStop, selectModelContext } from './generate';
 import { verify } from './verify';
+import { reviewStage, reviewOutcome } from '@reviewpilot/observability';
 const State = Annotation.Root({
   page: Annotation<ReviewContextPage | null>(),
   candidateItems: Annotation<ReviewCandidate[]>(),
@@ -18,34 +19,42 @@ const State = Annotation.Root({
 });
 export async function runReviewPipeline(input: PipelineInput): Promise<ReviewPipelineOutcome> {
   const graph = new StateGraph(State)
-    .addNode('context', async () => ({
-      page: selectModelContext(await loadContext(input.lease, input.client, input.signal)),
-    }))
-    .addNode('candidates', async (state) => {
-      input.signal.throwIfAborted();
-      const output = await generate(input, state.page!);
-      return { candidateItems: output.candidates, callIds: [output.callId] };
-    })
-    .addNode('verification', async (state) => {
-      input.signal.throwIfAborted();
-      const output = await verify(input, state.page!, state.candidateItems);
-      return { decisions: output.decisions, callIds: [...state.callIds, output.callId] };
-    })
-    .addNode('finalize', async (state) => ({
-      outcome: {
-        kind: 'completed' as const,
-        result: validateReview('ReviewResult', {
-          kind: 'ai-review',
-          lease: input.lease,
-          resultId: input.lease.taskId + ':review',
-          contextHash: state.page!.contextHash,
-          candidates: state.candidateItems,
-          decisions: state.decisions,
-          coverage: state.page!.coverage,
-          callIds: state.callIds,
-        }),
-      },
-    }))
+    .addNode('context', async () =>
+      reviewStage('context', async () => ({
+        page: selectModelContext(await loadContext(input.lease, input.client, input.signal)),
+      })),
+    )
+    .addNode('candidates', async (state) =>
+      reviewStage('candidates', async () => {
+        input.signal.throwIfAborted();
+        const output = await generate(input, state.page!);
+        return { candidateItems: output.candidates, callIds: [output.callId] };
+      }),
+    )
+    .addNode('verification', async (state) =>
+      reviewStage('verification', async () => {
+        input.signal.throwIfAborted();
+        const output = await verify(input, state.page!, state.candidateItems);
+        return { decisions: output.decisions, callIds: [...state.callIds, output.callId] };
+      }),
+    )
+    .addNode('finalize', async (state) =>
+      reviewStage('finalize', async () => ({
+        outcome: {
+          kind: 'completed' as const,
+          result: validateReview('ReviewResult', {
+            kind: 'ai-review',
+            lease: input.lease,
+            resultId: input.lease.taskId + ':review',
+            contextHash: state.page!.contextHash,
+            candidates: state.candidateItems,
+            decisions: state.decisions,
+            coverage: state.page!.coverage,
+            callIds: state.callIds,
+          }),
+        },
+      })),
+    )
     .addEdge(START, 'context')
     .addEdge('context', 'candidates')
     .addConditionalEdges('candidates', (state) =>
@@ -61,6 +70,13 @@ export async function runReviewPipeline(input: PipelineInput): Promise<ReviewPip
     );
     return state.outcome!;
   } catch (error) {
+    reviewOutcome(
+      error instanceof PipelineStop
+        ? error.kind
+        : error instanceof Error && error.message === 'MODEL_ARTIFACT_UNKNOWN'
+          ? 'blocked'
+          : 'failed',
+    );
     if (error instanceof PipelineStop) return { kind: error.kind, reasonCode: error.reasonCode };
     if (error instanceof Error && error.message === 'MODEL_ARTIFACT_UNKNOWN')
       return { kind: 'blocked', reasonCode: error.message };

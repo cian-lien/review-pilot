@@ -28,6 +28,43 @@ func modelHash(t *testing.T) string {
 	body, _ := json.Marshal(cfg.Model)
 	return jobs.Hash(body)
 }
+func TestBudgetReducedWindowLimitCannotReuseOldCeiling(t *testing.T) {
+	store := testsupport.NewStore(t)
+	server := httptest.NewServer(http.NotFoundHandler())
+	defer server.Close()
+	first, _ := testsupport.SeedReview(t, store, server.URL)
+	second, _ := testsupport.SeedReview(t, store, server.URL)
+	service := New(store.DB())
+	request := contracts.ReserveModelCallRequest{ModelConfigHash: modelHash(t), Lease: first, Purpose: "generate", Ordinal: 1, RequestHash: strings.Repeat("a", 64), InputTokenLimit: 5, OutputTokenLimit: 1}
+	if _, e := service.Reserve(context.Background(), request); e != nil {
+		t.Fatal(e)
+	}
+	cfg, e := config.LoadReview()
+	if e != nil {
+		t.Fatal(e)
+	}
+	cfg.Model.ModelConfigVersion += "-reduced"
+	cfg.Model.GlobalMonthlyLimitMicros = "6"
+	body, _ := json.Marshal(cfg.Model)
+	if e = os.WriteFile(os.Getenv("REVIEW_MODEL_CONFIG_FILE"), body, 0600); e != nil {
+		t.Fatal(e)
+	}
+	second.Snapshot.ModelConfigVersion = cfg.Model.ModelConfigVersion
+	body, _ = json.Marshal(second.Snapshot)
+	if e = store.DB().Exec("UPDATE review_runs SET snapshot=?::jsonb WHERE id=?", string(body), second.RunId).Error; e != nil {
+		t.Fatal(e)
+	}
+	var stored struct{ Snapshot []byte }
+	if e = store.DB().Raw("SELECT snapshot FROM review_runs WHERE id=?", second.RunId).Scan(&stored).Error; e != nil {
+		t.Fatal(e)
+	}
+	second.InputHash = jobs.Hash(stored.Snapshot)
+	request.Lease = second
+	request.ModelConfigHash = modelHash(t)
+	if _, e = service.Reserve(context.Background(), request); e == nil || e.Error() != "REVIEW_BUDGET_EXHAUSTED" {
+		t.Fatal("new six-micro ceiling ignored the existing six-micro hold", e)
+	}
+}
 func TestBudgetRejectsConfigurationDriftBeforeReservation(t *testing.T) {
 	store := testsupport.NewStore(t)
 	server := httptest.NewServer(http.NotFoundHandler())

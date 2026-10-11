@@ -45,7 +45,7 @@ func (s *QueryService) authorize(ctx context.Context, session auth.Session, tena
 	return nil
 }
 func expiredCandidate() contracts.ReviewCandidate {
-	return contracts.ReviewCandidate{CandidateId: "expired", Category: "correctness", Severity: "low", Title: "内容已过期或未保留", FailureScenario: "内容不可用", Impact: "内容不可用", RootCauseStatement: contracts.RootCauseStatement{Trigger: "内容不可用", Consequence: "内容不可用"}, SuggestedVerification: "内容不可用", Evidence: []contracts.EvidenceRef{}, IntroducedByPR: true}
+	return contracts.ReviewCandidate{CandidateId: "expired", Category: "other", Severity: "low", Title: "内容已过期或未保留", FailureScenario: "内容不可用", Impact: "内容不可用", RootCauseStatement: contracts.RootCauseStatement{Trigger: "内容不可用", Consequence: "内容不可用"}, SuggestedVerification: "内容不可用", Evidence: []contracts.EvidenceRef{}, IntroducedByPR: true}
 }
 func (s *QueryService) Detail(ctx context.Context, session auth.Session, tenant contracts.TenantRef, prNumber int, runID string) (contracts.ReviewRunDetail, error) {
 	out := contracts.ReviewRunDetail{Findings: []contracts.ReviewFinding{}, Filtered: []contracts.ReviewFilteredCandidate{}, Coverage: contracts.ReviewCoverage{Skipped: []contracts.ReviewSkippedFile{}, Limitations: []string{"CONTEXT_NOT_READY"}}, Publication: contracts.ReviewPublicationSummary{State: "pending"}}
@@ -295,7 +295,7 @@ func (s *QueryService) ListPulls(ctx context.Context, session auth.Session, tena
 	if e != nil {
 		return out, e
 	}
-	max := 2147483647
+	max := 2147483648
 	if cursor != "" {
 		max = c.Number
 	}

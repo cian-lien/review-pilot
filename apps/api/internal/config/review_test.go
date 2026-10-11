@@ -7,7 +7,7 @@ import (
 )
 
 func TestReviewDefaultsClosed(t *testing.T) {
-	for _, name := range []string{"REVIEW_MODE", "REVIEW_REAL_ALLOWED", "GITHUB_REVIEW_PUBLISH_ENABLED", "REVIEW_MODEL_CONFIG_FILE"} {
+	for _, name := range []string{"REVIEW_MODE", "REVIEW_REAL_ALLOWED", "GITHUB_REVIEW_PUBLISH_ENABLED", "REVIEW_MODEL_CONFIG_FILE", "REVIEW_RETAIN_CONTENT"} {
 		t.Setenv(name, "")
 	}
 	cfg, err := LoadReview()
@@ -23,5 +23,14 @@ func TestReviewDefaultsClosed(t *testing.T) {
 		if _, err := LoadReview(); err == nil {
 			t.Fatal("invalid configuration was accepted")
 		}
+	}
+	t.Setenv("REVIEW_MODEL_CONFIG_FILE", "")
+	t.Setenv("REVIEW_RETAIN_CONTENT", "false")
+	if cfg, err := LoadReview(); err != nil || cfg.Policy.RetainContent {
+		t.Fatal("metadata-only policy cannot be selected", err)
+	}
+	t.Setenv("REVIEW_RETAIN_CONTENT", "invalid")
+	if _, err := LoadReview(); err == nil {
+		t.Fatal("invalid content policy accepted")
 	}
 }

@@ -32,6 +32,17 @@ export function validateDecisions(
         ref.endLine >= ref.startLine,
     );
   }
+  function anchor(ref: EvidenceRef): string {
+    const evidence = context.evidence.find((value) => value.ref.evidenceId === ref.evidenceId)!;
+    // Slice the approved local reference, not the surrounding evidence window.
+    return normalize(
+      evidence.snippet
+        .replaceAll('\r\n', '\n')
+        .split('\n')
+        .slice(ref.startLine - evidence.ref.startLine, ref.endLine - evidence.ref.startLine + 1)
+        .join('\n'),
+    );
+  }
   return candidates.map((candidate) => {
     const decision = decisions.find((d) => d.candidateId === candidate.candidateId)!;
     let reason: string | undefined;
@@ -42,13 +53,15 @@ export function validateDecisions(
       reason = 'INVALID_EVIDENCE';
     else if (!candidate.evidence.some((ref) => validateDiffLocation(ref, diff)))
       reason = 'NOT_CHANGED_LOCATION';
-    const root = JSON.stringify([
-      candidate.category,
-      candidate.evidence[0]?.path,
-      normalize(candidate.rootCauseStatement.trigger),
-      normalize(candidate.rootCauseStatement.consequence),
-    ]);
     if (!reason && decision.verdict === 'verified') {
+      // Match Go's local-anchor identity; similar statements can describe distinct defects.
+      const root = JSON.stringify([
+        candidate.category,
+        candidate.evidence[0]!.path,
+        anchor(candidate.evidence[0]!),
+        normalize(candidate.rootCauseStatement.trigger),
+        normalize(candidate.rootCauseStatement.consequence),
+      ]);
       if (roots.has(root)) reason = 'DUPLICATE_ROOT';
       else roots.add(root);
     }

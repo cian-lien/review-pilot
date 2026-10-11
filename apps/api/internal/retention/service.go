@@ -113,7 +113,7 @@ func (s *Service) DeleteRepository(ctx context.Context, tenant contracts.TenantR
 			if err := tx.Exec("UPDATE jobs SET status='cancelled',lease_token=NULL,lease_expires_at=NULL WHERE run_id=?", run.ID).Error; err != nil {
 				return err
 			}
-			if err := tx.Exec("UPDATE publication_requests SET state=CASE WHEN review_write_started OR check_write_started THEN 'uncertain' ELSE 'cancelled' END,review_plan=NULL,lease_token=NULL,lease_expires_at=NULL WHERE run_id=?", run.ID).Error; err != nil {
+			if err := tx.Exec("UPDATE publication_requests SET state=CASE WHEN review_write_started OR check_write_started THEN 'uncertain' ELSE 'cancelled' END,review_plan=NULL,review_plan_erased=true,lease_token=NULL,lease_expires_at=NULL WHERE run_id=?", run.ID).Error; err != nil {
 				return err
 			}
 			// Keep only non-content occupancy so deletion cannot authorize duplicate external writes.

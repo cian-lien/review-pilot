@@ -6,11 +6,15 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"regexp"
 	"reviewpilot.local/api/internal/contracts"
 	"reviewpilot.local/api/internal/fault"
 	"reviewpilot.local/api/internal/github"
 	"reviewpilot.local/api/internal/jobs"
 	"reviewpilot.local/api/internal/persistence"
+	"strconv"
+	"strings"
+	"time"
 )
 
 func (s *Service) BuildReviewPlan(ctx context.Context, runID string) (contracts.ReviewPublicationPlan, error) {
@@ -30,11 +34,15 @@ func (s *Service) BuildReviewPlan(ctx context.Context, runID string) (contracts.
 		if e := tx.First(&task, "run_id=?", runID).Error; e != nil {
 			return e
 		}
-		_, run, allowed, e := jobs.LockReview(tx, task.ID)
+		lockedTask, run, allowed, e := jobs.LockReview(tx, task.ID)
 		if e != nil {
 			return e
 		}
-		if !allowed || run.PipelineVersion != "review-v1" || run.Status != "Publishing" {
+		var accepted bool
+		if e = tx.Raw("SELECT EXISTS(SELECT 1 FROM job_results WHERE task_id=?)", task.ID).Scan(&accepted).Error; e != nil {
+			return e
+		}
+		if !allowed || !accepted || lockedTask.Status != "result_ready" || run.PipelineVersion != "review-v1" || run.Status != "Publishing" {
 			return fault.New(409, "PUBLICATION_NOT_READY")
 		}
 		var request struct {
@@ -47,18 +55,29 @@ func (s *Service) BuildReviewPlan(ctx context.Context, runID string) (contracts.
 		if request.ReviewPlanErased {
 			return fault.New(409, "PUBLICATION_CONTENT_EXPIRED")
 		}
+		snapshot, e := jobs.ReviewSnapshot(run)
+		if e != nil {
+			return e
+		}
+		if !snapshot.Provenance.ContentExpiresAt.After(time.Now()) {
+			return fault.New(409, "PUBLICATION_CONTENT_EXPIRED")
+		}
 		if len(request.ReviewPlan) > 0 {
 			return contracts.DecodeReview("ReviewPublicationPlan", request.ReviewPlan, &plan, 32768)
-		}
-		var snapshot contracts.ReviewSnapshot
-		if e = json.Unmarshal(run.Snapshot, &snapshot); e != nil {
-			return e
 		}
 		plan.RunId = run.ID
 		plan.Tenant = snapshot.Identity.Tenant
 		plan.PrNumber = run.PrNumber
 		plan.HeadSha = run.HeadSHA
 		plan.Mode = contracts.ReviewPublicationPlanMode(snapshot.Provenance.ModelMode)
+		var manifest struct{ Pages []byte }
+		if e = tx.Raw("SELECT pages FROM review_context_manifests WHERE run_id=? AND sealed=true AND expires_at>clock_timestamp()", runID).Scan(&manifest).Error; e != nil {
+			return e
+		}
+		var pages []contracts.ReviewContextPage
+		if len(manifest.Pages) > 0 && json.Unmarshal(manifest.Pages, &pages) != nil {
+			return fault.New(409, "CONTEXT_CONTENT_INVALID")
+		}
 		scope := fmt.Sprintf("review-slots:%d:%d:%d", run.InstallationID, run.RepositoryID, run.PrNumber)
 		// All Runs for a PR share one transaction lock, including Runs for different SHAs.
 		if e = tx.Exec("SELECT pg_advisory_xact_lock(hashtextextended(?,0))", scope).Error; e != nil {
@@ -104,8 +123,7 @@ func (s *Service) BuildReviewPlan(ctx context.Context, runID string) (contracts.
 			var line *int
 			if len(facts) > 0 {
 				path = facts[0].Ref.Path
-				value := facts[0].Ref.EndLine
-				line = &value
+				line = publicationLine(pages, facts[0].Ref)
 			}
 			body := contracts.RedactReview(fmt.Sprintf("%s\n\n触发条件：%s\n影响：%s\n建议验证：%s", candidate.Title, candidate.FailureScenario, candidate.Impact, candidate.SuggestedVerification))
 			if len([]rune(body)) > 8192 {
@@ -124,6 +142,35 @@ func (s *Service) BuildReviewPlan(ctx context.Context, runID string) (contracts.
 		return tx.Exec("UPDATE publication_requests SET review_plan=?::jsonb WHERE run_id=?", string(body), run.ID).Error
 	})
 	return plan, err
+}
+
+// A verified range can include unchanged lines. Inline comments must select an added RIGHT-side line.
+func publicationLine(pages []contracts.ReviewContextPage, ref contracts.EvidenceRef) *int {
+	hunk := regexp.MustCompile(`^@@ -[0-9]+(?:,[0-9]+)? \+([0-9]+)(?:,[0-9]+)? @@`)
+	for _, page := range pages {
+		for _, file := range page.Files {
+			if file.Path != ref.Path || file.Head.Sha != ref.Sha || file.Patch == nil {
+				continue
+			}
+			line := 0
+			for _, part := range strings.Split(strings.ReplaceAll(*file.Patch, "\r\n", "\n"), "\n") {
+				if m := hunk.FindStringSubmatch(part); m != nil {
+					line, _ = strconv.Atoi(m[1])
+					continue
+				}
+				if strings.HasPrefix(part, "+") {
+					if line >= ref.StartLine && line <= ref.EndLine {
+						value := line
+						return &value
+					}
+					line++
+				} else if strings.HasPrefix(part, " ") {
+					line++
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func (s *Service) beginReviewWrite(ctx context.Context, l lease, check bool) error {
