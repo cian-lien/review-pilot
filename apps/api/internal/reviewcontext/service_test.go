@@ -15,6 +15,7 @@ import (
 	"reviewpilot.local/api/internal/contracts"
 	"reviewpilot.local/api/internal/fault"
 	"reviewpilot.local/api/internal/github"
+	"reviewpilot.local/api/internal/jobs"
 	"reviewpilot.local/api/internal/testsupport"
 )
 
@@ -150,6 +151,34 @@ func TestContextVersionChangesBetweenPages(t *testing.T) {
 	page, err = service.Read(context.Background(), contracts.ReadReviewContextRequest{Lease: lease, Cursor: page.NextCursor})
 	if err != nil || !page.Complete || page.ContextHash == nil || !page.Coverage.Complete || page.Files[0].PreviousPath == nil {
 		t.Fatalf("complete fixture failed: %+v %v", page, err)
+	}
+	lease, gateway = testsupport.SeedReview(t, store, server.URL)
+	lease.Snapshot.Policy.RetainContent = false
+	body, _ := json.Marshal(lease.Snapshot)
+	if err = store.DB().Exec("UPDATE review_runs SET snapshot=?::jsonb WHERE id=?", string(body), lease.RunId).Error; err != nil {
+		t.Fatal(err)
+	}
+	var stored struct{ Snapshot []byte }
+	store.DB().Raw("SELECT snapshot FROM review_runs WHERE id=?", lease.RunId).Scan(&stored)
+	lease.InputHash = jobs.Hash(stored.Snapshot)
+	service = New(store.DB(), gateway, lease.Snapshot.Policy)
+	page, err = service.Read(context.Background(), contracts.ReadReviewContextRequest{Lease: lease})
+	if err != nil || len(page.Evidence) == 0 {
+		t.Fatalf("ephemeral source missing: %v", err)
+	}
+	var leaked int
+	store.DB().Raw("SELECT count(*) FROM review_context_manifests WHERE run_id=? AND (files::text LIKE '%newCall%' OR pages::text LIKE '%newCall%')", lease.RunId).Scan(&leaked)
+	if leaked != 0 {
+		t.Fatal("non-retained source reached the database")
+	}
+	store.DB().Raw("SELECT count(*) FROM review_evidence WHERE run_id=? AND snippet IS NOT NULL", lease.RunId).Scan(&leaked)
+	if leaked != 0 {
+		t.Fatal("non-retained evidence reached the database")
+	}
+	ForgetEphemeral(lease.RunId)
+	_, err = service.Read(context.Background(), contracts.ReadReviewContextRequest{Lease: lease})
+	if !errors.As(err, &failure) || failure.Code != "CONTEXT_CONTENT_UNAVAILABLE" {
+		t.Fatalf("missing ephemeral context silently recovered: %v", err)
 	}
 	testsupport.ReviewVerdict(t, "context", map[string]any{"versionChangeBlocked": true, "sealedFixedContext": true})
 }

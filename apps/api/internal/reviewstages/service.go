@@ -89,9 +89,10 @@ func (s *Service) Save(ctx context.Context, req contracts.SaveReviewStageRequest
 		return fault.New(400, "STAGE_TOO_LARGE")
 	}
 	var payload contracts.ReviewStagePayload
-	if contracts.DecodeReview("ReviewStagePayload", body, &payload, req.Lease.Snapshot.Policy.MaxStageBytes) != nil {
+	if contracts.DecodeReview("ReviewStagePayload", contracts.RedactReviewJSON(body), &payload, req.Lease.Snapshot.Policy.MaxStageBytes) != nil {
 		return fault.New(400, "STAGE_CONTENT_INVALID")
 	}
+	body, _ = json.Marshal(payload)
 	if (req.Stage == "context" && (payload.Context == nil || payload.Candidates != nil || payload.Verification != nil || req.CallId != nil)) ||
 		(req.Stage == "candidates" && (payload.Candidates == nil || payload.Context != nil || payload.Verification != nil || req.CallId == nil)) ||
 		(req.Stage == "verification" && (payload.Verification == nil || payload.Context != nil || payload.Candidates != nil || req.CallId == nil)) {

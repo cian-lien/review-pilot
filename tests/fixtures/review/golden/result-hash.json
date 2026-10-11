@@ -1,0 +1,12 @@
+{
+  "business": {
+    "resultId": "179873d0-c155-45f7-a724-b6f0e8c80976:review",
+    "runId": "0f671ed0-38d5-447a-89db-2b0ce65712f6",
+    "inputHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "contextHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "candidates": [], "decisions": [],
+    "coverage": {"complete": true,"coveredChangedLines":0,"limitations":["中文 <tag> & line\u2028end"],"rawBytes":0,"readFiles":0,"skipped":[],"totalChangedLines":0,"totalFiles":0},
+    "callIds": []
+  },
+  "expectedHash": "0fb8138789a864efe3d9604ee53d925b866e68dfe63700554b589c64557a343e"
+}

@@ -146,6 +146,24 @@ func (s *Service) Read(ctx context.Context, req contracts.ReadReviewContextReque
 			changed += size
 		}
 		fileBody, _ := json.Marshal(selected)
+		for i := range selected {
+			if selected[i].Patch != nil {
+				redacted := contracts.RedactReview(*selected[i].Patch)
+				selected[i].Patch = &redacted
+			}
+		}
+		if !l.Snapshot.Policy.RetainContent {
+			if err := keepEphemeral(l, selected, []contracts.ReviewContextPage{}); err != nil {
+				return answer, err
+			}
+			metadata := append([]github.PullFile{}, selected...)
+			for i := range metadata {
+				metadata[i].Patch = nil
+			}
+			fileBody, _ = json.Marshal(metadata)
+		} else {
+			fileBody, _ = json.Marshal(selected)
+		}
 		coverageBody, _ := json.Marshal(coverage)
 		m = manifest{ID: jobs.UUID(), RunID: l.RunId, InputHash: l.InputHash, Files: fileBody, Pages: json.RawMessage("[]"), Coverage: coverageBody, ExpiresAt: l.Snapshot.Provenance.ContentExpiresAt}
 		err = s.transaction(ctx, l, func(tx *gorm.DB) error {
@@ -177,6 +195,13 @@ func (s *Service) Read(ctx context.Context, req contracts.ReadReviewContextReque
 	var coverage contracts.ReviewCoverage
 	if json.Unmarshal(m.Pages, &pages) != nil || json.Unmarshal(m.Files, &files) != nil || json.Unmarshal(m.Coverage, &coverage) != nil {
 		return answer, fault.New(503, "CONTEXT_INVALID")
+	}
+	if !l.Snapshot.Policy.RetainContent {
+		var available bool
+		files, pages, available = EphemeralContext(l)
+		if !available {
+			return answer, fault.New(409, "CONTEXT_CONTENT_UNAVAILABLE")
+		}
 	}
 	if index < len(pages) {
 		return pages[index], nil
@@ -229,7 +254,7 @@ func (s *Service) Read(ctx context.Context, req contracts.ReadReviewContextReque
 				reason = "MISSING_PATCH"
 			} else if changedFile.Head.State != "available" || (file.Status != "added" && changedFile.Base.State != "available") {
 				reason = "INSUFFICIENT_CONTEXT"
-			} else if !MatchPatch(*file.Patch, base, head, file.Additions, file.Deletions) {
+			} else if !MatchPatch(*file.Patch, contracts.RedactReview(base), contracts.RedactReview(head), file.Additions, file.Deletions) {
 				reason = "PATCH_MISMATCH"
 			}
 			for _, content := range []*contracts.ReviewFileContent{&changedFile.Base, &changedFile.Head} {
@@ -295,14 +320,24 @@ func (s *Service) Read(ctx context.Context, req contracts.ReadReviewContextReque
 		}
 		for _, evidence := range answer.Evidence {
 			r := evidence.Ref
-			if err := tx.Exec("INSERT INTO review_evidence(id,run_id,manifest_id,installation_id,repository_id,path,sha,content_hash,start_line,end_line,original_hash,snippet,redacted,expires_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", r.EvidenceId, l.RunId, m.ID, l.Tenant.InstallationId, l.Tenant.RepositoryId, r.Path, r.Sha, r.ContentHash, r.StartLine, r.EndLine, r.ContentHash, evidence.Snippet, evidence.Redacted, m.ExpiresAt).Error; err != nil {
+			var snippet any = evidence.Snippet
+			if !l.Snapshot.Policy.RetainContent {
+				snippet = nil
+			}
+			if err := tx.Exec("INSERT INTO review_evidence(id,run_id,manifest_id,installation_id,repository_id,path,sha,content_hash,start_line,end_line,original_hash,snippet,redacted,expires_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", r.EvidenceId, l.RunId, m.ID, l.Tenant.InstallationId, l.Tenant.RepositoryId, r.Path, r.Sha, r.ContentHash, r.StartLine, r.EndLine, r.ContentHash, snippet, evidence.Redacted, m.ExpiresAt).Error; err != nil {
 				return err
 			}
 		}
 		pageBody, _ := json.Marshal(pages)
+		if !l.Snapshot.Policy.RetainContent {
+			pageBody, _ = json.Marshal(metadataPages(pages))
+		}
 		coverageBody, _ := json.Marshal(answer.Coverage)
 		return tx.Exec("UPDATE review_context_manifests SET pages=?::jsonb,coverage=?::jsonb,next_index=next_index+1,sealed=?,context_hash=? WHERE id=?", string(pageBody), string(coverageBody), answer.Complete, answer.ContextHash, m.ID).Error
 	})
+	if err == nil && !l.Snapshot.Policy.RetainContent {
+		err = keepEphemeral(l, files, pages)
+	}
 	return answer, err
 }
 

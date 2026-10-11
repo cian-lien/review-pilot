@@ -9,3 +9,12 @@ export function redactReview(text: string): string {
       '$1[REDACTED]',
     );
 }
+export function redactStructured(value: unknown): unknown {
+  if (typeof value === 'string') return redactReview(value);
+  if (Array.isArray(value)) return value.map(redactStructured);
+  if (value && typeof value === 'object')
+    return Object.fromEntries(
+      Object.entries(value).map(([key, child]) => [key, redactStructured(child)]),
+    );
+  return value;
+}

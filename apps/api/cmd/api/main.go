@@ -22,6 +22,7 @@ import (
 	"reviewpilot.local/api/internal/persistence"
 	"reviewpilot.local/api/internal/repositories"
 	"reviewpilot.local/api/internal/reviewcontext"
+	"reviewpilot.local/api/internal/reviews"
 	"reviewpilot.local/api/internal/reviewstages"
 	"reviewpilot.local/api/internal/webhooks"
 )
@@ -100,6 +101,7 @@ func main() {
 	reviewcontext.Register(internal, reviewcontext.New(taskService.DB, service.Gateway, reviewCfg.Policy), cfg)
 	budgets.Register(internal, budgets.New(taskService.DB), cfg)
 	reviewstages.Register(internal, reviewstages.New(taskService.DB), cfg)
+	reviews.Register(internal, reviews.New(taskService.DB), cfg)
 	servers := []*http.Server{
 		{Addr: cfg.APIBindAddr, Handler: public, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 64 << 10},
 		{Addr: cfg.InternalBindAddr, Handler: internal, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 64 << 10},

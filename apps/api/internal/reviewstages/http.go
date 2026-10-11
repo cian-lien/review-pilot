@@ -24,7 +24,7 @@ func Register(router *gin.Engine, service *Service, cfg config.Config) {
 	})
 	group.POST("/:taskId/stages", func(c *gin.Context) {
 		var req contracts.SaveReviewStageRequest
-		if !jobs.DecodeReviewRequest(c, "SaveReviewStageRequest", &req, 262144) || !jobs.CheckReviewTaskURL(c, req.Lease) {
+		if !jobs.DecodeReviewRequest(c, "SaveReviewStageRequest", &req, 327680) || !jobs.CheckReviewTaskURL(c, req.Lease) {
 			return
 		}
 		if err := service.Save(c.Request.Context(), req); err != nil {

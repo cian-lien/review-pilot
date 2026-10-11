@@ -10,6 +10,7 @@ import (
 	"reviewpilot.local/api/internal/fault"
 	"reviewpilot.local/api/internal/jobs"
 	"reviewpilot.local/api/internal/persistence"
+	"reviewpilot.local/api/internal/reviewcontext"
 	"time"
 )
 
@@ -38,6 +39,9 @@ func (s *Service) Cleanup(ctx context.Context, now time.Time, limit int) (Cleanu
 			query string
 			count *int64
 		}{
+			{"WITH due AS(SELECT id FROM review_findings WHERE expires_at<=? AND (candidate IS NOT NULL OR evidence IS NOT NULL) ORDER BY expires_at LIMIT ? FOR UPDATE SKIP LOCKED) UPDATE review_findings a SET candidate=NULL,evidence=NULL,root_key='{}' FROM due d WHERE a.id=d.id", &counts.FindingContents},
+			{"WITH due AS(SELECT run_id,candidate_id FROM review_filtered_candidates WHERE expires_at<=? AND (title IS NOT NULL OR evidence IS NOT NULL) ORDER BY expires_at LIMIT ? FOR UPDATE SKIP LOCKED) UPDATE review_filtered_candidates a SET title=NULL,evidence=NULL FROM due d WHERE a.run_id=d.run_id AND a.candidate_id=d.candidate_id", &counts.FindingContents},
+			{"WITH due AS(SELECT x.task_id FROM job_results x JOIN jobs j ON j.id=x.task_id JOIN review_runs r ON r.id=j.run_id WHERE r.pipeline_version='review-v1' AND COALESCE((SELECT m.expires_at FROM review_context_manifests m WHERE m.run_id=r.id),x.accepted_at+interval '30 days')<=? AND x.payload<>'{}'::jsonb ORDER BY x.accepted_at LIMIT ? FOR UPDATE OF x SKIP LOCKED) UPDATE job_results x SET payload='{}' FROM due d WHERE x.task_id=d.task_id", &counts.FindingContents},
 			{"WITH due AS(SELECT run_id,stage,stage_input_hash FROM review_stage_artifacts WHERE expires_at<=? AND payload IS NOT NULL ORDER BY expires_at LIMIT ? FOR UPDATE SKIP LOCKED) UPDATE review_stage_artifacts a SET payload=NULL FROM due d WHERE a.run_id=d.run_id AND a.stage=d.stage AND a.stage_input_hash=d.stage_input_hash", &counts.Stages},
 			{"WITH due AS(SELECT id FROM review_context_manifests WHERE expires_at<=? AND (pages<>'[]'::jsonb OR files<>'[]'::jsonb) ORDER BY expires_at LIMIT ? FOR UPDATE SKIP LOCKED) UPDATE review_context_manifests a SET pages='[]',files='[]' FROM due d WHERE a.id=d.id", &counts.Contexts},
 			{"WITH due AS(SELECT id FROM review_evidence WHERE expires_at<=? AND snippet IS NOT NULL ORDER BY expires_at LIMIT ? FOR UPDATE SKIP LOCKED) UPDATE review_evidence a SET snippet=NULL FROM due d WHERE a.id=d.id", &counts.Contexts},
@@ -54,6 +58,9 @@ func (s *Service) Cleanup(ctx context.Context, now time.Time, limit int) (Cleanu
 		}
 		// Unknown financial holds are deliberately not part of content or metadata TTL cleanup.
 		for _, query := range []string{
+			"DELETE FROM review_filtered_candidates WHERE (run_id,candidate_id) IN(SELECT run_id,candidate_id FROM review_filtered_candidates WHERE created_at<? ORDER BY created_at LIMIT ?)",
+			"DELETE FROM review_findings WHERE id IN(SELECT id FROM review_findings WHERE created_at<? ORDER BY created_at LIMIT ?)",
+			"DELETE FROM review_coverage WHERE run_id IN(SELECT run_id FROM review_coverage WHERE created_at<? ORDER BY created_at LIMIT ?)",
 			"DELETE FROM operator_audits WHERE id IN(SELECT id FROM operator_audits WHERE created_at<? ORDER BY created_at LIMIT ?)",
 			"DELETE FROM review_stage_artifacts WHERE (run_id,stage,stage_input_hash) IN(SELECT run_id,stage,stage_input_hash FROM review_stage_artifacts WHERE created_at<? ORDER BY created_at LIMIT ?)",
 			"DELETE FROM review_evidence WHERE id IN(SELECT id FROM review_evidence WHERE expires_at<? ORDER BY expires_at LIMIT ?)",
@@ -100,13 +107,14 @@ func (s *Service) DeleteRepository(ctx context.Context, tenant contracts.TenantR
 			return err
 		}
 		for _, run := range runs {
+			reviewcontext.ForgetEphemeral(run.ID)
 			if err := tx.Exec("UPDATE jobs SET status='cancelled',lease_token=NULL,lease_expires_at=NULL WHERE run_id=?", run.ID).Error; err != nil {
 				return err
 			}
 			if err := tx.Exec("UPDATE publication_requests SET state='cancelled',lease_token=NULL,lease_expires_at=NULL WHERE run_id=?", run.ID).Error; err != nil {
 				return err
 			}
-			for _, query := range []string{"DELETE FROM review_evidence WHERE run_id=?", "DELETE FROM review_stage_artifacts WHERE run_id=?", "DELETE FROM review_context_manifests WHERE run_id=?", "UPDATE job_results SET payload='{}' WHERE task_id IN(SELECT id FROM jobs WHERE run_id=?)"} {
+			for _, query := range []string{"DELETE FROM review_findings WHERE run_id=?", "DELETE FROM review_filtered_candidates WHERE run_id=?", "DELETE FROM review_coverage WHERE run_id=?", "DELETE FROM review_evidence WHERE run_id=?", "DELETE FROM review_stage_artifacts WHERE run_id=?", "DELETE FROM review_context_manifests WHERE run_id=?", "UPDATE job_results SET payload='{}' WHERE task_id IN(SELECT id FROM jobs WHERE run_id=?)"} {
 				if err := tx.Exec(query, run.ID).Error; err != nil {
 					return err
 				}

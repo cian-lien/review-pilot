@@ -1,0 +1,8 @@
+[
+  {"name":"valid","verified":1,"calls":2},
+  {"name":"empty","verified":0,"calls":1},
+  {"name":"bad-reference","verified":0,"calls":2},
+  {"name":"old-or-protected","verified":0,"calls":2},
+  {"name":"duplicate-root","verified":1,"calls":2},
+  {"name":"insufficient-context","verified":0,"calls":2}
+]

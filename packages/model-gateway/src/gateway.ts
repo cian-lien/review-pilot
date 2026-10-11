@@ -7,7 +7,7 @@ import {
   type ModelRequest,
   type ProviderResponse,
 } from './types';
-import { redactReview } from './redact';
+import { redactReview, redactStructured } from './redact';
 import { modelConfigHash } from './configuration';
 export const safeHash = (text: string) => createHash('sha256').update(text).digest('hex');
 const system =
@@ -120,7 +120,7 @@ export class ModelGateway {
     let value: T | undefined;
     if (!reasonCode) {
       try {
-        value = request.validate(response!.data);
+        value = request.validate(redactStructured(response!.data));
       } catch {
         reasonCode = 'MODEL_SCHEMA_INVALID';
       }

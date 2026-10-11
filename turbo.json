@@ -11,6 +11,9 @@
     "review:cleanup": { "cache": false, "passThroughEnv": ["DATABASE_URL*", "REVIEW_*"] },
     "format:review": { "cache": false },
     "@reviewpilot/contracts#test:unit": { "cache": false },
+    "@reviewpilot/model-gateway#test:unit": {"cache":false},
+    "@reviewpilot/review-engine#test:unit": {"cache":false},
+    "@reviewpilot/worker-runtime#test:unit": {"cache":false},
     "test:review": { "cache": false, "passThroughEnv": ["REVIEW_TEST_ISOLATED", "REVIEW_CASE"] },
     "typegen": { "cache": false },
     "@reviewpilot/web#typecheck": { "dependsOn": ["typegen"], "outputs": [] },
@@ -131,6 +134,7 @@
       "outputs": []
     },
     "@reviewpilot/model-gateway#typecheck": {"dependsOn":["transit"],"outputs":[]},
+    "@reviewpilot/review-engine#typecheck": {"dependsOn":["transit"],"outputs":[]},
     "@reviewpilot/api#dev": {
       "cache": false,
       "persistent": true,
