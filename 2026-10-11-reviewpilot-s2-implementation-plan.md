@@ -167,7 +167,7 @@ expect(() => validateTask(validV2)).toThrow();
 
 **接口：** reviewcontext.New(db *gorm.DB,gateway *github.Gateway,policy contracts.ReviewPolicy) *Service；Service.Read(ctx context.Context,req contracts.ReadReviewContextRequest) (contracts.ReviewContextPage,error)；jobs.CheckReviewLease(tx *gorm.DB,lease contracts.ReviewLease) (persistence.Run,error) 供后续模块复用，核对安装、公开/启用、运行模式、epoch、租约、快照与输入 hash；parseDiff(files: ReviewChangedFile[]): ParsedReviewDiff；validateDiffLocation(ref: EvidenceRef,diff: ParsedReviewDiff): boolean；readBoundedBytes(response: Response,maxBytes: number,signal: AbortSignal): Promise<Uint8Array>。
 
-- [ ] 写 TestContextVersionChangesBetweenPages，断言中途新 Head 得到 Stale、不能返回 complete=true；用参数化 Fixture 断言分页缺失、错误内容锚点、越界路径、删除与重命名有明确状态。TS 断言 CRLF 与无末尾换行位置正确，超限 UTF8 响应停止 reader，不先执行 response.text()。
+- [x] 写 TestContextVersionChangesBetweenPages，断言中途新 Head 得到 Stale、不能返回 complete=true；用参数化 Fixture 断言分页缺失、错误内容锚点、越界路径、删除与重命名有明确状态。TS 断言 CRLF 与无末尾换行位置正确，超限 UTF8 响应停止 reader，不先执行 response.text()。
 
 ```ts
 const oversized = new Response('汉'.repeat(100));
@@ -175,10 +175,10 @@ await expect(readBoundedBytes(oversized, 256, new AbortController().signal))
   .rejects.toThrow('RESPONSE_TOO_LARGE');
 ```
 
-- [ ] 执行 context 场景和 pnpm exec turbo run test:unit --filter=@reviewpilot/repository。预期新增读取或映射断言失败。
-- [ ] 0004 建立 review_context_manifests、review_evidence，扩展 review_runs 的 needs_reconciliation/reason_code/provenance 和不可变配置引用，允许 Outbox 的 ai-review 类型但暂不启用投递。实现 Go 固定 SHA 读取及证据持久化；页间 SHA 与 patch 内容核验，不能持有数据库锁等待 GitHub 网络。测试可 seed 合法 fenced lease，不依赖任务 5 的 Claim 实现。Go 不向 Worker 暴露 Installation Token；完整 manifest contextHash 由 Go 提供，最后一页以前不允许生成。
-- [ ] 实现配置中的字节与文件限制，完整读取状态为 available、deleted、binary、missing、denied 或 too-large。新正文流式读取，旧连接响应限额保持不变；超过范围写 coverage reason。运行同一组定向命令，预期通过。
-- [ ] 提交 feat: add fixed-SHA review context and diff mapping。
+- [x] 执行 context 场景和 pnpm exec turbo run test:unit --filter=@reviewpilot/repository。预期新增读取或映射断言失败。
+- [x] 0004 建立 review_context_manifests、review_evidence，扩展 review_runs 的 needs_reconciliation/reason_code/provenance 和不可变配置引用，允许 Outbox 的 ai-review 类型但暂不启用投递。实现 Go 固定 SHA 读取及证据持久化；页间 SHA 与 patch 内容核验，不能持有数据库锁等待 GitHub 网络。测试可 seed 合法 fenced lease，不依赖任务 5 的 Claim 实现。Go 不向 Worker 暴露 Installation Token；完整 manifest contextHash 由 Go 提供，最后一页以前不允许生成。
+- [x] 实现配置中的字节与文件限制，完整读取状态为 available、deleted、binary、missing、denied 或 too-large。新正文流式读取，旧连接响应限额保持不变；超过范围写 coverage reason。运行同一组定向命令，预期通过。
+- [x] 提交 feat: add fixed-SHA review context and diff mapping。
 
 ## Task 3 原子预算与可恢复阶段事实
 

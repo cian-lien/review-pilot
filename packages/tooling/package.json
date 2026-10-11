@@ -25,6 +25,7 @@
     "test:integration": "cd ../.. && tsx scripts/s1-migration-test.ts"
   },
   "devDependencies": {
+    "@reviewpilot/repository": "workspace:*",
     "@reviewpilot/contracts": "workspace:*",
     "@reviewpilot/api": "workspace:*",
     "@reviewpilot/domain": "workspace:*",

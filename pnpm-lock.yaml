@@ -395,6 +395,12 @@ importers:
         specifier: 4.6.5
         version: 4.6.5
 
+  packages/repository:
+    dependencies:
+      '@reviewpilot/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+
   packages/tooling:
     devDependencies:
       '@reviewpilot/api':
@@ -412,6 +418,9 @@ importers:
       '@reviewpilot/persistence':
         specifier: workspace:*
         version: link:../persistence
+      '@reviewpilot/repository':
+        specifier: workspace:*
+        version: link:../repository
       '@reviewpilot/web':
         specifier: workspace:*
         version: link:../../apps/web

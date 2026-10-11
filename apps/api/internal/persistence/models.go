@@ -38,19 +38,21 @@ type PullRequest struct {
 func (PullRequest) TableName() string { return "pull_requests" }
 
 type Run struct {
-	ID              string
-	InstallationID  int64
-	RepositoryID    int64
-	PrNumber        int
-	BaseSHA         string `gorm:"column:base_sha"`
-	HeadSHA         string `gorm:"column:head_sha"`
-	PipelineVersion string
-	Generation      int
-	Snapshot        json.RawMessage `gorm:"type:jsonb"`
-	Status          string
-	CheckID         *int64
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	ID                  string
+	InstallationID      int64
+	RepositoryID        int64
+	PrNumber            int
+	BaseSHA             string `gorm:"column:base_sha"`
+	HeadSHA             string `gorm:"column:head_sha"`
+	PipelineVersion     string
+	Generation          int
+	Snapshot            json.RawMessage `gorm:"type:jsonb"`
+	Status              string
+	CheckID             *int64
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
+	NeedsReconciliation bool
+	ReasonCode          *string
 }
 
 func (Run) TableName() string { return "review_runs" }

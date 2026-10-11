@@ -20,6 +20,7 @@ import (
 	"reviewpilot.local/api/internal/observability"
 	"reviewpilot.local/api/internal/persistence"
 	"reviewpilot.local/api/internal/repositories"
+	"reviewpilot.local/api/internal/reviewcontext"
 	"reviewpilot.local/api/internal/webhooks"
 )
 
@@ -89,6 +90,12 @@ func main() {
 		taskService = jobs.New(nil)
 	}
 	jobs.Register(internal, taskService, cfg)
+	reviewCfg, reviewErr := config.LoadReview()
+	if reviewErr != nil {
+		slog.Error("REVIEW_CONFIG_INVALID")
+		os.Exit(1)
+	}
+	reviewcontext.Register(internal, reviewcontext.New(taskService.DB, service.Gateway, reviewCfg.Policy), cfg)
 	servers := []*http.Server{
 		{Addr: cfg.APIBindAddr, Handler: public, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 64 << 10},
 		{Addr: cfg.InternalBindAddr, Handler: internal, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 64 << 10},
