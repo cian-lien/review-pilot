@@ -7,112 +7,112 @@ paths:
     get:
       operationId: getHealth
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HealthResponse"
+                $ref: '#/components/schemas/HealthResponse'
   /api/bootstrap:
     get:
       operationId: getBootstrap
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BootstrapResponse"
-        "401":
+                $ref: '#/components/schemas/BootstrapResponse'
+        '401':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "503":
+                $ref: '#/components/schemas/APIError'
+        '503':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /api/session:
     get:
       operationId: getSession
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SessionResponse"
-        "401":
+                $ref: '#/components/schemas/SessionResponse'
+        '401':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "503":
+                $ref: '#/components/schemas/APIError'
+        '503':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /api/repositories:
     get:
       operationId: listRepositories
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RepositoryListResponse"
-        "401":
+                $ref: '#/components/schemas/RepositoryListResponse'
+        '401':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "503":
+                $ref: '#/components/schemas/APIError'
+        '503':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /api/runs:
     get:
       operationId: listRuns
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RunListResponse"
-        "401":
+                $ref: '#/components/schemas/RunListResponse'
+        '401':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "503":
+                $ref: '#/components/schemas/APIError'
+        '503':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /api/repositories/sync:
     post:
       operationId: syncRepositories
       responses:
-        "204":
+        '204':
           description: Synchronized
-        "403":
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /api/repositories/{installationId}/{repositoryId}:
     parameters:
       - in: path
@@ -136,22 +136,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SetRepositoryEnabledRequest"
+              $ref: '#/components/schemas/SetRepositoryEnabledRequest'
       responses:
-        "204":
+        '204':
           description: Updated
-        "403":
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /internal/tasks/{taskId}/claim:
     post:
       operationId: claimTask
@@ -165,54 +165,54 @@ paths:
             type: string
             format: uuid
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ClaimResponse"
-        "400":
+                $ref: '#/components/schemas/ClaimResponse'
+        '400':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
+                $ref: '#/components/schemas/APIError'
+        '401':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
+                $ref: '#/components/schemas/APIError'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
+                $ref: '#/components/schemas/APIError'
+        '404':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "503":
+                $ref: '#/components/schemas/APIError'
+        '503':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ClaimRequest"
+              $ref: '#/components/schemas/ClaimRequest'
   /internal/tasks/{taskId}/heartbeat:
     post:
       operationId: heartbeatTask
@@ -226,50 +226,50 @@ paths:
             type: string
             format: uuid
       responses:
-        "204":
+        '204':
           description: Success
-        "400":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
+        '400':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
+                $ref: '#/components/schemas/APIError'
+        '401':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
+                $ref: '#/components/schemas/APIError'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '404':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "503":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
+        '503':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TaskLease"
+              $ref: '#/components/schemas/TaskLease'
   /internal/tasks/{taskId}/connection-result:
     post:
       operationId: commitConnectionResult
@@ -283,54 +283,54 @@ paths:
             type: string
             format: uuid
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CommitResponse"
-        "400":
+                $ref: '#/components/schemas/CommitResponse'
+        '400':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
+                $ref: '#/components/schemas/APIError'
+        '401':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
+                $ref: '#/components/schemas/APIError'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
+                $ref: '#/components/schemas/APIError'
+        '404':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "503":
+                $ref: '#/components/schemas/APIError'
+        '503':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ConnectionResult"
+              $ref: '#/components/schemas/ConnectionResult'
   /internal/tasks/{taskId}/result:
     get:
       operationId: readConnectionResult
@@ -359,48 +359,48 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CommitResponse"
-        "400":
+                $ref: '#/components/schemas/CommitResponse'
+        '400':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
+                $ref: '#/components/schemas/APIError'
+        '401':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
+                $ref: '#/components/schemas/APIError'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
+                $ref: '#/components/schemas/APIError'
+        '404':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "503":
+                $ref: '#/components/schemas/APIError'
+        '503':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /internal/tasks/{taskId}/fail:
     post:
       operationId: failTask
@@ -414,50 +414,50 @@ paths:
             type: string
             format: uuid
       responses:
-        "204":
+        '204':
           description: Success
-        "400":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
+        '400':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
+                $ref: '#/components/schemas/APIError'
+        '401':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
+                $ref: '#/components/schemas/APIError'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '404':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "503":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
+        '503':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TaskLease"
+              $ref: '#/components/schemas/TaskLease'
   /api/github/webhook:
     post:
       operationId: acceptGitHubWebhook
@@ -487,42 +487,42 @@ paths:
               type: object
               additionalProperties: true
       responses:
-        "202":
+        '202':
           description: Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WebhookResponse"
-        "400":
+                $ref: '#/components/schemas/WebhookResponse'
+        '400':
           description: Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
+                $ref: '#/components/schemas/APIError'
+        '401':
           description: Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "413":
+                $ref: '#/components/schemas/APIError'
+        '413':
           description: Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "503":
+                $ref: '#/components/schemas/APIError'
+        '503':
           description: Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /internal/review-tasks/{taskId}/claim:
     post:
       operationId: reviewClaimReviewRequestclaim
@@ -540,26 +540,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ClaimReviewRequest"
+              $ref: '#/components/schemas/ClaimReviewRequest'
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ClaimReviewResponse"
-        "403":
+                $ref: '#/components/schemas/ClaimReviewResponse'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /internal/review-tasks/{taskId}/heartbeat:
     post:
       operationId: reviewReviewLeaseheartbeat
@@ -575,22 +575,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ReviewLease"
+              $ref: '#/components/schemas/ReviewLease'
       responses:
-        "204":
+        '204':
           description: Success
-        "403":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
+        '409':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
   /internal/review-tasks/{taskId}/context:
     post:
       operationId: reviewReadReviewContextRequestcontext
@@ -606,26 +606,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ReadReviewContextRequest"
+              $ref: '#/components/schemas/ReadReviewContextRequest'
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ReviewContextPage"
-        "403":
+                $ref: '#/components/schemas/ReviewContextPage'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /internal/review-tasks/{taskId}/model-calls/reserve:
     post:
       operationId: reviewReserveModelCallRequestmodelcallsreserve
@@ -641,26 +641,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ReserveModelCallRequest"
+              $ref: '#/components/schemas/ReserveModelCallRequest'
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ModelCall"
-        "403":
+                $ref: '#/components/schemas/ModelCall'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /internal/review-tasks/{taskId}/model-calls/{callId}/dispatch:
     post:
       operationId: reviewDispatchModelCallRequestmodelcallscallIddispatch
@@ -680,26 +680,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DispatchModelCallRequest"
+              $ref: '#/components/schemas/DispatchModelCallRequest'
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ModelCall"
-        "403":
+                $ref: '#/components/schemas/ModelCall'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /internal/review-tasks/{taskId}/model-calls/{callId}/settle:
     post:
       operationId: reviewSettleModelCallRequestmodelcallscallIdsettle
@@ -719,26 +719,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SettleModelCallRequest"
+              $ref: '#/components/schemas/SettleModelCallRequest'
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ModelCall"
-        "403":
+                $ref: '#/components/schemas/ModelCall'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /internal/review-tasks/{taskId}/stages/read:
     post:
       operationId: reviewReadReviewStageRequeststagesread
@@ -754,26 +754,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ReadReviewStageRequest"
+              $ref: '#/components/schemas/ReadReviewStageRequest'
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ReadReviewStageResponse"
-        "403":
+                $ref: '#/components/schemas/ReadReviewStageResponse'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /internal/review-tasks/{taskId}/stages:
     post:
       operationId: reviewSaveReviewStageRequeststages
@@ -789,26 +789,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SaveReviewStageRequest"
+              $ref: '#/components/schemas/SaveReviewStageRequest'
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CommitResponse"
-        "403":
+                $ref: '#/components/schemas/CommitResponse'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /internal/review-tasks/{taskId}/result:
     post:
       operationId: reviewCommitReviewRequestresult
@@ -824,26 +824,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CommitReviewRequest"
+              $ref: '#/components/schemas/CommitReviewRequest'
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ReviewCommitResponse"
-        "403":
+                $ref: '#/components/schemas/ReviewCommitResponse'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+                $ref: '#/components/schemas/APIError'
+        '409':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
     get:
       operationId: confirmReviewResult
       security:
@@ -864,18 +864,18 @@ paths:
             type: string
             pattern: ^[0-9a-f]{64}$
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ReviewCommitResponse"
-        "404":
+                $ref: '#/components/schemas/ReviewCommitResponse'
+        '404':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /internal/review-tasks/{taskId}/block:
     post:
       operationId: reviewReviewTaskActionRequestblock
@@ -891,22 +891,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ReviewTaskActionRequest"
+              $ref: '#/components/schemas/ReviewTaskActionRequest'
       responses:
-        "204":
+        '204':
           description: Success
-        "403":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
+        '409':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
   /internal/review-tasks/{taskId}/fail:
     post:
       operationId: reviewReviewTaskActionRequestfail
@@ -922,22 +922,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ReviewTaskActionRequest"
+              $ref: '#/components/schemas/ReviewTaskActionRequest'
       responses:
-        "204":
+        '204':
           description: Success
-        "403":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "409":
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
+        '409':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
   /api/repositories/{installationId}/{repositoryId}/pulls:
     get:
       operationId: getReviewPullList
@@ -963,18 +963,18 @@ paths:
             type: string
             maxLength: 512
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ReviewPullList"
-        "403":
+                $ref: '#/components/schemas/ReviewPullList'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /api/repositories/{installationId}/{repositoryId}/pulls/{number}/runs:
     get:
       operationId: getReviewRunList
@@ -1007,18 +1007,18 @@ paths:
             type: string
             maxLength: 512
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ReviewRunList"
-        "403":
+                $ref: '#/components/schemas/ReviewRunList'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
   /api/repositories/{installationId}/{repositoryId}/pulls/{number}/runs/{runId}:
     get:
       operationId: getReviewRunDetail
@@ -1049,18 +1049,18 @@ paths:
           required: true
           schema: *a1
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ReviewRunDetail"
-        "403":
+                $ref: '#/components/schemas/ReviewRunDetail'
+        '403':
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/APIError"
+                $ref: '#/components/schemas/APIError'
 components:
   schemas:
     TenantRef:
@@ -1100,7 +1100,7 @@ components:
             - generation
           properties:
             tenant:
-              $ref: "#/components/schemas/TenantRef"
+              $ref: '#/components/schemas/TenantRef'
             prNumber:
               type: integer
               minimum: 1
@@ -1160,7 +1160,7 @@ components:
           type: string
           pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
         tenant:
-          $ref: "#/components/schemas/TenantRef"
+          $ref: '#/components/schemas/TenantRef'
         headSha:
           type: string
           pattern: ^[0-9a-f]{40,64}$
@@ -1208,7 +1208,7 @@ components:
           type: string
           format: date-time
         snapshot:
-          $ref: "#/components/schemas/RunSnapshot"
+          $ref: '#/components/schemas/RunSnapshot'
         inputHash:
           type: string
           pattern: ^[a-f0-9]{64}$
@@ -1227,7 +1227,7 @@ components:
           minLength: 1
           maxLength: 200
         envelope:
-          $ref: "#/components/schemas/TaskEnvelope"
+          $ref: '#/components/schemas/TaskEnvelope'
     ClaimResponse:
       type: object
       additionalProperties: false
@@ -1245,7 +1245,7 @@ components:
             - exhausted
             - superseded
         lease:
-          $ref: "#/components/schemas/TaskLease"
+          $ref: '#/components/schemas/TaskLease'
     ConnectionResult:
       type: object
       additionalProperties: false
@@ -1379,7 +1379,7 @@ components:
       additionalProperties: false
       properties:
         tenant:
-          $ref: "#/components/schemas/TenantRef"
+          $ref: '#/components/schemas/TenantRef'
         fullName:
           type: string
         public:
@@ -1406,7 +1406,7 @@ components:
         repositories:
           type: array
           items:
-            $ref: "#/components/schemas/RepositorySummary"
+            $ref: '#/components/schemas/RepositorySummary'
       required:
         - repositories
     RunSummary:
@@ -1416,7 +1416,7 @@ components:
         id:
           type: string
         tenant:
-          $ref: "#/components/schemas/TenantRef"
+          $ref: '#/components/schemas/TenantRef'
         fullName:
           type: string
         prNumber:
@@ -1460,7 +1460,7 @@ components:
         runs:
           type: array
           items:
-            $ref: "#/components/schemas/RunSummary"
+            $ref: '#/components/schemas/RunSummary'
         aiReviewEnabled:
           type: boolean
           enum:
@@ -1516,7 +1516,7 @@ components:
           type: string
           pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
         tenant:
-          $ref: "#/components/schemas/TenantRef"
+          $ref: '#/components/schemas/TenantRef'
         headSha:
           type: string
           pattern: ^[0-9a-f]{40,64}$
@@ -1634,7 +1634,7 @@ components:
         - prTitle
       properties:
         tenant:
-          $ref: "#/components/schemas/TenantRef"
+          $ref: '#/components/schemas/TenantRef'
         prNumber:
           type: integer
           minimum: 1
@@ -1694,7 +1694,7 @@ components:
         - provenance
       properties:
         identity:
-          $ref: "#/components/schemas/ReviewIdentity"
+          $ref: '#/components/schemas/ReviewIdentity'
         modelConfigVersion:
           type: string
           maxLength: 128
@@ -1722,9 +1722,9 @@ components:
           enum:
             - none
         policy:
-          $ref: "#/components/schemas/ReviewPolicy"
+          $ref: '#/components/schemas/ReviewPolicy'
         provenance:
-          $ref: "#/components/schemas/ReviewProvenance"
+          $ref: '#/components/schemas/ReviewProvenance'
     ReviewLease:
       type: object
       additionalProperties: false
@@ -1743,7 +1743,7 @@ components:
         taskId: *a1
         runId: *a1
         tenant:
-          $ref: "#/components/schemas/TenantRef"
+          $ref: '#/components/schemas/TenantRef'
         headSha: *a2
         inputHash: *a4
         leaseToken: *a1
@@ -1757,7 +1757,7 @@ components:
           minimum: 1
           maximum: 5
         snapshot:
-          $ref: "#/components/schemas/ReviewSnapshot"
+          $ref: '#/components/schemas/ReviewSnapshot'
     ReviewSkippedFile:
       type: object
       additionalProperties: false
@@ -1813,7 +1813,7 @@ components:
         skipped:
           type: array
           items:
-            $ref: "#/components/schemas/ReviewSkippedFile"
+            $ref: '#/components/schemas/ReviewSkippedFile'
           maxItems: 64
         limitations:
           type: array
@@ -1893,9 +1893,9 @@ components:
           maxLength: 131072
           nullable: true
         base:
-          $ref: "#/components/schemas/ReviewFileContent"
+          $ref: '#/components/schemas/ReviewFileContent'
         head:
-          $ref: "#/components/schemas/ReviewFileContent"
+          $ref: '#/components/schemas/ReviewFileContent'
     EvidenceRef:
       type: object
       additionalProperties: false
@@ -1932,9 +1932,9 @@ components:
         - redacted
       properties:
         ref:
-          $ref: "#/components/schemas/EvidenceRef"
+          $ref: '#/components/schemas/EvidenceRef'
         tenant:
-          $ref: "#/components/schemas/TenantRef"
+          $ref: '#/components/schemas/TenantRef'
         snippet:
           type: string
           maxLength: 2048
@@ -1973,15 +1973,15 @@ components:
         files:
           type: array
           items:
-            $ref: "#/components/schemas/ReviewChangedFile"
+            $ref: '#/components/schemas/ReviewChangedFile'
           maxItems: 64
         evidence:
           type: array
           items:
-            $ref: "#/components/schemas/CodeEvidence"
+            $ref: '#/components/schemas/CodeEvidence'
           maxItems: 1024
         coverage: &a7
-          $ref: "#/components/schemas/ReviewCoverage"
+          $ref: '#/components/schemas/ReviewCoverage'
     RootCauseStatement:
       type: object
       additionalProperties: false
@@ -2042,13 +2042,13 @@ components:
         evidence:
           type: array
           items:
-            $ref: "#/components/schemas/EvidenceRef"
+            $ref: '#/components/schemas/EvidenceRef'
           maxItems: 5
         suggestedVerification:
           type: string
           maxLength: 2048
         rootCauseStatement:
-          $ref: "#/components/schemas/RootCauseStatement"
+          $ref: '#/components/schemas/RootCauseStatement'
     ReviewCandidates:
       type: object
       additionalProperties: false
@@ -2058,7 +2058,7 @@ components:
         candidates:
           type: array
           items:
-            $ref: "#/components/schemas/ReviewCandidate"
+            $ref: '#/components/schemas/ReviewCandidate'
           maxItems: 10
     VerificationDecision:
       type: object
@@ -2083,7 +2083,7 @@ components:
         evidence:
           type: array
           items:
-            $ref: "#/components/schemas/EvidenceRef"
+            $ref: '#/components/schemas/EvidenceRef'
           maxItems: 5
     ReviewVerification:
       type: object
@@ -2094,7 +2094,7 @@ components:
         decisions:
           type: array
           items:
-            $ref: "#/components/schemas/VerificationDecision"
+            $ref: '#/components/schemas/VerificationDecision'
           maxItems: 10
     ModelUsage:
       type: object
@@ -2167,7 +2167,7 @@ components:
           nullable: true
         usage:
           allOf:
-            - $ref: "#/components/schemas/ModelUsage"
+            - $ref: '#/components/schemas/ModelUsage'
           nullable: true
         revision:
           type: integer
@@ -2188,15 +2188,15 @@ components:
       properties:
         context:
           allOf:
-            - $ref: "#/components/schemas/ReviewContextPage"
+            - $ref: '#/components/schemas/ReviewContextPage'
           nullable: true
         candidates:
           allOf:
-            - $ref: "#/components/schemas/ReviewCandidates"
+            - $ref: '#/components/schemas/ReviewCandidates'
           nullable: true
         verification:
           allOf:
-            - $ref: "#/components/schemas/ReviewVerification"
+            - $ref: '#/components/schemas/ReviewVerification'
           nullable: true
     ReviewStageRecord:
       type: object
@@ -2222,7 +2222,7 @@ components:
           pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
           nullable: true
         payload:
-          $ref: "#/components/schemas/ReviewStagePayload"
+          $ref: '#/components/schemas/ReviewStagePayload'
         expiresAt: *a5
     ReviewResult:
       type: object
@@ -2242,7 +2242,7 @@ components:
           enum:
             - ai-review
         lease: &a9
-          $ref: "#/components/schemas/ReviewLease"
+          $ref: '#/components/schemas/ReviewLease'
         resultId:
           type: string
           maxLength: 64
@@ -2250,12 +2250,12 @@ components:
         candidates:
           type: array
           items:
-            $ref: "#/components/schemas/ReviewCandidate"
+            $ref: '#/components/schemas/ReviewCandidate'
           maxItems: 10
         decisions:
           type: array
           items:
-            $ref: "#/components/schemas/VerificationDecision"
+            $ref: '#/components/schemas/VerificationDecision'
           maxItems: 10
         coverage: *a7
         callIds:
@@ -2277,11 +2277,11 @@ components:
         findingId: *a1
         fingerprint: *a4
         candidate:
-          $ref: "#/components/schemas/ReviewCandidate"
+          $ref: '#/components/schemas/ReviewCandidate'
         evidence:
           type: array
           items:
-            $ref: "#/components/schemas/CodeEvidence"
+            $ref: '#/components/schemas/CodeEvidence'
           maxItems: 5
         publicationStatus:
           type: string
@@ -2316,7 +2316,7 @@ components:
         evidence:
           type: array
           items:
-            $ref: "#/components/schemas/EvidenceRef"
+            $ref: '#/components/schemas/EvidenceRef'
           maxItems: 5
     ReviewCostSummary:
       type: object
@@ -2340,7 +2340,7 @@ components:
         calls:
           type: array
           items:
-            $ref: "#/components/schemas/ModelCall"
+            $ref: '#/components/schemas/ModelCall'
           maxItems: 4
         knownCostMicros: *a8
         heldCostMicros: *a8
@@ -2385,7 +2385,7 @@ components:
       properties:
         runId: *a1
         tenant:
-          $ref: "#/components/schemas/TenantRef"
+          $ref: '#/components/schemas/TenantRef'
         prNumber:
           type: integer
           minimum: 1
@@ -2398,7 +2398,7 @@ components:
         findings:
           type: array
           items:
-            $ref: "#/components/schemas/ReviewPublicationFinding"
+            $ref: '#/components/schemas/ReviewPublicationFinding'
           maxItems: 3
         mode: *a3
     ReviewPublicationReceipt:
@@ -2465,7 +2465,7 @@ components:
           maximum: 3
         receipt:
           allOf:
-            - $ref: "#/components/schemas/ReviewPublicationReceipt"
+            - $ref: '#/components/schemas/ReviewPublicationReceipt'
           nullable: true
     ReviewRunSummary:
       type: object
@@ -2482,7 +2482,7 @@ components:
         runId: *a1
         headSha: *a2
         status:
-          $ref: "#/components/schemas/RunState"
+          $ref: '#/components/schemas/RunState'
         needsReconciliation: *a6
         reasonCode:
           type: string
@@ -2508,29 +2508,29 @@ components:
       properties:
         runId: *a1
         status:
-          $ref: "#/components/schemas/RunState"
+          $ref: '#/components/schemas/RunState'
         needsReconciliation: *a6
         reasonCode:
           type: string
           maxLength: 64
           nullable: true
         snapshot:
-          $ref: "#/components/schemas/ReviewSnapshot"
+          $ref: '#/components/schemas/ReviewSnapshot'
         findings:
           type: array
           items:
-            $ref: "#/components/schemas/ReviewFinding"
+            $ref: '#/components/schemas/ReviewFinding'
           maxItems: 10
         filtered:
           type: array
           items:
-            $ref: "#/components/schemas/ReviewFilteredCandidate"
+            $ref: '#/components/schemas/ReviewFilteredCandidate'
           maxItems: 10
         coverage: *a7
         costs:
-          $ref: "#/components/schemas/ReviewCostSummary"
+          $ref: '#/components/schemas/ReviewCostSummary'
         publication:
-          $ref: "#/components/schemas/ReviewPublicationSummary"
+          $ref: '#/components/schemas/ReviewPublicationSummary'
         contentExpired: *a6
     ReviewPullSummary:
       type: object
@@ -2550,7 +2550,7 @@ components:
           maxLength: 512
         headSha: *a2
         latestRun:
-          $ref: "#/components/schemas/ReviewRunSummary"
+          $ref: '#/components/schemas/ReviewRunSummary'
     ReviewPullList:
       type: object
       additionalProperties: false
@@ -2561,7 +2561,7 @@ components:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/ReviewPullSummary"
+            $ref: '#/components/schemas/ReviewPullSummary'
           maxItems: 20
         nextCursor:
           type: string
@@ -2577,7 +2577,7 @@ components:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/ReviewRunSummary"
+            $ref: '#/components/schemas/ReviewRunSummary'
           maxItems: 20
         nextCursor:
           type: string
@@ -2591,7 +2591,7 @@ components:
         - workerId
       properties:
         envelope:
-          $ref: "#/components/schemas/ReviewTaskEnvelope"
+          $ref: '#/components/schemas/ReviewTaskEnvelope'
         workerId:
           type: string
           maxLength: 128
@@ -2638,6 +2638,7 @@ components:
       type: object
       additionalProperties: false
       required:
+        - modelConfigHash
         - lease
         - purpose
         - ordinal
@@ -2645,6 +2646,7 @@ components:
         - inputTokenLimit
         - outputTokenLimit
       properties:
+        modelConfigHash: *a4
         lease: *a9
         purpose: *a10
         ordinal:
@@ -2701,7 +2703,7 @@ components:
             - uncertain
         usage:
           allOf:
-            - $ref: "#/components/schemas/ModelUsage"
+            - $ref: '#/components/schemas/ModelUsage'
           nullable: true
         safeResponseHash:
           type: string
@@ -2732,7 +2734,7 @@ components:
         found: *a6
         record:
           allOf:
-            - $ref: "#/components/schemas/ReviewStageRecord"
+            - $ref: '#/components/schemas/ReviewStageRecord'
           nullable: true
     SaveReviewStageRequest:
       type: object
@@ -2752,7 +2754,7 @@ components:
           pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
           nullable: true
         payload:
-          $ref: "#/components/schemas/ReviewStagePayload"
+          $ref: '#/components/schemas/ReviewStagePayload'
     CommitReviewRequest:
       type: object
       additionalProperties: false
@@ -2760,7 +2762,7 @@ components:
         - result
       properties:
         result:
-          $ref: "#/components/schemas/ReviewResult"
+          $ref: '#/components/schemas/ReviewResult'
     ReviewCommitResponse:
       type: object
       additionalProperties: false

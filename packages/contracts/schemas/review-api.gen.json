@@ -2235,6 +2235,7 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
+          "modelConfigHash",
           "lease",
           "purpose",
           "ordinal",
@@ -2243,6 +2244,10 @@
           "outputTokenLimit"
         ],
         "properties": {
+          "modelConfigHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
           "lease": {
             "$ref": "#/components/schemas/ReviewLease"
           },

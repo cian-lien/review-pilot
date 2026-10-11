@@ -1,0 +1,22 @@
+{
+  "name": "@reviewpilot/model-gateway",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test:unit": "cd ../.. && vitest run --config vitest.config.ts packages/model-gateway/tests",
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "lint": "eslint src tests",
+    "format": "prettier --write package.json tsconfig.json src tests --log-level warn"
+  },
+  "dependencies": {
+    "@langchain/core": "1.2.17",
+    "@langchain/openai": "1.6.2",
+    "@reviewpilot/contracts": "workspace:*",
+    "@reviewpilot/repository": "workspace:*",
+    "zod": "4.6.5"
+  }
+}

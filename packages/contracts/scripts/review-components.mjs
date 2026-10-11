@@ -23,7 +23,8 @@ const hash = { type: 'string', pattern: '^[0-9a-f]{64}$' };
 const sha = { type: 'string', pattern: '^[0-9a-f]{40,64}$' };
 const money = { type: 'string', pattern: '^(0|[1-9][0-9]{0,18})$', maxLength: 19 };
 const timestamp = { type: 'string', format: 'date-time' };
-const nullable = (schema) => schema.$ref ? { allOf: [schema], nullable: true } : { ...schema, nullable: true };
+const nullable = (schema) =>
+  schema.$ref ? { allOf: [schema], nullable: true } : { ...schema, nullable: true };
 const stage = values('context', 'candidates', 'verification');
 const purpose = values('generate', 'verify');
 const lease = ref('ReviewLease');
@@ -332,6 +333,7 @@ export const reviewComponents = {
   }),
   ReadReviewContextRequest: object({ lease, cursor: nullable(text(256)) }),
   ReserveModelCallRequest: object({
+    modelConfigHash: hash,
     lease,
     purpose,
     ordinal: integer(2, 1),

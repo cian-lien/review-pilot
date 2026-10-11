@@ -120,6 +120,10 @@ func (s *Service) Reserve(ctx context.Context, req contracts.ReserveModelCallReq
 		return answer, fault.New(409, "MODEL_CONFIG_MISMATCH")
 	}
 	m := cfg.Model
+	modelBody, _ := json.Marshal(m)
+	if req.ModelConfigHash != jobs.Hash(modelBody) {
+		return answer, fault.New(409, "MODEL_CONFIG_MISMATCH")
+	}
 	inputPrice, _ := config.ParseMicros(m.InputMicrosPerMillion)
 	outputPrice, _ := config.ParseMicros(m.OutputMicrosPerMillion)
 	amount, err := Cost(req.InputTokenLimit, req.OutputTokenLimit, inputPrice, outputPrice)
@@ -127,7 +131,6 @@ func (s *Service) Reserve(ctx context.Context, req contracts.ReserveModelCallReq
 		return answer, fault.New(400, "INVALID_MODEL_COST")
 	}
 	err = s.transaction(ctx, req.Lease, func(tx *gorm.DB) error {
-		modelBody, _ := json.Marshal(m)
 		digest := jobs.Hash(modelBody)
 		if err := tx.Exec("INSERT INTO review_model_configs(version,digest,payload) VALUES(?,?,?::jsonb) ON CONFLICT DO NOTHING", m.ModelConfigVersion, digest, string(modelBody)).Error; err != nil {
 			return err

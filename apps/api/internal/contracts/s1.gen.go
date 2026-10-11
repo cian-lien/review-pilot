@@ -1077,6 +1077,7 @@ type RepositorySummary struct {
 type ReserveModelCallRequest struct {
 	InputTokenLimit  int                            `json:"inputTokenLimit"`
 	Lease            ReviewLease                    `json:"lease"`
+	ModelConfigHash  string                         `json:"modelConfigHash"`
 	Ordinal          int                            `json:"ordinal"`
 	OutputTokenLimit int                            `json:"outputTokenLimit"`
 	Purpose          ReserveModelCallRequestPurpose `json:"purpose"`

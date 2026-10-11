@@ -19,6 +19,29 @@ import (
 	"time"
 )
 
+func modelHash(t *testing.T) string {
+	t.Helper()
+	cfg, err := config.LoadReview()
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := json.Marshal(cfg.Model)
+	return jobs.Hash(body)
+}
+func TestBudgetRejectsConfigurationDriftBeforeReservation(t *testing.T) {
+	store := testsupport.NewStore(t)
+	server := httptest.NewServer(http.NotFoundHandler())
+	defer server.Close()
+	lease, _ := testsupport.SeedReview(t, store, server.URL)
+	req := contracts.ReserveModelCallRequest{ModelConfigHash: strings.Repeat("0", 64), Lease: lease, Purpose: "generate", Ordinal: 1, RequestHash: strings.Repeat("a", 64), InputTokenLimit: 5, OutputTokenLimit: 1}
+	if _, err := New(store.DB()).Reserve(context.Background(), req); err == nil {
+		t.Fatal("configuration drift must fail before reservation")
+	}
+	var count int64
+	if err := store.DB().Raw("SELECT count(*) FROM model_calls WHERE run_id=?", lease.RunId).Scan(&count).Error; err != nil || count != 0 {
+		t.Fatal("mismatch created model facts")
+	}
+}
 func TestBudgetRaceAndUnknownUsage(t *testing.T) {
 	store := testsupport.NewStore(t)
 	server := httptest.NewServer(http.NotFoundHandler())
@@ -49,7 +72,7 @@ func TestBudgetRaceAndUnknownUsage(t *testing.T) {
 		wait.Add(1)
 		go func(l contracts.ReviewLease) {
 			defer wait.Done()
-			call, err := service.Reserve(context.Background(), contracts.ReserveModelCallRequest{Lease: l, Purpose: "generate", Ordinal: 1, RequestHash: strings.Repeat("a", 64), InputTokenLimit: 5, OutputTokenLimit: 1})
+			call, err := service.Reserve(context.Background(), contracts.ReserveModelCallRequest{ModelConfigHash: modelHash(t), Lease: l, Purpose: "generate", Ordinal: 1, RequestHash: strings.Repeat("a", 64), InputTokenLimit: 5, OutputTokenLimit: 1})
 			if err == nil {
 				mutex.Lock()
 				successful = append(successful, struct {
@@ -81,7 +104,7 @@ func TestBudgetRaceAndUnknownUsage(t *testing.T) {
 	if err = store.DB().Raw("SELECT held_micros FROM budget_limits WHERE scope_type='global'").Scan(&held).Error; err != nil || held != 6 {
 		t.Fatalf("unknown charge was refunded: %d %v", held, err)
 	}
-	if _, err = service.Reserve(context.Background(), contracts.ReserveModelCallRequest{Lease: lease, Purpose: "generate", Ordinal: 2, RequestHash: strings.Repeat("b", 64), InputTokenLimit: 5, OutputTokenLimit: 1}); err == nil {
+	if _, err = service.Reserve(context.Background(), contracts.ReserveModelCallRequest{ModelConfigHash: modelHash(t), Lease: lease, Purpose: "generate", Ordinal: 2, RequestHash: strings.Repeat("b", 64), InputTokenLimit: 5, OutputTokenLimit: 1}); err == nil {
 		t.Fatal("unknown call automatically retried")
 	}
 	if _, err = config.ParseMicros("9223372036854775808"); err == nil {
@@ -114,7 +137,7 @@ func TestSettledCallWithoutArtifactBlocksRecovery(t *testing.T) {
 	defer server.Close()
 	lease, _ := testsupport.SeedReview(t, store, server.URL)
 	service := New(store.DB())
-	call, err := service.Reserve(context.Background(), contracts.ReserveModelCallRequest{Lease: lease, Purpose: "generate", Ordinal: 1, RequestHash: strings.Repeat("c", 64), InputTokenLimit: 5, OutputTokenLimit: 1})
+	call, err := service.Reserve(context.Background(), contracts.ReserveModelCallRequest{ModelConfigHash: modelHash(t), Lease: lease, Purpose: "generate", Ordinal: 1, RequestHash: strings.Repeat("c", 64), InputTokenLimit: 5, OutputTokenLimit: 1})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -126,7 +149,7 @@ func TestSettledCallWithoutArtifactBlocksRecovery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = service.Reserve(context.Background(), contracts.ReserveModelCallRequest{Lease: lease, Purpose: "generate", Ordinal: 2, RequestHash: strings.Repeat("d", 64), InputTokenLimit: 5, OutputTokenLimit: 1})
+	_, err = service.Reserve(context.Background(), contracts.ReserveModelCallRequest{ModelConfigHash: modelHash(t), Lease: lease, Purpose: "generate", Ordinal: 2, RequestHash: strings.Repeat("d", 64), InputTokenLimit: 5, OutputTokenLimit: 1})
 	if err == nil {
 		t.Fatal("charged call without an artifact generated again")
 	}
@@ -144,7 +167,7 @@ func TestBudgetSettlementIsIdempotent(t *testing.T) {
 	service := New(store.DB())
 	for _, outcome := range []contracts.SettleModelCallRequestOutcome{"succeeded", "uncertain"} {
 		lease, _ := testsupport.SeedReview(t, store, server.URL)
-		call, err := service.Reserve(context.Background(), contracts.ReserveModelCallRequest{Lease: lease, Purpose: "generate", Ordinal: 1, RequestHash: strings.Repeat("e", 64), InputTokenLimit: 5, OutputTokenLimit: 1})
+		call, err := service.Reserve(context.Background(), contracts.ReserveModelCallRequest{ModelConfigHash: modelHash(t), Lease: lease, Purpose: "generate", Ordinal: 1, RequestHash: strings.Repeat("e", 64), InputTokenLimit: 5, OutputTokenLimit: 1})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -173,7 +196,7 @@ func TestBudgetOperatorReconciliationAndScopedDeletion(t *testing.T) {
 	defer server.Close()
 	lease, _ := testsupport.SeedReview(t, store, server.URL)
 	service := New(store.DB())
-	call, err := service.Reserve(context.Background(), contracts.ReserveModelCallRequest{Lease: lease, Purpose: "generate", Ordinal: 1, RequestHash: strings.Repeat("f", 64), InputTokenLimit: 5, OutputTokenLimit: 1})
+	call, err := service.Reserve(context.Background(), contracts.ReserveModelCallRequest{ModelConfigHash: modelHash(t), Lease: lease, Purpose: "generate", Ordinal: 1, RequestHash: strings.Repeat("f", 64), InputTokenLimit: 5, OutputTokenLimit: 1})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -202,7 +225,7 @@ func TestBudgetOperatorReconciliationAndScopedDeletion(t *testing.T) {
 	}
 	// Keep a separate unknown call to verify that repository deletion cannot refund it.
 	unknownLease, _ := testsupport.SeedReview(t, store, server.URL)
-	unknown, err := service.Reserve(context.Background(), contracts.ReserveModelCallRequest{Lease: unknownLease, Purpose: "generate", Ordinal: 1, RequestHash: strings.Repeat("a", 64), InputTokenLimit: 5, OutputTokenLimit: 1})
+	unknown, err := service.Reserve(context.Background(), contracts.ReserveModelCallRequest{ModelConfigHash: modelHash(t), Lease: unknownLease, Purpose: "generate", Ordinal: 1, RequestHash: strings.Repeat("a", 64), InputTokenLimit: 5, OutputTokenLimit: 1})
 	if err != nil {
 		t.Fatal(err)
 	}

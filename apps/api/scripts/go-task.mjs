@@ -10,6 +10,9 @@ try {
   if (error.code !== 'ENOENT') throw error;
 }
 const root = fileURLToPath(new URL('..', import.meta.url));
+// Model credentials belong exclusively to the review Worker, never the Go control plane.
+for (const name of ['MODEL_API_KEY', 'MODEL_API_KEY_FILE', 'OPENAI_API_KEY', 'OPENAI_API_KEY_FILE'])
+  delete process.env[name];
 for (const name of [
   'DATABASE_URL',
   'RABBITMQ_URL',

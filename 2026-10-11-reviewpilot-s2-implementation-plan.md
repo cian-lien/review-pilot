@@ -114,7 +114,7 @@ stageInputHash 固定为 SHA256(inputHash + '\n' + contextHash + '\n' + stage + 
 | POST /claim | ClaimReviewRequest，含 envelope、workerId | ClaimReviewResponse，claimed 时含 ReviewLease，其余 outcome 沿用 S1，新增 blocked |
 | POST /heartbeat | ReviewLease | 204 |
 | POST /context | ReadReviewContextRequest，含 lease、cursor | ReviewContextPage |
-| POST /model-calls/reserve | ReserveModelCallRequest，含 lease、purpose、ordinal、requestHash、输入/输出界限 | ModelCall，重复键同内容返回已有调用 |
+| POST /model-calls/reserve | ReserveModelCallRequest，含 lease、purpose、ordinal、requestHash、modelConfigHash、输入/输出界限 | ModelCall，重复键同内容返回已有调用；非敏感配置内容 hash 必须匹配 Go 冻结配置 |
 | POST /model-calls/{callId}/dispatch | DispatchModelCallRequest，含 lease、expectedRevision | ModelCall；只有首次授权发送响应才允许 Worker 发请求 |
 | POST /model-calls/{callId}/settle | SettleModelCallRequest，含 lease、expectedRevision、用量、结果类别 | ModelCall |
 | POST /stages/read | ReadReviewStageRequest，含 lease、stage、stageInputHash | ReadReviewStageResponse，found 与可用 record |
@@ -213,8 +213,8 @@ if unknownCall.State != "uncertain" || heldAfterTimeout != 6 {
 
 **接口：** ModelProvider.invoke(request: ProviderRequest,signal: AbortSignal): Promise<ProviderResponse>；ProviderResponse 为 data:unknown、usage 可选、safeResponseHash，不携隐藏推理；ModelGateway.call<T>(request: ModelRequest<T>): Promise<ModelOutcome<T>>。ModelRequest<T> 包含 ReviewLease、purpose、ordinal、Schema 验证器、脱敏 input、signal；ModelOutcome<T> 使用 kind=succeeded/failed/needs-reconciliation、callId，成功包含 value:T，其余包含 reasonCode。BudgetClient 的 reserve/dispatch/settle 方法分别消费任务 3 同名 Request DTO、返回 ModelCall。
 
-- [ ] gateway.test.ts 断言先 reserve 再 dispatch 再 invoke；dispatch 响应丢失时 invoke 次数为 0；超时或用量缺失返回 needs-reconciliation，不自动 retry；合法且明确可重试失败最多多一次调用，每次有新预留。断言 Schema 错误、截断响应和地址与冻结配置不匹配均拒绝。
-- [ ] launch.test.ts 子进程使用 sentinel 环境：review Worker 只得到 MODEL_API_KEY 与本角色服务 token，数据库、GitHub、Evolution token 不可见；evolution Worker 不获得模型密钥。redact.test.ts 断言生成和验证输入均去除 Secret，并保留行映射。
+- [x] gateway.test.ts 断言先 reserve 再 dispatch 再 invoke；dispatch 响应丢失时 invoke 次数为 0；超时或用量缺失返回 needs-reconciliation，不自动 retry；合法且明确可重试失败最多多一次调用，每次有新预留。断言 Schema 错误、截断响应和地址与冻结配置不匹配均拒绝。
+- [x] launch.test.ts 子进程使用 sentinel 环境：review Worker 只得到 MODEL_API_KEY 与本角色服务 token，数据库、GitHub、Evolution token 不可见；evolution Worker 不获得模型密钥。redact.test.ts 断言生成和验证输入均去除 Secret，并保留行映射。
 
 ```ts
 // trace is captured by the fake budget client and fake provider for one successful call.
@@ -224,10 +224,10 @@ expect(timeout.kind).toBe('needs-reconciliation');
 expect(timeout.invokeCount).toBe(1);
 ```
 
-- [ ] 安装并锁定互相兼容的 @langchain/core 与 @langchain/openai，创建本包脚本。运行本包 test:unit 与 worker-runtime test:unit，预期上述断言在网关与白名单尚未实现时失败。
-- [ ] 实现 FakeProvider 的脚本化响应与 OpenAICompatibleProvider：非流式 Chat Completions、供应商和 LangChain 双层 maxRetries=0、请求 AbortSignal/60 秒上限、明确结构化输出模式和安全错误映射。配置有界 fetch，按 UTF8 字节限制模型响应最多 256 KiB 并禁止跨 host 重定向；SDK 不满足响应大小/重试控制时拒绝真实模式。
-- [ ] 模型目的地址和能力匹配冻结配置；完整模型消息计数含 system、Schema 与候选，未知 tokenizer 或计费项拒绝真实发送。脱敏由两个阶段共用，不把原始输入、错误对象、response 或 Prompt 输出到遥测。扩展 launcher 的 MODEL_API_KEY_FILE，仅 review 角色可读取；隔离模式不读项目 .env，REVIEW_FAKE_SCRIPT_FILE 仅 review + fake 角色获得。
-- [ ] 运行 pnpm exec turbo run test:unit --filter=@reviewpilot/model-gateway --filter=@reviewpilot/worker-runtime，预期通过；无付费请求。提交 feat: add budgeted model gateway and isolated credentials。
+- [x] 安装并锁定互相兼容的 @langchain/core 与 @langchain/openai，创建本包脚本。运行本包 test:unit 与 worker-runtime test:unit，预期上述断言在网关与白名单尚未实现时失败。
+- [x] 实现 FakeProvider 的脚本化响应与 OpenAICompatibleProvider：非流式 Chat Completions、供应商和 LangChain 双层 maxRetries=0、请求 AbortSignal/60 秒上限、明确结构化输出模式和安全错误映射。配置有界 fetch，按 UTF8 字节限制模型响应最多 256 KiB 并禁止跨 host 重定向；SDK 不满足响应大小/重试控制时拒绝真实模式。
+- [x] 模型目的地址和能力匹配冻结配置；完整模型消息计数含 system、Schema 与候选，未知 tokenizer 或计费项拒绝真实发送。脱敏由两个阶段共用，不把原始输入、错误对象、response 或 Prompt 输出到遥测。扩展 launcher 的 MODEL_API_KEY_FILE，仅 review 角色可读取；隔离模式不读项目 .env，REVIEW_FAKE_SCRIPT_FILE 仅 review + fake 角色获得。
+- [x] 运行 pnpm exec turbo run test:unit --filter=@reviewpilot/model-gateway --filter=@reviewpilot/worker-runtime，预期通过；无付费请求。提交 feat: add budgeted model gateway and isolated credentials。
 
 ## Task 5 串行引擎与最终结果持久化
 

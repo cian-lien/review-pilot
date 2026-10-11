@@ -902,6 +902,7 @@ export interface components {
             cursor: string | null;
         };
         ReserveModelCallRequest: {
+            modelConfigHash: string;
             lease: components["schemas"]["ReviewLease"];
             /** @enum {string} */
             purpose: "generate" | "verify";

@@ -130,6 +130,7 @@
       "dependsOn": ["transit"],
       "outputs": []
     },
+    "@reviewpilot/model-gateway#typecheck": {"dependsOn":["transit"],"outputs":[]},
     "@reviewpilot/api#dev": {
       "cache": false,
       "persistent": true,
@@ -334,6 +335,9 @@
       "cache": false,
       "persistent": true,
       "passThroughEnv": [
+        "MODEL_API_KEY*",
+        "REVIEW_*",
+        "TEST_MODEL_BASE_URL",
         "RABBITMQ_URL",
         "INTERNAL_API_URL",
         "REVIEW_WORKER_SERVICE_TOKEN",
