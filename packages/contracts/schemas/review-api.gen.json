@@ -1505,7 +1505,11 @@
             "nullable": true
           },
           "usage": {
-            "$ref": "#/components/schemas/ModelUsage",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ModelUsage"
+              }
+            ],
             "nullable": true
           },
           "revision": {
@@ -1533,15 +1537,27 @@
         ],
         "properties": {
           "context": {
-            "$ref": "#/components/schemas/ReviewContextPage",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewContextPage"
+              }
+            ],
             "nullable": true
           },
           "candidates": {
-            "$ref": "#/components/schemas/ReviewCandidates",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewCandidates"
+              }
+            ],
             "nullable": true
           },
           "verification": {
-            "$ref": "#/components/schemas/ReviewVerification",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewVerification"
+              }
+            ],
             "nullable": true
           }
         }
@@ -1954,7 +1970,11 @@
             "maximum": 3
           },
           "receipt": {
-            "$ref": "#/components/schemas/ReviewPublicationReceipt",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewPublicationReceipt"
+              }
+            ],
             "nullable": true
           }
         }
@@ -2184,7 +2204,11 @@
             ]
           },
           "lease": {
-            "$ref": "#/components/schemas/ReviewLease",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewLease"
+              }
+            ],
             "nullable": true
           }
         }
@@ -2308,7 +2332,11 @@
             ]
           },
           "usage": {
-            "$ref": "#/components/schemas/ModelUsage",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ModelUsage"
+              }
+            ],
             "nullable": true
           },
           "safeResponseHash": {
@@ -2361,7 +2389,11 @@
             "type": "boolean"
           },
           "record": {
-            "$ref": "#/components/schemas/ReviewStageRecord",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewStageRecord"
+              }
+            ],
             "nullable": true
           }
         }

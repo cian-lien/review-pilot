@@ -35,8 +35,33 @@ func (s *Service) Recover(ctx context.Context) error {
 		if _, err := control(tx); err != nil {
 			return err
 		}
+		// Expired execution is not evidence that a dispatched model request was uncharged.
+		var expired []persistence.Job
+		if err := tx.Where("status='running' AND lease_expires_at<=clock_timestamp() AND EXISTS(SELECT 1 FROM review_runs r WHERE r.id=jobs.run_id AND r.pipeline_version='review-v1')").Order("id").Limit(100).Find(&expired).Error; err != nil {
+			return err
+		}
+		for _, candidate := range expired {
+			// Match reservation lock order: authority, job, Run, then model call.
+			j, r, _, err := LockReview(tx, candidate.ID)
+			if err != nil {
+				return err
+			}
+			now, err := dbNow(tx)
+			if err != nil {
+				return err
+			}
+			if j.Status != "running" || j.LeaseExpiresAt == nil || j.LeaseExpiresAt.After(now) {
+				continue
+			}
+			if err := tx.Exec("UPDATE model_calls SET state='uncertain',reason_code='MODEL_EXECUTION_LOST',revision=revision+1 WHERE run_id=? AND state='dispatching'", r.ID).Error; err != nil {
+				return err
+			}
+			if err := tx.Exec("UPDATE review_runs SET needs_reconciliation=true,reason_code='MODEL_FACTS_INCOMPLETE',updated_at=clock_timestamp() WHERE id=? AND EXISTS(SELECT 1 FROM model_calls c WHERE c.run_id=? AND (c.state='uncertain' OR(c.state='settled' AND c.outcome='succeeded' AND NOT EXISTS(SELECT 1 FROM review_stage_artifacts a WHERE a.call_id=c.call_id AND a.payload IS NOT NULL AND a.expires_at>clock_timestamp()))))", r.ID, r.ID).Error; err != nil {
+				return err
+			}
+		}
 		var rows []persistence.Job
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE", Options: "SKIP LOCKED"}).Where("kind='review' AND ((status='running' AND lease_expires_at<=clock_timestamp()) OR (status='queued' AND available_at<=clock_timestamp() AND NOT EXISTS(SELECT 1 FROM outbox_events o WHERE o.task_id=jobs.id AND (o.sent_at IS NULL OR o.sent_at>clock_timestamp()-interval '5 seconds'))))").Order("available_at,id").Limit(100).Find(&rows).Error; err != nil {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE", Options: "SKIP LOCKED"}).Where("kind='review' AND NOT EXISTS(SELECT 1 FROM review_runs r WHERE r.id=jobs.run_id AND r.needs_reconciliation) AND ((status='running' AND lease_expires_at<=clock_timestamp()) OR (status='queued' AND available_at<=clock_timestamp() AND NOT EXISTS(SELECT 1 FROM outbox_events o WHERE o.task_id=jobs.id AND (o.sent_at IS NULL OR o.sent_at>clock_timestamp()-interval '5 seconds'))))").Order("available_at,id").Limit(100).Find(&rows).Error; err != nil {
 			return err
 		}
 		for _, j := range rows {
@@ -44,6 +69,9 @@ func (s *Service) Recover(ctx context.Context) error {
 			if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&r, "id=?", j.RunID).Error; err != nil {
 				return err
 			}
+			if r.PipelineVersion == "review-v1" {
+				continue
+			} // v2 notification is enabled with its consumer in Task 6.
 			if j.Attempts >= j.MaxAttempts {
 				if err := tx.Exec("UPDATE jobs SET status='failed',lease_token=NULL,lease_expires_at=NULL WHERE id=?", j.ID).Error; err != nil {
 					return err

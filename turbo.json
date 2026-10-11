@@ -7,6 +7,8 @@
   "globalDependencies": ["tsconfig.base.json", "eslint.config.mjs"],
   "globalEnv": ["NODE_ENV"],
   "tasks": {
+    "review:reconcile": { "cache": false, "passThroughEnv": ["DATABASE_URL*", "REVIEW_*"] },
+    "review:cleanup": { "cache": false, "passThroughEnv": ["DATABASE_URL*", "REVIEW_*"] },
     "format:review": { "cache": false },
     "@reviewpilot/contracts#test:unit": { "cache": false },
     "test:review": { "cache": false, "passThroughEnv": ["REVIEW_TEST_ISOLATED", "REVIEW_CASE"] },

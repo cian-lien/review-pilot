@@ -38,8 +38,12 @@ switch (task) {
     if (process.env.NODE_ENV === 'production') run(root + '/bin/migrate', extra);
     else run('go', ['run', './cmd/migrate', ...extra]);
     break;
+  case 'review-admin':
+    if (process.env.NODE_ENV === 'production') run(root + '/bin/review-admin', extra);
+    else run('go', ['run', './cmd/review-admin', ...extra]);
+    break;
   case 'build':
-    for (const entry of ['api', 'dispatcher', 'migrate']) {
+    for (const entry of ['api', 'dispatcher', 'migrate', 'review-admin']) {
       if (existsSync(root + '/cmd/' + entry))
         run('go', ['build', '-trimpath', '-o', 'bin/' + entry, './cmd/' + entry]);
     }

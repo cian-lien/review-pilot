@@ -26,6 +26,14 @@ func ReviewSnapshot(r persistence.Run) (contracts.ReviewSnapshot, error) {
 }
 
 func CheckReviewLease(tx *gorm.DB, l contracts.ReviewLease) (persistence.Run, error) {
+	return checkReviewLease(tx, l, false)
+}
+
+// CheckReviewLeaseFacts allows only confirmation of existing immutable facts on a blocked Run.
+func CheckReviewLeaseFacts(tx *gorm.DB, l contracts.ReviewLease) (persistence.Run, error) {
+	return checkReviewLease(tx, l, true)
+}
+func checkReviewLease(tx *gorm.DB, l contracts.ReviewLease, allowBlocked bool) (persistence.Run, error) {
 	runtime, err := control(tx)
 	if err != nil {
 		return persistence.Run{}, err
@@ -40,7 +48,7 @@ func CheckReviewLease(tx *gorm.DB, l contracts.ReviewLease) (persistence.Run, er
 	}
 	if !authorized || j.Kind != "review" || j.Status != "running" || j.RunID != l.RunId || j.LeaseToken == nil || *j.LeaseToken != l.LeaseToken ||
 		j.LeaseExpiresAt == nil || !j.LeaseExpiresAt.After(now) || j.ExecutionEpoch != runtime.Epoch || l.ExecutionEpoch != runtime.Epoch ||
-		r.NeedsReconciliation || r.Status == "Stale" || r.Status == "Cancelled" || r.Status == "Failed" || l.InputHash != Hash(r.Snapshot) ||
+		(r.NeedsReconciliation && !allowBlocked) || r.Status == "Stale" || r.Status == "Cancelled" || r.Status == "Failed" || l.InputHash != Hash(r.Snapshot) ||
 		int64(l.Tenant.InstallationId) != r.InstallationID || int64(l.Tenant.RepositoryId) != r.RepositoryID || l.HeadSha != r.HeadSHA {
 		return r, conflict("LEASE_LOST")
 	}

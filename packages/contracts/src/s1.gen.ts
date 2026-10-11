@@ -756,15 +756,15 @@ export interface components {
             currency: string;
             reservedCostMicros: string;
             actualCostMicros: string | null;
-            usage: components["schemas"]["ModelUsage"];
+            usage: components["schemas"]["ModelUsage"] | null;
             revision: number;
             sendAuthorized: boolean;
             reasonCode: string | null;
         };
         ReviewStagePayload: {
-            context: components["schemas"]["ReviewContextPage"];
-            candidates: components["schemas"]["ReviewCandidates"];
-            verification: components["schemas"]["ReviewVerification"];
+            context: components["schemas"]["ReviewContextPage"] | null;
+            candidates: components["schemas"]["ReviewCandidates"] | null;
+            verification: components["schemas"]["ReviewVerification"] | null;
         };
         ReviewStageRecord: {
             /** @enum {string} */
@@ -848,7 +848,7 @@ export interface components {
             /** @enum {string} */
             state: "pending" | "published" | "cancelled" | "failed" | "uncertain";
             occupiedSlots: number;
-            receipt: components["schemas"]["ReviewPublicationReceipt"];
+            receipt: components["schemas"]["ReviewPublicationReceipt"] | null;
         };
         ReviewRunSummary: {
             runId: string;
@@ -895,7 +895,7 @@ export interface components {
         ClaimReviewResponse: {
             /** @enum {string} */
             outcome: "claimed" | "busy" | "accepted" | "cancelled" | "terminal" | "blocked";
-            lease: components["schemas"]["ReviewLease"];
+            lease: components["schemas"]["ReviewLease"] | null;
         };
         ReadReviewContextRequest: {
             lease: components["schemas"]["ReviewLease"];
@@ -921,7 +921,7 @@ export interface components {
             expectedRevision: number;
             /** @enum {string} */
             outcome: "succeeded" | "failed" | "not-sent" | "uncertain";
-            usage: components["schemas"]["ModelUsage"];
+            usage: components["schemas"]["ModelUsage"] | null;
             safeResponseHash: string | null;
             reasonCode: string | null;
         };
@@ -933,7 +933,7 @@ export interface components {
         };
         ReadReviewStageResponse: {
             found: boolean;
-            record: components["schemas"]["ReviewStageRecord"];
+            record: components["schemas"]["ReviewStageRecord"] | null;
         };
         SaveReviewStageRequest: {
             lease: components["schemas"]["ReviewLease"];

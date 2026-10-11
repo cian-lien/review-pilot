@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "review:reconcile": "node scripts/go-task.mjs review-admin reconcile-model",
+    "review:cleanup": "node scripts/go-task.mjs review-admin cleanup",
     "db:migrate": "node scripts/go-task.mjs migrate",
     "cutover:check": "node scripts/go-task.mjs migrate --preflight",
     "dispatcher": "node scripts/go-task.mjs dispatcher",

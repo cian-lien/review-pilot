@@ -52,6 +52,14 @@ func reviewSchemaValid(definition, value any) bool {
 	if value == nil {
 		return s["nullable"] == true
 	}
+	if all, ok := s["allOf"].([]any); ok {
+		for _, definition := range all {
+			if !reviewSchemaValid(definition, value) {
+				return false
+			}
+		}
+		return true
+	}
 	if name, ok := s["$ref"].(string); ok {
 		return reviewSchemaValid(reviewDefinitions[strings.TrimPrefix(name, "#/components/schemas/")], value)
 	}

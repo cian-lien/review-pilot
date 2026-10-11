@@ -188,7 +188,7 @@ await expect(readBoundedBytes(oversized, 256, new AbortController().signal))
 
 CleanupCounts 在 retention/service.go 定义 Contexts、Stages、FindingContents、Metadata 四个非负计数；SQL 尚未创建的后续表不预先引用，任务 5/6 同步扩展清理和删除。模型费用和业务内容分表，清理正文不等于解除收费。
 
-- [ ] 写 TestBudgetRaceAndUnknownUsage：余额 10 微单位，两笔同时各申请 6，只能一笔成功；超时调用额度不释放，重试使用新调用且总数受限，19 位溢出金额拒绝。写 TestSettledCallWithoutArtifactBlocksRecovery：费用已记、artifact 不存在时阻断，不生成第二笔同阶段调用。TestReviewStages 断言旧 token、内容冲突和过期读取。
+- [x] 写 TestBudgetRaceAndUnknownUsage：余额 10 微单位，两笔同时各申请 6，只能一笔成功；超时调用额度不释放，重试使用新调用且总数受限，19 位溢出金额拒绝。写 TestSettledCallWithoutArtifactBlocksRecovery：费用已记、artifact 不存在时阻断，不生成第二笔同阶段调用。TestReviewStages 断言旧 token、内容冲突和过期读取。
 
 ```go
 // Values are queried from this test's isolated ledger after the concurrent requests.
@@ -200,12 +200,12 @@ if unknownCall.State != "uncertain" || heldAfterTimeout != 6 {
 }
 ```
 
-- [ ] 分别执行 budget 与 stages 场景，预期新预算和阶段行为失败。场景创建自己的数据库并执行迁移，不接收生产 URL。
-- [ ] 0005 建立 budget_limits、budget_reservations、model_calls、review_stage_artifacts 与 operator_audits。唯一约束覆盖 Run/purpose/ordinal、调用身份与阶段恢复键；复用任务 2 的 CheckReviewLease，调用记录与 fencing 同一事务检查。context 阶段无需模型 callId，candidates/verification 必须绑定相应已结算调用。
-- [ ] Dispatch 的 CAS 只在 reserved → dispatching 的首次响应授予发送权；重复或丢失响应不再次授予，恢复后进入 uncertain。结算与 artifact 写入采用幂等键，恢复扫描将过期执行的未完成 dispatching 标记 uncertain，排除 needs_reconciliation；也识别 settled 但无 stage 的不完整事实。
-- [ ] 建立部署者 CLI review-admin reconcile-model，必填 callId、expectedRevision、outcome=charged/not-sent、receiptRef；charged 必填 actualCostMicros/currency，审计后解除对应收费不确定性。结果缺失时只有显式 --retry-stage 且阶段次数未耗尽才可重新预留；无此参数不重调模型。review-admin cleanup 调用同一 Cleanup 服务；API 无公开管理员免鉴权入口。
-- [ ] 清理到期源码片段及产物正文，元数据超期按 12 个月政策清理；retention.Service.DeleteRepository(ctx context.Context,tenant contracts.TenantRef) error 使用显式范围事务清除 S2 内容，停止任务并保留不含内容的删除凭据。未知费用保留匿名化的全局余额占用，不因仓库删除伪造退款。测试到期 artifact 无法读取、删除不影响其他安装、未知费用不能被一般 TTL 清理释放；CLI cleanup --delete-installation/--delete-repository 需两者明确且匹配，默认仅清理到期内容。
-- [ ] 运行 budget/stages 场景及 pnpm exec turbo run test:unit --filter=@reviewpilot/api -- ./internal/retention -count=1，预期通过。提交 feat: add fenced review budgets and stage recovery。
+- [x] 分别执行 budget 与 stages 场景，预期新预算和阶段行为失败。场景创建自己的数据库并执行迁移，不接收生产 URL。
+- [x] 0005 建立 budget_limits、budget_reservations、model_calls、review_stage_artifacts 与 operator_audits。唯一约束覆盖 Run/purpose/ordinal、调用身份与阶段恢复键；复用任务 2 的 CheckReviewLease，调用记录与 fencing 同一事务检查。context 阶段无需模型 callId，candidates/verification 必须绑定相应已结算调用。
+- [x] Dispatch 的 CAS 只在 reserved → dispatching 的首次响应授予发送权；重复或丢失响应不再次授予，恢复后进入 uncertain。结算与 artifact 写入采用幂等键，恢复扫描将过期执行的未完成 dispatching 标记 uncertain，排除 needs_reconciliation；也识别 settled 但无 stage 的不完整事实。
+- [x] 建立部署者 CLI review-admin reconcile-model，必填 callId、expectedRevision、outcome=charged/not-sent、receiptRef；charged 必填 actualCostMicros/currency，审计后解除对应收费不确定性。结果缺失时只有显式 --retry-stage 且阶段次数未耗尽才可重新预留；无此参数不重调模型。review-admin cleanup 调用同一 Cleanup 服务；API 无公开管理员免鉴权入口。
+- [x] 清理到期源码片段及产物正文，元数据超期按 12 个月政策清理；retention.Service.DeleteRepository(ctx context.Context,tenant contracts.TenantRef) error 使用显式范围事务清除 S2 内容，停止任务并保留不含内容的删除凭据。未知费用保留匿名化的全局余额占用，不因仓库删除伪造退款。测试到期 artifact 无法读取、删除不影响其他安装、未知费用不能被一般 TTL 清理释放；CLI cleanup --delete-installation/--delete-repository 需两者明确且匹配，默认仅清理到期内容。
+- [x] 运行 budget/stages 场景及 pnpm exec turbo run test:unit --filter=@reviewpilot/api -- ./internal/retention -count=1，预期通过。提交 feat: add fenced review budgets and stage recovery。
 
 ## Task 4 模型网关与 Worker 凭证隔离
 

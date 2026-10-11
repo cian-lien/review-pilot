@@ -12,6 +12,7 @@ import (
 	"reviewpilot.local/api/internal/observability"
 	"reviewpilot.local/api/internal/persistence"
 	"reviewpilot.local/api/internal/publisher"
+	"reviewpilot.local/api/internal/retention"
 	"syscall"
 	"time"
 )
@@ -43,10 +44,17 @@ func main() {
 	publications := publisher.New(store.DB(), github.New(cfg), cfg)
 	relay := &messaging.Relay{DB: store.DB(), Publisher: rabbit, Observer: observability.Current()}
 	ticker := time.NewTicker(5 * time.Second)
+	nextCleanup := time.Now()
 	defer ticker.Stop()
 	for {
 		step, stop := context.WithTimeout(ctx, 20*time.Second)
 		observability.Current().RecordState(step, store.DB())
+		if time.Now().After(nextCleanup) {
+			if _, err = retention.New(store.DB()).Cleanup(step, time.Now(), 100); err != nil {
+				slog.Warn("REVIEW_RETENTION_UNAVAILABLE")
+			}
+			nextCleanup = time.Now().Add(time.Hour)
+		}
 		if err = service.Recover(step); err != nil {
 			slog.Warn("RECOVERY_UNAVAILABLE")
 		}

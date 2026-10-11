@@ -25,8 +25,8 @@ func SeedReview(t *testing.T, store *persistence.Store, address string) (contrac
 	if err := persistence.ApplyMigrations(context.Background(), store, os.Getenv("MIGRATION_DIRECTORY")); err != nil {
 		t.Fatal(err)
 	}
-	fixtureID := "review-fixture"
-	model := config.ReviewModelConfig{ModelConfigVersion: "fake-v1", PriceVersion: "fake-price-v1", BaseURL: address + "/v1", Model: "fake-review", StructuredOutputMode: "json-schema",
+	fixtureID := "review-fixture-" + jobs.Hash([]byte(t.Name()))[:12]
+	model := config.ReviewModelConfig{ModelConfigVersion: "fake-" + jobs.Hash([]byte(t.Name()))[:12], PriceVersion: "fake-price-v1", BaseURL: address + "/v1", Model: "fake-review", StructuredOutputMode: "json-schema",
 		Currency: "TEST", InputMicrosPerMillion: "1000000", OutputMicrosPerMillion: "1000000", RunLimitMicros: "100000", RepositoryDailyLimitMicros: "1000000", GlobalMonthlyLimitMicros: "10000000", UsageSupported: true, OnlyTokenBilling: true, FixtureID: fixtureID}
 	dir := t.TempDir()
 	body, _ := json.Marshal(model)

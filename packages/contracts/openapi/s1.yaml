@@ -2166,7 +2166,8 @@ components:
           maxLength: 19
           nullable: true
         usage:
-          $ref: "#/components/schemas/ModelUsage"
+          allOf:
+            - $ref: "#/components/schemas/ModelUsage"
           nullable: true
         revision:
           type: integer
@@ -2186,13 +2187,16 @@ components:
         - verification
       properties:
         context:
-          $ref: "#/components/schemas/ReviewContextPage"
+          allOf:
+            - $ref: "#/components/schemas/ReviewContextPage"
           nullable: true
         candidates:
-          $ref: "#/components/schemas/ReviewCandidates"
+          allOf:
+            - $ref: "#/components/schemas/ReviewCandidates"
           nullable: true
         verification:
-          $ref: "#/components/schemas/ReviewVerification"
+          allOf:
+            - $ref: "#/components/schemas/ReviewVerification"
           nullable: true
     ReviewStageRecord:
       type: object
@@ -2460,7 +2464,8 @@ components:
           minimum: 0
           maximum: 3
         receipt:
-          $ref: "#/components/schemas/ReviewPublicationReceipt"
+          allOf:
+            - $ref: "#/components/schemas/ReviewPublicationReceipt"
           nullable: true
     ReviewRunSummary:
       type: object
@@ -2614,7 +2619,8 @@ components:
             - ReviewTerminal
             - ReviewBlocked
         lease:
-          $ref: "#/components/schemas/ReviewLease"
+          allOf:
+            - *a9
           nullable: true
     ReadReviewContextRequest:
       type: object
@@ -2694,7 +2700,8 @@ components:
             - not-sent
             - uncertain
         usage:
-          $ref: "#/components/schemas/ModelUsage"
+          allOf:
+            - $ref: "#/components/schemas/ModelUsage"
           nullable: true
         safeResponseHash:
           type: string
@@ -2724,7 +2731,8 @@ components:
       properties:
         found: *a6
         record:
-          $ref: "#/components/schemas/ReviewStageRecord"
+          allOf:
+            - $ref: "#/components/schemas/ReviewStageRecord"
           nullable: true
     SaveReviewStageRequest:
       type: object

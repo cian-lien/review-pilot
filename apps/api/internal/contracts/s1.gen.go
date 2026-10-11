@@ -930,7 +930,7 @@ type ClaimReviewRequest struct {
 
 // ClaimReviewResponse defines model for ClaimReviewResponse.
 type ClaimReviewResponse struct {
-	Lease   ReviewLease                `json:"lease"`
+	Lease   *ReviewLease               `json:"lease"`
 	Outcome ClaimReviewResponseOutcome `json:"outcome"`
 }
 
@@ -1021,7 +1021,7 @@ type ModelCall struct {
 	Revision           int              `json:"revision"`
 	SendAuthorized     bool             `json:"sendAuthorized"`
 	State              ModelCallState   `json:"state"`
-	Usage              ModelUsage       `json:"usage"`
+	Usage              *ModelUsage      `json:"usage"`
 }
 
 // ModelCallPurpose defines model for ModelCall.Purpose.
@@ -1054,8 +1054,8 @@ type ReadReviewStageRequestStage string
 
 // ReadReviewStageResponse defines model for ReadReviewStageResponse.
 type ReadReviewStageResponse struct {
-	Found  bool              `json:"found"`
-	Record ReviewStageRecord `json:"record"`
+	Found  bool               `json:"found"`
+	Record *ReviewStageRecord `json:"record"`
 }
 
 // RepositoryListResponse defines model for RepositoryListResponse.
@@ -1312,7 +1312,7 @@ type ReviewPublicationReceiptState string
 // ReviewPublicationSummary defines model for ReviewPublicationSummary.
 type ReviewPublicationSummary struct {
 	OccupiedSlots int                           `json:"occupiedSlots"`
-	Receipt       ReviewPublicationReceipt      `json:"receipt"`
+	Receipt       *ReviewPublicationReceipt     `json:"receipt"`
 	State         ReviewPublicationSummaryState `json:"state"`
 }
 
@@ -1418,9 +1418,9 @@ type ReviewSnapshotVerificationPromptVersion string
 
 // ReviewStagePayload defines model for ReviewStagePayload.
 type ReviewStagePayload struct {
-	Candidates   ReviewCandidates   `json:"candidates"`
-	Context      ReviewContextPage  `json:"context"`
-	Verification ReviewVerification `json:"verification"`
+	Candidates   *ReviewCandidates   `json:"candidates"`
+	Context      *ReviewContextPage  `json:"context"`
+	Verification *ReviewVerification `json:"verification"`
 }
 
 // ReviewStageRecord defines model for ReviewStageRecord.
@@ -1551,7 +1551,7 @@ type SettleModelCallRequest struct {
 	Outcome          SettleModelCallRequestOutcome `json:"outcome"`
 	ReasonCode       *string                       `json:"reasonCode"`
 	SafeResponseHash *string                       `json:"safeResponseHash"`
-	Usage            ModelUsage                    `json:"usage"`
+	Usage            *ModelUsage                   `json:"usage"`
 }
 
 // SettleModelCallRequestOutcome defines model for SettleModelCallRequest.Outcome.
