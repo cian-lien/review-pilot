@@ -7,7 +7,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "format": "prettier --write package.json tsconfig.json src/index.ts src/validate.ts tests scripts openapi schemas --log-level warn",
+    "format": "prettier --write package.json tsconfig.json src/index.ts src/validate.ts src/review.ts tests scripts openapi schemas/task-v1.json schemas/task-v2.json --log-level warn",
     "typecheck": "tsc --noEmit --project tsconfig.json",
     "lint": "eslint src tests scripts",
     "codegen": "node scripts/generate.mjs",

@@ -7,112 +7,112 @@ paths:
     get:
       operationId: getHealth
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthResponse'
+                $ref: "#/components/schemas/HealthResponse"
   /api/bootstrap:
     get:
       operationId: getBootstrap
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BootstrapResponse'
-        '401':
+                $ref: "#/components/schemas/BootstrapResponse"
+        "401":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '503':
+                $ref: "#/components/schemas/APIError"
+        "503":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
+                $ref: "#/components/schemas/APIError"
   /api/session:
     get:
       operationId: getSession
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionResponse'
-        '401':
+                $ref: "#/components/schemas/SessionResponse"
+        "401":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '503':
+                $ref: "#/components/schemas/APIError"
+        "503":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
+                $ref: "#/components/schemas/APIError"
   /api/repositories:
     get:
       operationId: listRepositories
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RepositoryListResponse'
-        '401':
+                $ref: "#/components/schemas/RepositoryListResponse"
+        "401":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '503':
+                $ref: "#/components/schemas/APIError"
+        "503":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
+                $ref: "#/components/schemas/APIError"
   /api/runs:
     get:
       operationId: listRuns
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RunListResponse'
-        '401':
+                $ref: "#/components/schemas/RunListResponse"
+        "401":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '503':
+                $ref: "#/components/schemas/APIError"
+        "503":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
+                $ref: "#/components/schemas/APIError"
   /api/repositories/sync:
     post:
       operationId: syncRepositories
       responses:
-        '204':
+        "204":
           description: Synchronized
-        '403':
+        "403":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
+                $ref: "#/components/schemas/APIError"
   /api/repositories/{installationId}/{repositoryId}:
     parameters:
       - in: path
@@ -136,22 +136,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SetRepositoryEnabledRequest'
+              $ref: "#/components/schemas/SetRepositoryEnabledRequest"
       responses:
-        '204':
+        "204":
           description: Updated
-        '403':
+        "403":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '409':
+                $ref: "#/components/schemas/APIError"
+        "409":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
+                $ref: "#/components/schemas/APIError"
   /internal/tasks/{taskId}/claim:
     post:
       operationId: claimTask
@@ -165,54 +165,54 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ClaimResponse'
-        '400':
+                $ref: "#/components/schemas/ClaimResponse"
+        "400":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '401':
+                $ref: "#/components/schemas/APIError"
+        "401":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '403':
+                $ref: "#/components/schemas/APIError"
+        "403":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '404':
+                $ref: "#/components/schemas/APIError"
+        "404":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '409':
+                $ref: "#/components/schemas/APIError"
+        "409":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '503':
+                $ref: "#/components/schemas/APIError"
+        "503":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
+                $ref: "#/components/schemas/APIError"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ClaimRequest'
+              $ref: "#/components/schemas/ClaimRequest"
   /internal/tasks/{taskId}/heartbeat:
     post:
       operationId: heartbeatTask
@@ -226,50 +226,50 @@ paths:
             type: string
             format: uuid
       responses:
-        '204':
+        "204":
           description: Success
-        '400':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIError'
-        '401':
+        "400":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '403':
+                $ref: "#/components/schemas/APIError"
+        "401":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '404':
+                $ref: "#/components/schemas/APIError"
+        "403":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '409':
+                $ref: "#/components/schemas/APIError"
+        "404":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '503':
+                $ref: "#/components/schemas/APIError"
+        "409":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
+                $ref: "#/components/schemas/APIError"
+        "503":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TaskLease'
+              $ref: "#/components/schemas/TaskLease"
   /internal/tasks/{taskId}/connection-result:
     post:
       operationId: commitConnectionResult
@@ -283,54 +283,54 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommitResponse'
-        '400':
+                $ref: "#/components/schemas/CommitResponse"
+        "400":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '401':
+                $ref: "#/components/schemas/APIError"
+        "401":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '403':
+                $ref: "#/components/schemas/APIError"
+        "403":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '404':
+                $ref: "#/components/schemas/APIError"
+        "404":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '409':
+                $ref: "#/components/schemas/APIError"
+        "409":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '503':
+                $ref: "#/components/schemas/APIError"
+        "503":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
+                $ref: "#/components/schemas/APIError"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ConnectionResult'
+              $ref: "#/components/schemas/ConnectionResult"
   /internal/tasks/{taskId}/result:
     get:
       operationId: readConnectionResult
@@ -359,48 +359,48 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommitResponse'
-        '400':
+                $ref: "#/components/schemas/CommitResponse"
+        "400":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '401':
+                $ref: "#/components/schemas/APIError"
+        "401":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '403':
+                $ref: "#/components/schemas/APIError"
+        "403":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '404':
+                $ref: "#/components/schemas/APIError"
+        "404":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '409':
+                $ref: "#/components/schemas/APIError"
+        "409":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '503':
+                $ref: "#/components/schemas/APIError"
+        "503":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
+                $ref: "#/components/schemas/APIError"
   /internal/tasks/{taskId}/fail:
     post:
       operationId: failTask
@@ -414,50 +414,50 @@ paths:
             type: string
             format: uuid
       responses:
-        '204':
+        "204":
           description: Success
-        '400':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIError'
-        '401':
+        "400":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '403':
+                $ref: "#/components/schemas/APIError"
+        "401":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '404':
+                $ref: "#/components/schemas/APIError"
+        "403":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '409':
+                $ref: "#/components/schemas/APIError"
+        "404":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '503':
+                $ref: "#/components/schemas/APIError"
+        "409":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
+                $ref: "#/components/schemas/APIError"
+        "503":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TaskLease'
+              $ref: "#/components/schemas/TaskLease"
   /api/github/webhook:
     post:
       operationId: acceptGitHubWebhook
@@ -487,42 +487,580 @@ paths:
               type: object
               additionalProperties: true
       responses:
-        '202':
+        "202":
           description: Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WebhookResponse'
-        '400':
+                $ref: "#/components/schemas/WebhookResponse"
+        "400":
           description: Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '401':
+                $ref: "#/components/schemas/APIError"
+        "401":
           description: Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '409':
+                $ref: "#/components/schemas/APIError"
+        "409":
           description: Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '413':
+                $ref: "#/components/schemas/APIError"
+        "413":
           description: Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
-        '503':
+                $ref: "#/components/schemas/APIError"
+        "503":
           description: Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APIError'
+                $ref: "#/components/schemas/APIError"
+  /internal/review-tasks/{taskId}/claim:
+    post:
+      operationId: reviewClaimReviewRequestclaim
+      security:
+        - WorkerBearer: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: &a1
+            type: string
+            pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClaimReviewRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClaimReviewResponse"
+        "403":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "409":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /internal/review-tasks/{taskId}/heartbeat:
+    post:
+      operationId: reviewReviewLeaseheartbeat
+      security:
+        - WorkerBearer: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewLease"
+      responses:
+        "204":
+          description: Success
+        "403":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "409":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /internal/review-tasks/{taskId}/context:
+    post:
+      operationId: reviewReadReviewContextRequestcontext
+      security:
+        - WorkerBearer: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReadReviewContextRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewContextPage"
+        "403":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "409":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /internal/review-tasks/{taskId}/model-calls/reserve:
+    post:
+      operationId: reviewReserveModelCallRequestmodelcallsreserve
+      security:
+        - WorkerBearer: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReserveModelCallRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelCall"
+        "403":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "409":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /internal/review-tasks/{taskId}/model-calls/{callId}/dispatch:
+    post:
+      operationId: reviewDispatchModelCallRequestmodelcallscallIddispatch
+      security:
+        - WorkerBearer: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: *a1
+        - name: callId
+          in: path
+          required: true
+          schema: *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DispatchModelCallRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelCall"
+        "403":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "409":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /internal/review-tasks/{taskId}/model-calls/{callId}/settle:
+    post:
+      operationId: reviewSettleModelCallRequestmodelcallscallIdsettle
+      security:
+        - WorkerBearer: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: *a1
+        - name: callId
+          in: path
+          required: true
+          schema: *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettleModelCallRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelCall"
+        "403":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "409":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /internal/review-tasks/{taskId}/stages/read:
+    post:
+      operationId: reviewReadReviewStageRequeststagesread
+      security:
+        - WorkerBearer: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReadReviewStageRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadReviewStageResponse"
+        "403":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "409":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /internal/review-tasks/{taskId}/stages:
+    post:
+      operationId: reviewSaveReviewStageRequeststages
+      security:
+        - WorkerBearer: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveReviewStageRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommitResponse"
+        "403":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "409":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /internal/review-tasks/{taskId}/result:
+    post:
+      operationId: reviewCommitReviewRequestresult
+      security:
+        - WorkerBearer: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommitReviewRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewCommitResponse"
+        "403":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "409":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+    get:
+      operationId: confirmReviewResult
+      security:
+        - WorkerBearer: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: *a1
+        - name: runId
+          in: query
+          required: false
+          schema: *a1
+        - name: inputHash
+          in: query
+          required: false
+          schema: &a4
+            type: string
+            pattern: ^[0-9a-f]{64}$
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewCommitResponse"
+        "404":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /internal/review-tasks/{taskId}/block:
+    post:
+      operationId: reviewReviewTaskActionRequestblock
+      security:
+        - WorkerBearer: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewTaskActionRequest"
+      responses:
+        "204":
+          description: Success
+        "403":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "409":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /internal/review-tasks/{taskId}/fail:
+    post:
+      operationId: reviewReviewTaskActionRequestfail
+      security:
+        - WorkerBearer: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewTaskActionRequest"
+      responses:
+        "204":
+          description: Success
+        "403":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "409":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /api/repositories/{installationId}/{repositoryId}/pulls:
+    get:
+      operationId: getReviewPullList
+      parameters:
+        - name: installationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 9007199254740991
+        - name: repositoryId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 9007199254740991
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 512
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewPullList"
+        "403":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /api/repositories/{installationId}/{repositoryId}/pulls/{number}/runs:
+    get:
+      operationId: getReviewRunList
+      parameters:
+        - name: installationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 9007199254740991
+        - name: repositoryId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 9007199254740991
+        - name: number
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 2147483647
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 512
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewRunList"
+        "403":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+  /api/repositories/{installationId}/{repositoryId}/pulls/{number}/runs/{runId}:
+    get:
+      operationId: getReviewRunDetail
+      parameters:
+        - name: installationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 9007199254740991
+        - name: repositoryId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 9007199254740991
+        - name: number
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 2147483647
+        - name: runId
+          in: path
+          required: true
+          schema: *a1
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewRunDetail"
+        "403":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
 components:
   schemas:
     TenantRef:
@@ -562,7 +1100,7 @@ components:
             - generation
           properties:
             tenant:
-              $ref: '#/components/schemas/TenantRef'
+              $ref: "#/components/schemas/TenantRef"
             prNumber:
               type: integer
               minimum: 1
@@ -622,7 +1160,7 @@ components:
           type: string
           pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
         tenant:
-          $ref: '#/components/schemas/TenantRef'
+          $ref: "#/components/schemas/TenantRef"
         headSha:
           type: string
           pattern: ^[0-9a-f]{40,64}$
@@ -670,7 +1208,7 @@ components:
           type: string
           format: date-time
         snapshot:
-          $ref: '#/components/schemas/RunSnapshot'
+          $ref: "#/components/schemas/RunSnapshot"
         inputHash:
           type: string
           pattern: ^[a-f0-9]{64}$
@@ -689,7 +1227,7 @@ components:
           minLength: 1
           maxLength: 200
         envelope:
-          $ref: '#/components/schemas/TaskEnvelope'
+          $ref: "#/components/schemas/TaskEnvelope"
     ClaimResponse:
       type: object
       additionalProperties: false
@@ -707,7 +1245,7 @@ components:
             - exhausted
             - superseded
         lease:
-          $ref: '#/components/schemas/TaskLease'
+          $ref: "#/components/schemas/TaskLease"
     ConnectionResult:
       type: object
       additionalProperties: false
@@ -841,7 +1379,7 @@ components:
       additionalProperties: false
       properties:
         tenant:
-          $ref: '#/components/schemas/TenantRef'
+          $ref: "#/components/schemas/TenantRef"
         fullName:
           type: string
         public:
@@ -868,7 +1406,7 @@ components:
         repositories:
           type: array
           items:
-            $ref: '#/components/schemas/RepositorySummary'
+            $ref: "#/components/schemas/RepositorySummary"
       required:
         - repositories
     RunSummary:
@@ -878,7 +1416,7 @@ components:
         id:
           type: string
         tenant:
-          $ref: '#/components/schemas/TenantRef'
+          $ref: "#/components/schemas/TenantRef"
         fullName:
           type: string
         prNumber:
@@ -922,7 +1460,7 @@ components:
         runs:
           type: array
           items:
-            $ref: '#/components/schemas/RunSummary'
+            $ref: "#/components/schemas/RunSummary"
         aiReviewEnabled:
           type: boolean
           enum:
@@ -951,6 +1489,1301 @@ components:
       properties:
         accepted:
           type: boolean
+    ReviewTaskEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+        - schemaVersion
+        - messageId
+        - taskId
+        - runId
+        - tenant
+        - headSha
+        - kind
+        - notificationGeneration
+      properties:
+        schemaVersion:
+          type: integer
+          enum:
+            - 2
+        messageId:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        taskId:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        runId:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        tenant:
+          $ref: "#/components/schemas/TenantRef"
+        headSha:
+          type: string
+          pattern: ^[0-9a-f]{40,64}$
+        kind:
+          type: string
+          enum:
+            - ai-review
+        notificationGeneration:
+          type: integer
+          minimum: 0
+        traceparent:
+          type: string
+          maxLength: 55
+          pattern: ^00-[0-9a-f]{32}-[0-9a-f]{16}-0[01]$
+        tracestate:
+          type: string
+          maxLength: 512
+    RunState:
+      type: string
+      enum:
+        - Queued
+        - Indexing
+        - Reviewing
+        - Verifying
+        - Publishing
+        - Completed
+        - Partial
+        - Stale
+        - Cancelled
+        - Failed
+    ReviewPolicy:
+      type: object
+      additionalProperties: false
+      required:
+        - maxChangedLines
+        - maxFiles
+        - maxFileBytes
+        - maxRawBytes
+        - maxPageBytes
+        - maxStageBytes
+        - maxResultBytes
+        - maxCandidates
+        - maxReferences
+        - maxSnippetBytes
+        - maxInputTokens
+        - maxOutputTokens
+        - timeoutSeconds
+        - retainContent
+      properties:
+        maxChangedLines:
+          type: integer
+          minimum: 1
+          maximum: 1500
+        maxFiles:
+          type: integer
+          minimum: 1
+          maximum: 64
+        maxFileBytes:
+          type: integer
+          minimum: 1
+          maximum: 131072
+        maxRawBytes:
+          type: integer
+          minimum: 1
+          maximum: 2097152
+        maxPageBytes:
+          type: integer
+          minimum: 1
+          maximum: 262144
+        maxStageBytes:
+          type: integer
+          minimum: 1
+          maximum: 262144
+        maxResultBytes:
+          type: integer
+          minimum: 1
+          maximum: 65536
+        maxCandidates:
+          type: integer
+          minimum: 1
+          maximum: 10
+        maxReferences:
+          type: integer
+          minimum: 1
+          maximum: 5
+        maxSnippetBytes:
+          type: integer
+          minimum: 1
+          maximum: 2048
+        maxInputTokens:
+          type: integer
+          minimum: 1
+          maximum: 12000
+        maxOutputTokens:
+          type: integer
+          minimum: 1
+          maximum: 4096
+        timeoutSeconds:
+          type: integer
+          minimum: 1
+          maximum: 60
+        retainContent: &a6
+          type: boolean
+    ReviewIdentity:
+      type: object
+      additionalProperties: false
+      required:
+        - tenant
+        - prNumber
+        - baseSha
+        - headSha
+        - pipelineVersion
+        - generation
+        - repositoryFullName
+        - prTitle
+      properties:
+        tenant:
+          $ref: "#/components/schemas/TenantRef"
+        prNumber:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+        baseSha: &a2
+          type: string
+          pattern: ^[0-9a-f]{40,64}$
+        headSha: *a2
+        pipelineVersion:
+          type: string
+          enum:
+            - review-v1
+        generation:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        repositoryFullName:
+          type: string
+          maxLength: 256
+        prTitle:
+          type: string
+          maxLength: 512
+    ReviewProvenance:
+      type: object
+      additionalProperties: false
+      required:
+        - modelMode
+        - githubMode
+        - fixtureId
+        - contentExpiresAt
+      properties:
+        modelMode: &a3
+          type: string
+          enum:
+            - fake
+            - real
+        githubMode: *a3
+        fixtureId:
+          type: string
+          maxLength: 128
+        contentExpiresAt: &a5
+          type: string
+          format: date-time
+    ReviewSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+        - identity
+        - modelConfigVersion
+        - priceVersion
+        - repositoryConfigVersion
+        - generationPromptVersion
+        - verificationPromptVersion
+        - memorySetVersion
+        - trustedRulesSha
+        - policy
+        - provenance
+      properties:
+        identity:
+          $ref: "#/components/schemas/ReviewIdentity"
+        modelConfigVersion:
+          type: string
+          maxLength: 128
+        priceVersion:
+          type: string
+          maxLength: 128
+        repositoryConfigVersion:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        generationPromptVersion:
+          type: string
+          enum:
+            - review-generation-v1
+        verificationPromptVersion:
+          type: string
+          enum:
+            - review-verification-v1
+        memorySetVersion:
+          type: string
+          enum:
+            - none
+        trustedRulesSha:
+          type: string
+          enum:
+            - none
+        policy:
+          $ref: "#/components/schemas/ReviewPolicy"
+        provenance:
+          $ref: "#/components/schemas/ReviewProvenance"
+    ReviewLease:
+      type: object
+      additionalProperties: false
+      required:
+        - taskId
+        - runId
+        - tenant
+        - headSha
+        - inputHash
+        - leaseToken
+        - leaseExpiresAt
+        - executionEpoch
+        - attempt
+        - snapshot
+      properties:
+        taskId: *a1
+        runId: *a1
+        tenant:
+          $ref: "#/components/schemas/TenantRef"
+        headSha: *a2
+        inputHash: *a4
+        leaseToken: *a1
+        leaseExpiresAt: *a5
+        executionEpoch:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        attempt:
+          type: integer
+          minimum: 1
+          maximum: 5
+        snapshot:
+          $ref: "#/components/schemas/ReviewSnapshot"
+    ReviewSkippedFile:
+      type: object
+      additionalProperties: false
+      required:
+        - path
+        - reasonCode
+        - changedLines
+      properties:
+        path:
+          type: string
+          maxLength: 1024
+        reasonCode:
+          type: string
+          maxLength: 64
+        changedLines:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+    ReviewCoverage:
+      type: object
+      additionalProperties: false
+      required:
+        - complete
+        - totalFiles
+        - readFiles
+        - totalChangedLines
+        - coveredChangedLines
+        - rawBytes
+        - skipped
+        - limitations
+      properties:
+        complete: *a6
+        totalFiles:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        readFiles:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        totalChangedLines:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        coveredChangedLines:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        rawBytes:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        skipped:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewSkippedFile"
+          maxItems: 64
+        limitations:
+          type: array
+          items:
+            type: string
+            maxLength: 256
+          maxItems: 16
+    ReviewFileContent:
+      type: object
+      additionalProperties: false
+      required:
+        - state
+        - sha
+        - contentHash
+        - text
+        - bytes
+      properties:
+        state:
+          type: string
+          enum:
+            - available
+            - deleted
+            - binary
+            - missing
+            - denied
+            - too-large
+        sha: *a2
+        contentHash:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+          nullable: true
+        text:
+          type: string
+          maxLength: 131072
+          nullable: true
+        bytes:
+          type: integer
+          minimum: 0
+          maximum: 131072
+    ReviewChangedFile:
+      type: object
+      additionalProperties: false
+      required:
+        - path
+        - previousPath
+        - status
+        - additions
+        - deletions
+        - patch
+        - base
+        - head
+      properties:
+        path:
+          type: string
+          maxLength: 1024
+        previousPath:
+          type: string
+          maxLength: 1024
+          nullable: true
+        status:
+          type: string
+          enum:
+            - added
+            - modified
+            - removed
+            - renamed
+        additions:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        deletions:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        patch:
+          type: string
+          maxLength: 131072
+          nullable: true
+        base:
+          $ref: "#/components/schemas/ReviewFileContent"
+        head:
+          $ref: "#/components/schemas/ReviewFileContent"
+    EvidenceRef:
+      type: object
+      additionalProperties: false
+      required:
+        - evidenceId
+        - path
+        - sha
+        - startLine
+        - endLine
+        - contentHash
+      properties:
+        evidenceId: *a1
+        path:
+          type: string
+          maxLength: 1024
+        sha: *a2
+        startLine:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+        endLine:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+        contentHash: *a4
+    CodeEvidence:
+      type: object
+      additionalProperties: false
+      required:
+        - ref
+        - tenant
+        - snippet
+        - readState
+        - redacted
+      properties:
+        ref:
+          $ref: "#/components/schemas/EvidenceRef"
+        tenant:
+          $ref: "#/components/schemas/TenantRef"
+        snippet:
+          type: string
+          maxLength: 2048
+        readState:
+          type: string
+          enum:
+            - available
+        redacted: *a6
+    ReviewContextPage:
+      type: object
+      additionalProperties: false
+      required:
+        - manifestId
+        - contextHash
+        - cursor
+        - nextCursor
+        - complete
+        - files
+        - evidence
+        - coverage
+      properties:
+        manifestId: *a1
+        contextHash:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+          nullable: true
+        cursor:
+          type: string
+          maxLength: 256
+          nullable: true
+        nextCursor:
+          type: string
+          maxLength: 256
+          nullable: true
+        complete: *a6
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewChangedFile"
+          maxItems: 64
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/CodeEvidence"
+          maxItems: 1024
+        coverage: &a7
+          $ref: "#/components/schemas/ReviewCoverage"
+    RootCauseStatement:
+      type: object
+      additionalProperties: false
+      required:
+        - trigger
+        - consequence
+      properties:
+        trigger:
+          type: string
+          maxLength: 512
+        consequence:
+          type: string
+          maxLength: 512
+    ReviewCandidate:
+      type: object
+      additionalProperties: false
+      required:
+        - candidateId
+        - title
+        - severity
+        - category
+        - failureScenario
+        - impact
+        - introducedByPR
+        - evidence
+        - suggestedVerification
+        - rootCauseStatement
+      properties:
+        candidateId:
+          type: string
+          maxLength: 64
+        title:
+          type: string
+          maxLength: 240
+        severity:
+          type: string
+          enum:
+            - high
+            - medium
+            - low
+        category:
+          type: string
+          enum:
+            - concurrency
+            - validation
+            - authorization
+            - lifecycle
+            - error-handling
+            - data-integrity
+            - other
+        failureScenario:
+          type: string
+          maxLength: 2048
+        impact:
+          type: string
+          maxLength: 2048
+        introducedByPR: *a6
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvidenceRef"
+          maxItems: 5
+        suggestedVerification:
+          type: string
+          maxLength: 2048
+        rootCauseStatement:
+          $ref: "#/components/schemas/RootCauseStatement"
+    ReviewCandidates:
+      type: object
+      additionalProperties: false
+      required:
+        - candidates
+      properties:
+        candidates:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewCandidate"
+          maxItems: 10
+    VerificationDecision:
+      type: object
+      additionalProperties: false
+      required:
+        - candidateId
+        - verdict
+        - reasonCode
+        - evidence
+      properties:
+        candidateId:
+          type: string
+          maxLength: 64
+        verdict:
+          type: string
+          enum:
+            - verified
+            - abstain
+        reasonCode:
+          type: string
+          maxLength: 64
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvidenceRef"
+          maxItems: 5
+    ReviewVerification:
+      type: object
+      additionalProperties: false
+      required:
+        - decisions
+      properties:
+        decisions:
+          type: array
+          items:
+            $ref: "#/components/schemas/VerificationDecision"
+          maxItems: 10
+    ModelUsage:
+      type: object
+      additionalProperties: false
+      required:
+        - inputTokens
+        - outputTokens
+      properties:
+        inputTokens:
+          type: integer
+          minimum: 0
+          maximum: 1000000
+        outputTokens:
+          type: integer
+          minimum: 0
+          maximum: 1000000
+    ModelCall:
+      type: object
+      additionalProperties: false
+      required:
+        - callId
+        - reservationId
+        - purpose
+        - ordinal
+        - requestHash
+        - state
+        - priceVersion
+        - currency
+        - reservedCostMicros
+        - actualCostMicros
+        - usage
+        - revision
+        - sendAuthorized
+        - reasonCode
+      properties:
+        callId: *a1
+        reservationId: *a1
+        purpose: &a10
+          type: string
+          enum:
+            - generate
+            - verify
+        ordinal:
+          type: integer
+          minimum: 1
+          maximum: 2
+        requestHash: *a4
+        state:
+          type: string
+          enum:
+            - reserved
+            - dispatching
+            - settled
+            - released
+            - uncertain
+        priceVersion:
+          type: string
+          maxLength: 128
+        currency:
+          type: string
+          maxLength: 4
+        reservedCostMicros: &a8
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,18})$
+          maxLength: 19
+        actualCostMicros:
+          type: string
+          pattern: ^(0|[1-9][0-9]{0,18})$
+          maxLength: 19
+          nullable: true
+        usage:
+          $ref: "#/components/schemas/ModelUsage"
+          nullable: true
+        revision:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        sendAuthorized: *a6
+        reasonCode:
+          type: string
+          maxLength: 64
+          nullable: true
+    ReviewStagePayload:
+      type: object
+      additionalProperties: false
+      required:
+        - context
+        - candidates
+        - verification
+      properties:
+        context:
+          $ref: "#/components/schemas/ReviewContextPage"
+          nullable: true
+        candidates:
+          $ref: "#/components/schemas/ReviewCandidates"
+          nullable: true
+        verification:
+          $ref: "#/components/schemas/ReviewVerification"
+          nullable: true
+    ReviewStageRecord:
+      type: object
+      additionalProperties: false
+      required:
+        - stage
+        - stageInputHash
+        - outputHash
+        - callId
+        - payload
+        - expiresAt
+      properties:
+        stage: &a11
+          type: string
+          enum:
+            - context
+            - candidates
+            - verification
+        stageInputHash: *a4
+        outputHash: *a4
+        callId:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+          nullable: true
+        payload:
+          $ref: "#/components/schemas/ReviewStagePayload"
+        expiresAt: *a5
+    ReviewResult:
+      type: object
+      additionalProperties: false
+      required:
+        - kind
+        - lease
+        - resultId
+        - contextHash
+        - candidates
+        - decisions
+        - coverage
+        - callIds
+      properties:
+        kind:
+          type: string
+          enum:
+            - ai-review
+        lease: &a9
+          $ref: "#/components/schemas/ReviewLease"
+        resultId:
+          type: string
+          maxLength: 64
+        contextHash: *a4
+        candidates:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewCandidate"
+          maxItems: 10
+        decisions:
+          type: array
+          items:
+            $ref: "#/components/schemas/VerificationDecision"
+          maxItems: 10
+        coverage: *a7
+        callIds:
+          type: array
+          items: *a1
+          maxItems: 4
+    ReviewFinding:
+      type: object
+      additionalProperties: false
+      required:
+        - findingId
+        - fingerprint
+        - candidate
+        - evidence
+        - publicationStatus
+        - reasonCode
+        - contentExpired
+      properties:
+        findingId: *a1
+        fingerprint: *a4
+        candidate:
+          $ref: "#/components/schemas/ReviewCandidate"
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/CodeEvidence"
+          maxItems: 5
+        publicationStatus:
+          type: string
+          enum:
+            - pending
+            - published
+            - not-published
+            - uncertain
+        reasonCode:
+          type: string
+          maxLength: 64
+          nullable: true
+        contentExpired: *a6
+    ReviewFilteredCandidate:
+      type: object
+      additionalProperties: false
+      required:
+        - candidateId
+        - title
+        - reasonCode
+        - evidence
+      properties:
+        candidateId:
+          type: string
+          maxLength: 64
+        title:
+          type: string
+          maxLength: 240
+        reasonCode:
+          type: string
+          maxLength: 64
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvidenceRef"
+          maxItems: 5
+    ReviewCostSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - currency
+        - priceVersion
+        - calls
+        - knownCostMicros
+        - heldCostMicros
+        - needsReconciliation
+        - monthlyWarning
+        - dailyResetsAt
+      properties:
+        currency:
+          type: string
+          maxLength: 4
+        priceVersion:
+          type: string
+          maxLength: 128
+        calls:
+          type: array
+          items:
+            $ref: "#/components/schemas/ModelCall"
+          maxItems: 4
+        knownCostMicros: *a8
+        heldCostMicros: *a8
+        needsReconciliation: *a6
+        monthlyWarning: *a6
+        dailyResetsAt: *a5
+    ReviewPublicationFinding:
+      type: object
+      additionalProperties: false
+      required:
+        - findingId
+        - fingerprint
+        - path
+        - line
+        - body
+      properties:
+        findingId: *a1
+        fingerprint: *a4
+        path:
+          type: string
+          maxLength: 1024
+        line:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+          nullable: true
+        body:
+          type: string
+          maxLength: 8192
+    ReviewPublicationPlan:
+      type: object
+      additionalProperties: false
+      required:
+        - runId
+        - tenant
+        - prNumber
+        - headSha
+        - planHash
+        - marker
+        - findings
+        - mode
+      properties:
+        runId: *a1
+        tenant:
+          $ref: "#/components/schemas/TenantRef"
+        prNumber:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+        headSha: *a2
+        planHash: *a4
+        marker:
+          type: string
+          maxLength: 256
+        findings:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewPublicationFinding"
+          maxItems: 3
+        mode: *a3
+    ReviewPublicationReceipt:
+      type: object
+      additionalProperties: false
+      required:
+        - reviewId
+        - commentIds
+        - checkId
+        - headSha
+        - authorAppId
+        - marker
+        - state
+        - mode
+      properties:
+        reviewId:
+          type: string
+          maxLength: 64
+          nullable: true
+        commentIds:
+          type: array
+          items:
+            type: string
+            maxLength: 64
+          maxItems: 3
+        checkId:
+          type: string
+          maxLength: 64
+          nullable: true
+        headSha: *a2
+        authorAppId:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        marker:
+          type: string
+          maxLength: 256
+        state:
+          type: string
+          enum:
+            - confirmed
+            - uncertain
+            - not-written
+        mode: *a3
+    ReviewPublicationSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - state
+        - occupiedSlots
+        - receipt
+      properties:
+        state:
+          type: string
+          enum:
+            - pending
+            - published
+            - cancelled
+            - failed
+            - uncertain
+        occupiedSlots:
+          type: integer
+          minimum: 0
+          maximum: 3
+        receipt:
+          $ref: "#/components/schemas/ReviewPublicationReceipt"
+          nullable: true
+    ReviewRunSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - runId
+        - headSha
+        - status
+        - needsReconciliation
+        - reasonCode
+        - createdAt
+        - mode
+      properties:
+        runId: *a1
+        headSha: *a2
+        status:
+          $ref: "#/components/schemas/RunState"
+        needsReconciliation: *a6
+        reasonCode:
+          type: string
+          maxLength: 64
+          nullable: true
+        createdAt: *a5
+        mode: *a3
+    ReviewRunDetail:
+      type: object
+      additionalProperties: false
+      required:
+        - runId
+        - status
+        - needsReconciliation
+        - reasonCode
+        - snapshot
+        - findings
+        - filtered
+        - coverage
+        - costs
+        - publication
+        - contentExpired
+      properties:
+        runId: *a1
+        status:
+          $ref: "#/components/schemas/RunState"
+        needsReconciliation: *a6
+        reasonCode:
+          type: string
+          maxLength: 64
+          nullable: true
+        snapshot:
+          $ref: "#/components/schemas/ReviewSnapshot"
+        findings:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewFinding"
+          maxItems: 10
+        filtered:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewFilteredCandidate"
+          maxItems: 10
+        coverage: *a7
+        costs:
+          $ref: "#/components/schemas/ReviewCostSummary"
+        publication:
+          $ref: "#/components/schemas/ReviewPublicationSummary"
+        contentExpired: *a6
+    ReviewPullSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - prNumber
+        - title
+        - headSha
+        - latestRun
+      properties:
+        prNumber:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+        title:
+          type: string
+          maxLength: 512
+        headSha: *a2
+        latestRun:
+          $ref: "#/components/schemas/ReviewRunSummary"
+    ReviewPullList:
+      type: object
+      additionalProperties: false
+      required:
+        - items
+        - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewPullSummary"
+          maxItems: 20
+        nextCursor:
+          type: string
+          maxLength: 512
+          nullable: true
+    ReviewRunList:
+      type: object
+      additionalProperties: false
+      required:
+        - items
+        - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewRunSummary"
+          maxItems: 20
+        nextCursor:
+          type: string
+          maxLength: 512
+          nullable: true
+    ClaimReviewRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - envelope
+        - workerId
+      properties:
+        envelope:
+          $ref: "#/components/schemas/ReviewTaskEnvelope"
+        workerId:
+          type: string
+          maxLength: 128
+    ClaimReviewResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - outcome
+        - lease
+      properties:
+        outcome:
+          type: string
+          enum:
+            - claimed
+            - busy
+            - accepted
+            - cancelled
+            - terminal
+            - blocked
+          x-enum-varnames:
+            - ReviewClaimed
+            - ReviewBusy
+            - ReviewFinished
+            - ReviewCancelled
+            - ReviewTerminal
+            - ReviewBlocked
+        lease:
+          $ref: "#/components/schemas/ReviewLease"
+          nullable: true
+    ReadReviewContextRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - lease
+        - cursor
+      properties:
+        lease: *a9
+        cursor:
+          type: string
+          maxLength: 256
+          nullable: true
+    ReserveModelCallRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - lease
+        - purpose
+        - ordinal
+        - requestHash
+        - inputTokenLimit
+        - outputTokenLimit
+      properties:
+        lease: *a9
+        purpose: *a10
+        ordinal:
+          type: integer
+          minimum: 1
+          maximum: 2
+        requestHash: *a4
+        inputTokenLimit:
+          type: integer
+          minimum: 1
+          maximum: 12000
+        outputTokenLimit:
+          type: integer
+          minimum: 1
+          maximum: 4096
+    DispatchModelCallRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - lease
+        - callId
+        - expectedRevision
+      properties:
+        lease: *a9
+        callId: *a1
+        expectedRevision:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+    SettleModelCallRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - lease
+        - callId
+        - expectedRevision
+        - outcome
+        - usage
+        - safeResponseHash
+        - reasonCode
+      properties:
+        lease: *a9
+        callId: *a1
+        expectedRevision:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        outcome:
+          type: string
+          enum:
+            - succeeded
+            - failed
+            - not-sent
+            - uncertain
+        usage:
+          $ref: "#/components/schemas/ModelUsage"
+          nullable: true
+        safeResponseHash:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+          nullable: true
+        reasonCode:
+          type: string
+          maxLength: 64
+          nullable: true
+    ReadReviewStageRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - lease
+        - stage
+        - stageInputHash
+      properties:
+        lease: *a9
+        stage: *a11
+        stageInputHash: *a4
+    ReadReviewStageResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - found
+        - record
+      properties:
+        found: *a6
+        record:
+          $ref: "#/components/schemas/ReviewStageRecord"
+          nullable: true
+    SaveReviewStageRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - lease
+        - stage
+        - stageInputHash
+        - callId
+        - payload
+      properties:
+        lease: *a9
+        stage: *a11
+        stageInputHash: *a4
+        callId:
+          type: string
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+          nullable: true
+        payload:
+          $ref: "#/components/schemas/ReviewStagePayload"
+    CommitReviewRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - result
+      properties:
+        result:
+          $ref: "#/components/schemas/ReviewResult"
+    ReviewCommitResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - outcome
+        - resultId
+        - resultHash
+      properties:
+        outcome:
+          type: string
+          enum:
+            - accepted
+            - already-accepted
+          x-enum-varnames:
+            - ReviewAccepted
+            - ReviewAlreadyAccepted
+        resultId:
+          type: string
+          maxLength: 64
+        resultHash: *a4
+    ReviewTaskActionRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - lease
+        - reasonCode
+      properties:
+        lease: *a9
+        reasonCode:
+          type: string
+          maxLength: 64
   securitySchemes:
     WorkerBearer:
       type: http

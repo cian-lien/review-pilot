@@ -10,7 +10,7 @@
 
 **设计依据：** [已确认的 S2 设计](docs/superpowers/specs/2026-10-11-reviewpilot-s2-ai-review-design.md)。执行前同时阅读 [AGENTS.md](AGENTS.md) 和 [S1 交付记录](docs/reports/s1-go-migration.md)。
 
-日期：2026-10-11。状态：待用户审阅批准。当前只写计划，不安装依赖、不开发、不执行迁移或模型调用。
+日期：2026-10-11。状态：用户已批准执行，实施中。真实模型调用、真实 GitHub 写入与业务数据库迁移仍未授权。
 
 ## 全局约束
 
@@ -147,7 +147,7 @@ stageInputHash 固定为 SHA256(inputHash + '\n' + contextHash + '\n' + stage + 
 
 **接口：** validateReviewTask(input: unknown): ReviewTaskEnvelope；config.LoadReview() (ReviewConfig,error)，包含上述模式、policy、非敏感模型版本与配额；runReviewScenario(name: string): Promise<Record<string, unknown>> 是测试调度入口，未实现 case 必须失败。
 
-- [ ] 写 review-schema.test.ts：合法 v2 通过；schemaVersion=1 携 ai-review、schemaVersion=3、额外 token、错误 SHA 均拒绝；同一合法 v1 仍只被旧 validateTask 接受。写 TestReviewDefaultsClosed，断言默认 disabled、真实发布 false、配置含 API Key 或无效配额拒绝。
+- [x] 写 review-schema.test.ts：合法 v2 通过；schemaVersion=1 携 ai-review、schemaVersion=3、额外 token、错误 SHA 均拒绝；同一合法 v1 仍只被旧 validateTask 接受。写 TestReviewDefaultsClosed，断言默认 disabled、真实发布 false、配置含 API Key 或无效配额拒绝。
 
 ```ts
 // validV2 is the complete fixture for the v2 fields listed above.
@@ -156,10 +156,10 @@ expect(() => validateReviewTask({ ...validV2, schemaVersion: 3 })).toThrow();
 expect(() => validateTask(validV2)).toThrow();
 ```
 
-- [ ] 用最小测试入口建立 contracts 场景：pnpm exec turbo run test:review --filter=@reviewpilot/tooling -- --case contracts。预期新增 v2 断言失败；保留实际失败输出，不把语法错误当行为失败。
-- [ ] 实现双消息投影、生成 DTO 与 config.LoadReview()；契约生成命令只写生成文件和已有 OpenAPI，不改旧消息源。脚本实现独立隔离 case 注册与 verdict 校验，不调用业务库；Go 包装器在 test + REVIEW_TEST_ISOLATED=1 下跳过项目环境和密钥文件加载，默认开发行为不变。
-- [ ] 执行 codegen contracts:check 命令以及 contracts 场景；运行 pnpm exec turbo run test:unit --filter=@reviewpilot/api -- ./internal/config -run TestReviewDefaultsClosed -count=1。预期通过且旧契约无漂移。
-- [ ] 仅提交本任务文件：docs 外已有用户 AGENTS.md 不自动加入。提交说明 feat: add S2 review contracts and closed configuration。
+- [x] 用最小测试入口建立 contracts 场景：pnpm exec turbo run test:review --filter=@reviewpilot/tooling -- --case contracts。预期新增 v2 断言失败；保留实际失败输出，不把语法错误当行为失败。
+- [x] 实现双消息投影、生成 DTO 与 config.LoadReview()；契约生成命令只写生成文件和已有 OpenAPI，不改旧消息源。脚本实现独立隔离 case 注册与 verdict 校验，不调用业务库；Go 包装器在 test + REVIEW_TEST_ISOLATED=1 下跳过项目环境和密钥文件加载，默认开发行为不变。
+- [x] 执行 codegen contracts:check 命令以及 contracts 场景；运行 pnpm exec turbo run test:unit --filter=@reviewpilot/api -- ./internal/config -run TestReviewDefaultsClosed -count=1。预期通过且旧契约无漂移。
+- [x] 仅提交本任务文件：docs 外已有用户 AGENTS.md 不自动加入。提交说明 feat: add S2 review contracts and closed configuration。
 
 ## Task 2 固定版本读取与 Diff 位置
 

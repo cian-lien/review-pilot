@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "format:review": "cd ../.. && prettier --write scripts/s2-review-test.ts vitest.review.config.ts tests/integration/s2-review.test.ts infra/review/model-config.example.json turbo.json packages/tooling/package.json --log-level warn",
+    "test:review": "cd ../.. && tsx scripts/s2-review-test.ts",
     "cutover:check": "cd ../.. && tsx scripts/s1-cutover-check.ts",
     "verify:migration": "cd ../.. && tsx scripts/verify-migration.ts",
     "infra:check": "cd ../.. && tsx scripts/s1-observability-check.ts",

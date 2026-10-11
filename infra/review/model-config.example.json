@@ -1,0 +1,16 @@
+{
+  "modelConfigVersion": "configure-before-use",
+  "priceVersion": "configure-before-use",
+  "baseURL": "https://provider.example/v1",
+  "model": "configure-before-use",
+  "structuredOutputMode": "json-schema",
+  "currency": "USD",
+  "inputMicrosPerMillion": "0",
+  "outputMicrosPerMillion": "0",
+  "runLimitMicros": "0",
+  "repositoryDailyLimitMicros": "0",
+  "globalMonthlyLimitMicros": "0",
+  "usageSupported": false,
+  "onlyTokenBilling": false,
+  "fixtureId": ""
+}

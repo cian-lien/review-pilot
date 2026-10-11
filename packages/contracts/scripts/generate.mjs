@@ -5,10 +5,12 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
 import openapiTS, { astToString } from 'openapi-typescript';
+import { reviewComponents, reviewPaths } from './review-components.mjs';
 
 const root = new URL('../', import.meta.url);
 const goRoot = fileURLToPath(new URL('../../../apps/api/', import.meta.url));
 const schema = JSON.parse(await readFile(new URL('schemas/task-v1.json', root), 'utf8'));
+const reviewSchema = JSON.parse(await readFile(new URL('schemas/task-v2.json', root), 'utf8'));
 const specPath = new URL('openapi/s1.yaml', root);
 const spec = YAML.parse(await readFile(specPath, 'utf8'));
 const project = (value) => {
@@ -29,6 +31,23 @@ if (check && JSON.stringify(spec.components.schemas.TaskEnvelope) !== JSON.strin
   throw new Error('TaskEnvelope projection drift: run codegen');
 }
 spec.components.schemas.TaskEnvelope = projected;
+if (
+  check &&
+  JSON.stringify(spec.components.schemas.ReviewTaskEnvelope) !==
+    JSON.stringify(project(reviewSchema))
+)
+  throw new Error('ReviewTaskEnvelope projection drift');
+spec.components.schemas.ReviewTaskEnvelope = project(reviewSchema);
+for (const [name, value] of Object.entries(reviewComponents)) {
+  if (check && JSON.stringify(spec.components.schemas[name]) !== JSON.stringify(value))
+    throw new Error(name + ' review projection drift');
+  spec.components.schemas[name] = value;
+}
+for (const [name, value] of Object.entries(reviewPaths)) {
+  if (check && JSON.stringify(spec.paths[name]) !== JSON.stringify(value))
+    throw new Error(name + ' path drift');
+  spec.paths[name] = value;
+}
 for (const [name, value] of Object.entries(schema.$defs)) {
   if (check && JSON.stringify(spec.components.schemas[name]) !== JSON.stringify(project(value)))
     throw new Error(name + ' projection drift');
@@ -58,6 +77,17 @@ try {
   );
   if (result.status !== 0) throw new Error(result.stderr || 'Go codegen failed');
   const generated = [
+    [
+      new URL(
+        'internal/contracts/review-api.gen.json',
+        new URL('../../../apps/api/', import.meta.url),
+      ),
+      JSON.stringify({ components: spec.components }, null, 2) + '\n',
+    ],
+    [
+      new URL('schemas/review-api.gen.json', root),
+      JSON.stringify({ components: spec.components }, null, 2) + '\n',
+    ],
     [new URL('src/s1.gen.ts', root), ts],
     [
       new URL('internal/contracts/s1.gen.go', new URL('../../../apps/api/', import.meta.url)),

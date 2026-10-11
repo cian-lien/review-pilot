@@ -70,6 +70,51 @@ func (e ClaimResponseOutcome) Valid() bool {
 	}
 }
 
+// Defines values for ClaimReviewResponseOutcome.
+const (
+	ReviewBlocked   ClaimReviewResponseOutcome = "blocked"
+	ReviewBusy      ClaimReviewResponseOutcome = "busy"
+	ReviewCancelled ClaimReviewResponseOutcome = "cancelled"
+	ReviewClaimed   ClaimReviewResponseOutcome = "claimed"
+	ReviewFinished  ClaimReviewResponseOutcome = "accepted"
+	ReviewTerminal  ClaimReviewResponseOutcome = "terminal"
+)
+
+// Valid indicates whether the value is a known member of the ClaimReviewResponseOutcome enum.
+func (e ClaimReviewResponseOutcome) Valid() bool {
+	switch e {
+	case ReviewBlocked:
+		return true
+	case ReviewBusy:
+		return true
+	case ReviewCancelled:
+		return true
+	case ReviewClaimed:
+		return true
+	case ReviewFinished:
+		return true
+	case ReviewTerminal:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CodeEvidenceReadState.
+const (
+	CodeEvidenceReadStateAvailable CodeEvidenceReadState = "available"
+)
+
+// Valid indicates whether the value is a known member of the CodeEvidenceReadState enum.
+func (e CodeEvidenceReadState) Valid() bool {
+	switch e {
+	case CodeEvidenceReadStateAvailable:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CommitResponseOutcome.
 const (
 	Accepted        CommitResponseOutcome = "accepted"
@@ -133,6 +178,519 @@ func (e HealthResponsePhase) Valid() bool {
 	}
 }
 
+// Defines values for ModelCallPurpose.
+const (
+	ModelCallPurposeGenerate ModelCallPurpose = "generate"
+	ModelCallPurposeVerify   ModelCallPurpose = "verify"
+)
+
+// Valid indicates whether the value is a known member of the ModelCallPurpose enum.
+func (e ModelCallPurpose) Valid() bool {
+	switch e {
+	case ModelCallPurposeGenerate:
+		return true
+	case ModelCallPurposeVerify:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ModelCallState.
+const (
+	ModelCallStateDispatching ModelCallState = "dispatching"
+	ModelCallStateReleased    ModelCallState = "released"
+	ModelCallStateReserved    ModelCallState = "reserved"
+	ModelCallStateSettled     ModelCallState = "settled"
+	ModelCallStateUncertain   ModelCallState = "uncertain"
+)
+
+// Valid indicates whether the value is a known member of the ModelCallState enum.
+func (e ModelCallState) Valid() bool {
+	switch e {
+	case ModelCallStateDispatching:
+		return true
+	case ModelCallStateReleased:
+		return true
+	case ModelCallStateReserved:
+		return true
+	case ModelCallStateSettled:
+		return true
+	case ModelCallStateUncertain:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReadReviewStageRequestStage.
+const (
+	ReadReviewStageRequestStageCandidates   ReadReviewStageRequestStage = "candidates"
+	ReadReviewStageRequestStageContext      ReadReviewStageRequestStage = "context"
+	ReadReviewStageRequestStageVerification ReadReviewStageRequestStage = "verification"
+)
+
+// Valid indicates whether the value is a known member of the ReadReviewStageRequestStage enum.
+func (e ReadReviewStageRequestStage) Valid() bool {
+	switch e {
+	case ReadReviewStageRequestStageCandidates:
+		return true
+	case ReadReviewStageRequestStageContext:
+		return true
+	case ReadReviewStageRequestStageVerification:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReserveModelCallRequestPurpose.
+const (
+	ReserveModelCallRequestPurposeGenerate ReserveModelCallRequestPurpose = "generate"
+	ReserveModelCallRequestPurposeVerify   ReserveModelCallRequestPurpose = "verify"
+)
+
+// Valid indicates whether the value is a known member of the ReserveModelCallRequestPurpose enum.
+func (e ReserveModelCallRequestPurpose) Valid() bool {
+	switch e {
+	case ReserveModelCallRequestPurposeGenerate:
+		return true
+	case ReserveModelCallRequestPurposeVerify:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewCandidateCategory.
+const (
+	Authorization ReviewCandidateCategory = "authorization"
+	Concurrency   ReviewCandidateCategory = "concurrency"
+	DataIntegrity ReviewCandidateCategory = "data-integrity"
+	ErrorHandling ReviewCandidateCategory = "error-handling"
+	Lifecycle     ReviewCandidateCategory = "lifecycle"
+	Other         ReviewCandidateCategory = "other"
+	Validation    ReviewCandidateCategory = "validation"
+)
+
+// Valid indicates whether the value is a known member of the ReviewCandidateCategory enum.
+func (e ReviewCandidateCategory) Valid() bool {
+	switch e {
+	case Authorization:
+		return true
+	case Concurrency:
+		return true
+	case DataIntegrity:
+		return true
+	case ErrorHandling:
+		return true
+	case Lifecycle:
+		return true
+	case Other:
+		return true
+	case Validation:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewCandidateSeverity.
+const (
+	High   ReviewCandidateSeverity = "high"
+	Low    ReviewCandidateSeverity = "low"
+	Medium ReviewCandidateSeverity = "medium"
+)
+
+// Valid indicates whether the value is a known member of the ReviewCandidateSeverity enum.
+func (e ReviewCandidateSeverity) Valid() bool {
+	switch e {
+	case High:
+		return true
+	case Low:
+		return true
+	case Medium:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewChangedFileStatus.
+const (
+	Added    ReviewChangedFileStatus = "added"
+	Modified ReviewChangedFileStatus = "modified"
+	Removed  ReviewChangedFileStatus = "removed"
+	Renamed  ReviewChangedFileStatus = "renamed"
+)
+
+// Valid indicates whether the value is a known member of the ReviewChangedFileStatus enum.
+func (e ReviewChangedFileStatus) Valid() bool {
+	switch e {
+	case Added:
+		return true
+	case Modified:
+		return true
+	case Removed:
+		return true
+	case Renamed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewCommitResponseOutcome.
+const (
+	ReviewAccepted        ReviewCommitResponseOutcome = "accepted"
+	ReviewAlreadyAccepted ReviewCommitResponseOutcome = "already-accepted"
+)
+
+// Valid indicates whether the value is a known member of the ReviewCommitResponseOutcome enum.
+func (e ReviewCommitResponseOutcome) Valid() bool {
+	switch e {
+	case ReviewAccepted:
+		return true
+	case ReviewAlreadyAccepted:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewFileContentState.
+const (
+	ReviewFileContentStateAvailable ReviewFileContentState = "available"
+	ReviewFileContentStateBinary    ReviewFileContentState = "binary"
+	ReviewFileContentStateDeleted   ReviewFileContentState = "deleted"
+	ReviewFileContentStateDenied    ReviewFileContentState = "denied"
+	ReviewFileContentStateMissing   ReviewFileContentState = "missing"
+	ReviewFileContentStateTooLarge  ReviewFileContentState = "too-large"
+)
+
+// Valid indicates whether the value is a known member of the ReviewFileContentState enum.
+func (e ReviewFileContentState) Valid() bool {
+	switch e {
+	case ReviewFileContentStateAvailable:
+		return true
+	case ReviewFileContentStateBinary:
+		return true
+	case ReviewFileContentStateDeleted:
+		return true
+	case ReviewFileContentStateDenied:
+		return true
+	case ReviewFileContentStateMissing:
+		return true
+	case ReviewFileContentStateTooLarge:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewFindingPublicationStatus.
+const (
+	ReviewFindingPublicationStatusNotPublished ReviewFindingPublicationStatus = "not-published"
+	ReviewFindingPublicationStatusPending      ReviewFindingPublicationStatus = "pending"
+	ReviewFindingPublicationStatusPublished    ReviewFindingPublicationStatus = "published"
+	ReviewFindingPublicationStatusUncertain    ReviewFindingPublicationStatus = "uncertain"
+)
+
+// Valid indicates whether the value is a known member of the ReviewFindingPublicationStatus enum.
+func (e ReviewFindingPublicationStatus) Valid() bool {
+	switch e {
+	case ReviewFindingPublicationStatusNotPublished:
+		return true
+	case ReviewFindingPublicationStatusPending:
+		return true
+	case ReviewFindingPublicationStatusPublished:
+		return true
+	case ReviewFindingPublicationStatusUncertain:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewIdentityPipelineVersion.
+const (
+	ReviewV1 ReviewIdentityPipelineVersion = "review-v1"
+)
+
+// Valid indicates whether the value is a known member of the ReviewIdentityPipelineVersion enum.
+func (e ReviewIdentityPipelineVersion) Valid() bool {
+	switch e {
+	case ReviewV1:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewProvenanceGithubMode.
+const (
+	ReviewProvenanceGithubModeFake ReviewProvenanceGithubMode = "fake"
+	ReviewProvenanceGithubModeReal ReviewProvenanceGithubMode = "real"
+)
+
+// Valid indicates whether the value is a known member of the ReviewProvenanceGithubMode enum.
+func (e ReviewProvenanceGithubMode) Valid() bool {
+	switch e {
+	case ReviewProvenanceGithubModeFake:
+		return true
+	case ReviewProvenanceGithubModeReal:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewProvenanceModelMode.
+const (
+	ReviewProvenanceModelModeFake ReviewProvenanceModelMode = "fake"
+	ReviewProvenanceModelModeReal ReviewProvenanceModelMode = "real"
+)
+
+// Valid indicates whether the value is a known member of the ReviewProvenanceModelMode enum.
+func (e ReviewProvenanceModelMode) Valid() bool {
+	switch e {
+	case ReviewProvenanceModelModeFake:
+		return true
+	case ReviewProvenanceModelModeReal:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewPublicationPlanMode.
+const (
+	ReviewPublicationPlanModeFake ReviewPublicationPlanMode = "fake"
+	ReviewPublicationPlanModeReal ReviewPublicationPlanMode = "real"
+)
+
+// Valid indicates whether the value is a known member of the ReviewPublicationPlanMode enum.
+func (e ReviewPublicationPlanMode) Valid() bool {
+	switch e {
+	case ReviewPublicationPlanModeFake:
+		return true
+	case ReviewPublicationPlanModeReal:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewPublicationReceiptMode.
+const (
+	ReviewPublicationReceiptModeFake ReviewPublicationReceiptMode = "fake"
+	ReviewPublicationReceiptModeReal ReviewPublicationReceiptMode = "real"
+)
+
+// Valid indicates whether the value is a known member of the ReviewPublicationReceiptMode enum.
+func (e ReviewPublicationReceiptMode) Valid() bool {
+	switch e {
+	case ReviewPublicationReceiptModeFake:
+		return true
+	case ReviewPublicationReceiptModeReal:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewPublicationReceiptState.
+const (
+	ReviewPublicationReceiptStateConfirmed  ReviewPublicationReceiptState = "confirmed"
+	ReviewPublicationReceiptStateNotWritten ReviewPublicationReceiptState = "not-written"
+	ReviewPublicationReceiptStateUncertain  ReviewPublicationReceiptState = "uncertain"
+)
+
+// Valid indicates whether the value is a known member of the ReviewPublicationReceiptState enum.
+func (e ReviewPublicationReceiptState) Valid() bool {
+	switch e {
+	case ReviewPublicationReceiptStateConfirmed:
+		return true
+	case ReviewPublicationReceiptStateNotWritten:
+		return true
+	case ReviewPublicationReceiptStateUncertain:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewPublicationSummaryState.
+const (
+	ReviewPublicationSummaryStateCancelled ReviewPublicationSummaryState = "cancelled"
+	ReviewPublicationSummaryStateFailed    ReviewPublicationSummaryState = "failed"
+	ReviewPublicationSummaryStatePending   ReviewPublicationSummaryState = "pending"
+	ReviewPublicationSummaryStatePublished ReviewPublicationSummaryState = "published"
+	ReviewPublicationSummaryStateUncertain ReviewPublicationSummaryState = "uncertain"
+)
+
+// Valid indicates whether the value is a known member of the ReviewPublicationSummaryState enum.
+func (e ReviewPublicationSummaryState) Valid() bool {
+	switch e {
+	case ReviewPublicationSummaryStateCancelled:
+		return true
+	case ReviewPublicationSummaryStateFailed:
+		return true
+	case ReviewPublicationSummaryStatePending:
+		return true
+	case ReviewPublicationSummaryStatePublished:
+		return true
+	case ReviewPublicationSummaryStateUncertain:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewResultKind.
+const (
+	ReviewResultKindAiReview ReviewResultKind = "ai-review"
+)
+
+// Valid indicates whether the value is a known member of the ReviewResultKind enum.
+func (e ReviewResultKind) Valid() bool {
+	switch e {
+	case ReviewResultKindAiReview:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewRunSummaryMode.
+const (
+	ReviewRunSummaryModeFake ReviewRunSummaryMode = "fake"
+	ReviewRunSummaryModeReal ReviewRunSummaryMode = "real"
+)
+
+// Valid indicates whether the value is a known member of the ReviewRunSummaryMode enum.
+func (e ReviewRunSummaryMode) Valid() bool {
+	switch e {
+	case ReviewRunSummaryModeFake:
+		return true
+	case ReviewRunSummaryModeReal:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewSnapshotGenerationPromptVersion.
+const (
+	ReviewGenerationV1 ReviewSnapshotGenerationPromptVersion = "review-generation-v1"
+)
+
+// Valid indicates whether the value is a known member of the ReviewSnapshotGenerationPromptVersion enum.
+func (e ReviewSnapshotGenerationPromptVersion) Valid() bool {
+	switch e {
+	case ReviewGenerationV1:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewSnapshotMemorySetVersion.
+const (
+	ReviewSnapshotMemorySetVersionNone ReviewSnapshotMemorySetVersion = "none"
+)
+
+// Valid indicates whether the value is a known member of the ReviewSnapshotMemorySetVersion enum.
+func (e ReviewSnapshotMemorySetVersion) Valid() bool {
+	switch e {
+	case ReviewSnapshotMemorySetVersionNone:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewSnapshotTrustedRulesSha.
+const (
+	ReviewSnapshotTrustedRulesShaNone ReviewSnapshotTrustedRulesSha = "none"
+)
+
+// Valid indicates whether the value is a known member of the ReviewSnapshotTrustedRulesSha enum.
+func (e ReviewSnapshotTrustedRulesSha) Valid() bool {
+	switch e {
+	case ReviewSnapshotTrustedRulesShaNone:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewSnapshotVerificationPromptVersion.
+const (
+	ReviewVerificationV1 ReviewSnapshotVerificationPromptVersion = "review-verification-v1"
+)
+
+// Valid indicates whether the value is a known member of the ReviewSnapshotVerificationPromptVersion enum.
+func (e ReviewSnapshotVerificationPromptVersion) Valid() bool {
+	switch e {
+	case ReviewVerificationV1:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewStageRecordStage.
+const (
+	ReviewStageRecordStageCandidates   ReviewStageRecordStage = "candidates"
+	ReviewStageRecordStageContext      ReviewStageRecordStage = "context"
+	ReviewStageRecordStageVerification ReviewStageRecordStage = "verification"
+)
+
+// Valid indicates whether the value is a known member of the ReviewStageRecordStage enum.
+func (e ReviewStageRecordStage) Valid() bool {
+	switch e {
+	case ReviewStageRecordStageCandidates:
+		return true
+	case ReviewStageRecordStageContext:
+		return true
+	case ReviewStageRecordStageVerification:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewTaskEnvelopeKind.
+const (
+	ReviewTaskEnvelopeKindAiReview ReviewTaskEnvelopeKind = "ai-review"
+)
+
+// Valid indicates whether the value is a known member of the ReviewTaskEnvelopeKind enum.
+func (e ReviewTaskEnvelopeKind) Valid() bool {
+	switch e {
+	case ReviewTaskEnvelopeKindAiReview:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewTaskEnvelopeSchemaVersion.
+const (
+	N2 ReviewTaskEnvelopeSchemaVersion = 2
+)
+
+// Valid indicates whether the value is a known member of the ReviewTaskEnvelopeSchemaVersion enum.
+func (e ReviewTaskEnvelopeSchemaVersion) Valid() bool {
+	switch e {
+	case N2:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for RunListResponseAiReviewEnabled.
 const (
 	RunListResponseAiReviewEnabledFalse RunListResponseAiReviewEnabled = false
@@ -142,6 +700,48 @@ const (
 func (e RunListResponseAiReviewEnabled) Valid() bool {
 	switch e {
 	case RunListResponseAiReviewEnabledFalse:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RunState.
+const (
+	RunStateCancelled  RunState = "Cancelled"
+	RunStateCompleted  RunState = "Completed"
+	RunStateFailed     RunState = "Failed"
+	RunStateIndexing   RunState = "Indexing"
+	RunStatePartial    RunState = "Partial"
+	RunStatePublishing RunState = "Publishing"
+	RunStateQueued     RunState = "Queued"
+	RunStateReviewing  RunState = "Reviewing"
+	RunStateStale      RunState = "Stale"
+	RunStateVerifying  RunState = "Verifying"
+)
+
+// Valid indicates whether the value is a known member of the RunState enum.
+func (e RunState) Valid() bool {
+	switch e {
+	case RunStateCancelled:
+		return true
+	case RunStateCompleted:
+		return true
+	case RunStateFailed:
+		return true
+	case RunStateIndexing:
+		return true
+	case RunStatePartial:
+		return true
+	case RunStatePublishing:
+		return true
+	case RunStateQueued:
+		return true
+	case RunStateReviewing:
+		return true
+	case RunStateStale:
+		return true
+	case RunStateVerifying:
 		return true
 	default:
 		return false
@@ -190,6 +790,51 @@ func (e RunSummaryStatus) Valid() bool {
 	}
 }
 
+// Defines values for SaveReviewStageRequestStage.
+const (
+	SaveReviewStageRequestStageCandidates   SaveReviewStageRequestStage = "candidates"
+	SaveReviewStageRequestStageContext      SaveReviewStageRequestStage = "context"
+	SaveReviewStageRequestStageVerification SaveReviewStageRequestStage = "verification"
+)
+
+// Valid indicates whether the value is a known member of the SaveReviewStageRequestStage enum.
+func (e SaveReviewStageRequestStage) Valid() bool {
+	switch e {
+	case SaveReviewStageRequestStageCandidates:
+		return true
+	case SaveReviewStageRequestStageContext:
+		return true
+	case SaveReviewStageRequestStageVerification:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SettleModelCallRequestOutcome.
+const (
+	SettleModelCallRequestOutcomeFailed    SettleModelCallRequestOutcome = "failed"
+	SettleModelCallRequestOutcomeNotSent   SettleModelCallRequestOutcome = "not-sent"
+	SettleModelCallRequestOutcomeSucceeded SettleModelCallRequestOutcome = "succeeded"
+	SettleModelCallRequestOutcomeUncertain SettleModelCallRequestOutcome = "uncertain"
+)
+
+// Valid indicates whether the value is a known member of the SettleModelCallRequestOutcome enum.
+func (e SettleModelCallRequestOutcome) Valid() bool {
+	switch e {
+	case SettleModelCallRequestOutcomeFailed:
+		return true
+	case SettleModelCallRequestOutcomeNotSent:
+		return true
+	case SettleModelCallRequestOutcomeSucceeded:
+		return true
+	case SettleModelCallRequestOutcomeUncertain:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TaskEnvelopeKind.
 const (
 	TaskEnvelopeKindConnectionCheck TaskEnvelopeKind = "connection-check"
@@ -217,6 +862,24 @@ const (
 func (e TaskEnvelopeSchemaVersion) Valid() bool {
 	switch e {
 	case N1:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VerificationDecisionVerdict.
+const (
+	Abstain  VerificationDecisionVerdict = "abstain"
+	Verified VerificationDecisionVerdict = "verified"
+)
+
+// Valid indicates whether the value is a known member of the VerificationDecisionVerdict enum.
+func (e VerificationDecisionVerdict) Valid() bool {
+	switch e {
+	case Abstain:
+		return true
+	case Verified:
 		return true
 	default:
 		return false
@@ -259,6 +922,33 @@ type ClaimResponse struct {
 // ClaimResponseOutcome defines model for ClaimResponse.Outcome.
 type ClaimResponseOutcome string
 
+// ClaimReviewRequest defines model for ClaimReviewRequest.
+type ClaimReviewRequest struct {
+	Envelope ReviewTaskEnvelope `json:"envelope"`
+	WorkerId string             `json:"workerId"`
+}
+
+// ClaimReviewResponse defines model for ClaimReviewResponse.
+type ClaimReviewResponse struct {
+	Lease   ReviewLease                `json:"lease"`
+	Outcome ClaimReviewResponseOutcome `json:"outcome"`
+}
+
+// ClaimReviewResponseOutcome defines model for ClaimReviewResponse.Outcome.
+type ClaimReviewResponseOutcome string
+
+// CodeEvidence defines model for CodeEvidence.
+type CodeEvidence struct {
+	ReadState CodeEvidenceReadState `json:"readState"`
+	Redacted  bool                  `json:"redacted"`
+	Ref       EvidenceRef           `json:"ref"`
+	Snippet   string                `json:"snippet"`
+	Tenant    TenantRef             `json:"tenant"`
+}
+
+// CodeEvidenceReadState defines model for CodeEvidence.ReadState.
+type CodeEvidenceReadState string
+
 // CommitResponse defines model for CommitResponse.
 type CommitResponse struct {
 	Outcome CommitResponseOutcome `json:"outcome"`
@@ -266,6 +956,11 @@ type CommitResponse struct {
 
 // CommitResponseOutcome defines model for CommitResponse.Outcome.
 type CommitResponseOutcome string
+
+// CommitReviewRequest defines model for CommitReviewRequest.
+type CommitReviewRequest struct {
+	Result ReviewResult `json:"result"`
+}
 
 // ConnectionResult defines model for ConnectionResult.
 type ConnectionResult struct {
@@ -282,6 +977,23 @@ type ConnectionResult struct {
 // ConnectionResultKind defines model for ConnectionResult.Kind.
 type ConnectionResultKind string
 
+// DispatchModelCallRequest defines model for DispatchModelCallRequest.
+type DispatchModelCallRequest struct {
+	CallId           string      `json:"callId"`
+	ExpectedRevision int         `json:"expectedRevision"`
+	Lease            ReviewLease `json:"lease"`
+}
+
+// EvidenceRef defines model for EvidenceRef.
+type EvidenceRef struct {
+	ContentHash string `json:"contentHash"`
+	EndLine     int    `json:"endLine"`
+	EvidenceId  string `json:"evidenceId"`
+	Path        string `json:"path"`
+	Sha         string `json:"sha"`
+	StartLine   int    `json:"startLine"`
+}
+
 // HealthResponse defines model for HealthResponse.
 type HealthResponse struct {
 	AiReviewEnabled HealthResponseAiReviewEnabled `json:"aiReviewEnabled"`
@@ -293,6 +1005,58 @@ type HealthResponseAiReviewEnabled bool
 
 // HealthResponsePhase defines model for HealthResponse.Phase.
 type HealthResponsePhase string
+
+// ModelCall defines model for ModelCall.
+type ModelCall struct {
+	ActualCostMicros   *string          `json:"actualCostMicros"`
+	CallId             string           `json:"callId"`
+	Currency           string           `json:"currency"`
+	Ordinal            int              `json:"ordinal"`
+	PriceVersion       string           `json:"priceVersion"`
+	Purpose            ModelCallPurpose `json:"purpose"`
+	ReasonCode         *string          `json:"reasonCode"`
+	RequestHash        string           `json:"requestHash"`
+	ReservationId      string           `json:"reservationId"`
+	ReservedCostMicros string           `json:"reservedCostMicros"`
+	Revision           int              `json:"revision"`
+	SendAuthorized     bool             `json:"sendAuthorized"`
+	State              ModelCallState   `json:"state"`
+	Usage              ModelUsage       `json:"usage"`
+}
+
+// ModelCallPurpose defines model for ModelCall.Purpose.
+type ModelCallPurpose string
+
+// ModelCallState defines model for ModelCall.State.
+type ModelCallState string
+
+// ModelUsage defines model for ModelUsage.
+type ModelUsage struct {
+	InputTokens  int `json:"inputTokens"`
+	OutputTokens int `json:"outputTokens"`
+}
+
+// ReadReviewContextRequest defines model for ReadReviewContextRequest.
+type ReadReviewContextRequest struct {
+	Cursor *string     `json:"cursor"`
+	Lease  ReviewLease `json:"lease"`
+}
+
+// ReadReviewStageRequest defines model for ReadReviewStageRequest.
+type ReadReviewStageRequest struct {
+	Lease          ReviewLease                 `json:"lease"`
+	Stage          ReadReviewStageRequestStage `json:"stage"`
+	StageInputHash string                      `json:"stageInputHash"`
+}
+
+// ReadReviewStageRequestStage defines model for ReadReviewStageRequest.Stage.
+type ReadReviewStageRequestStage string
+
+// ReadReviewStageResponse defines model for ReadReviewStageResponse.
+type ReadReviewStageResponse struct {
+	Found  bool              `json:"found"`
+	Record ReviewStageRecord `json:"record"`
+}
 
 // RepositoryListResponse defines model for RepositoryListResponse.
 type RepositoryListResponse struct {
@@ -307,6 +1071,406 @@ type RepositorySummary struct {
 	FullName      string    `json:"fullName"`
 	Public        bool      `json:"public"`
 	Tenant        TenantRef `json:"tenant"`
+}
+
+// ReserveModelCallRequest defines model for ReserveModelCallRequest.
+type ReserveModelCallRequest struct {
+	InputTokenLimit  int                            `json:"inputTokenLimit"`
+	Lease            ReviewLease                    `json:"lease"`
+	Ordinal          int                            `json:"ordinal"`
+	OutputTokenLimit int                            `json:"outputTokenLimit"`
+	Purpose          ReserveModelCallRequestPurpose `json:"purpose"`
+	RequestHash      string                         `json:"requestHash"`
+}
+
+// ReserveModelCallRequestPurpose defines model for ReserveModelCallRequest.Purpose.
+type ReserveModelCallRequestPurpose string
+
+// ReviewCandidate defines model for ReviewCandidate.
+type ReviewCandidate struct {
+	CandidateId           string                  `json:"candidateId"`
+	Category              ReviewCandidateCategory `json:"category"`
+	Evidence              []EvidenceRef           `json:"evidence"`
+	FailureScenario       string                  `json:"failureScenario"`
+	Impact                string                  `json:"impact"`
+	IntroducedByPR        bool                    `json:"introducedByPR"`
+	RootCauseStatement    RootCauseStatement      `json:"rootCauseStatement"`
+	Severity              ReviewCandidateSeverity `json:"severity"`
+	SuggestedVerification string                  `json:"suggestedVerification"`
+	Title                 string                  `json:"title"`
+}
+
+// ReviewCandidateCategory defines model for ReviewCandidate.Category.
+type ReviewCandidateCategory string
+
+// ReviewCandidateSeverity defines model for ReviewCandidate.Severity.
+type ReviewCandidateSeverity string
+
+// ReviewCandidates defines model for ReviewCandidates.
+type ReviewCandidates struct {
+	Candidates []ReviewCandidate `json:"candidates"`
+}
+
+// ReviewChangedFile defines model for ReviewChangedFile.
+type ReviewChangedFile struct {
+	Additions    int                     `json:"additions"`
+	Base         ReviewFileContent       `json:"base"`
+	Deletions    int                     `json:"deletions"`
+	Head         ReviewFileContent       `json:"head"`
+	Patch        *string                 `json:"patch"`
+	Path         string                  `json:"path"`
+	PreviousPath *string                 `json:"previousPath"`
+	Status       ReviewChangedFileStatus `json:"status"`
+}
+
+// ReviewChangedFileStatus defines model for ReviewChangedFile.Status.
+type ReviewChangedFileStatus string
+
+// ReviewCommitResponse defines model for ReviewCommitResponse.
+type ReviewCommitResponse struct {
+	Outcome    ReviewCommitResponseOutcome `json:"outcome"`
+	ResultHash string                      `json:"resultHash"`
+	ResultId   string                      `json:"resultId"`
+}
+
+// ReviewCommitResponseOutcome defines model for ReviewCommitResponse.Outcome.
+type ReviewCommitResponseOutcome string
+
+// ReviewContextPage defines model for ReviewContextPage.
+type ReviewContextPage struct {
+	Complete    bool                `json:"complete"`
+	ContextHash *string             `json:"contextHash"`
+	Coverage    ReviewCoverage      `json:"coverage"`
+	Cursor      *string             `json:"cursor"`
+	Evidence    []CodeEvidence      `json:"evidence"`
+	Files       []ReviewChangedFile `json:"files"`
+	ManifestId  string              `json:"manifestId"`
+	NextCursor  *string             `json:"nextCursor"`
+}
+
+// ReviewCostSummary defines model for ReviewCostSummary.
+type ReviewCostSummary struct {
+	Calls               []ModelCall `json:"calls"`
+	Currency            string      `json:"currency"`
+	DailyResetsAt       time.Time   `json:"dailyResetsAt"`
+	HeldCostMicros      string      `json:"heldCostMicros"`
+	KnownCostMicros     string      `json:"knownCostMicros"`
+	MonthlyWarning      bool        `json:"monthlyWarning"`
+	NeedsReconciliation bool        `json:"needsReconciliation"`
+	PriceVersion        string      `json:"priceVersion"`
+}
+
+// ReviewCoverage defines model for ReviewCoverage.
+type ReviewCoverage struct {
+	Complete            bool                `json:"complete"`
+	CoveredChangedLines int                 `json:"coveredChangedLines"`
+	Limitations         []string            `json:"limitations"`
+	RawBytes            int                 `json:"rawBytes"`
+	ReadFiles           int                 `json:"readFiles"`
+	Skipped             []ReviewSkippedFile `json:"skipped"`
+	TotalChangedLines   int                 `json:"totalChangedLines"`
+	TotalFiles          int                 `json:"totalFiles"`
+}
+
+// ReviewFileContent defines model for ReviewFileContent.
+type ReviewFileContent struct {
+	Bytes       int                    `json:"bytes"`
+	ContentHash *string                `json:"contentHash"`
+	Sha         string                 `json:"sha"`
+	State       ReviewFileContentState `json:"state"`
+	Text        *string                `json:"text"`
+}
+
+// ReviewFileContentState defines model for ReviewFileContent.State.
+type ReviewFileContentState string
+
+// ReviewFilteredCandidate defines model for ReviewFilteredCandidate.
+type ReviewFilteredCandidate struct {
+	CandidateId string        `json:"candidateId"`
+	Evidence    []EvidenceRef `json:"evidence"`
+	ReasonCode  string        `json:"reasonCode"`
+	Title       string        `json:"title"`
+}
+
+// ReviewFinding defines model for ReviewFinding.
+type ReviewFinding struct {
+	Candidate         ReviewCandidate                `json:"candidate"`
+	ContentExpired    bool                           `json:"contentExpired"`
+	Evidence          []CodeEvidence                 `json:"evidence"`
+	FindingId         string                         `json:"findingId"`
+	Fingerprint       string                         `json:"fingerprint"`
+	PublicationStatus ReviewFindingPublicationStatus `json:"publicationStatus"`
+	ReasonCode        *string                        `json:"reasonCode"`
+}
+
+// ReviewFindingPublicationStatus defines model for ReviewFinding.PublicationStatus.
+type ReviewFindingPublicationStatus string
+
+// ReviewIdentity defines model for ReviewIdentity.
+type ReviewIdentity struct {
+	BaseSha            string                        `json:"baseSha"`
+	Generation         int                           `json:"generation"`
+	HeadSha            string                        `json:"headSha"`
+	PipelineVersion    ReviewIdentityPipelineVersion `json:"pipelineVersion"`
+	PrNumber           int                           `json:"prNumber"`
+	PrTitle            string                        `json:"prTitle"`
+	RepositoryFullName string                        `json:"repositoryFullName"`
+	Tenant             TenantRef                     `json:"tenant"`
+}
+
+// ReviewIdentityPipelineVersion defines model for ReviewIdentity.PipelineVersion.
+type ReviewIdentityPipelineVersion string
+
+// ReviewLease defines model for ReviewLease.
+type ReviewLease struct {
+	Attempt        int            `json:"attempt"`
+	ExecutionEpoch int            `json:"executionEpoch"`
+	HeadSha        string         `json:"headSha"`
+	InputHash      string         `json:"inputHash"`
+	LeaseExpiresAt time.Time      `json:"leaseExpiresAt"`
+	LeaseToken     string         `json:"leaseToken"`
+	RunId          string         `json:"runId"`
+	Snapshot       ReviewSnapshot `json:"snapshot"`
+	TaskId         string         `json:"taskId"`
+	Tenant         TenantRef      `json:"tenant"`
+}
+
+// ReviewPolicy defines model for ReviewPolicy.
+type ReviewPolicy struct {
+	MaxCandidates   int  `json:"maxCandidates"`
+	MaxChangedLines int  `json:"maxChangedLines"`
+	MaxFileBytes    int  `json:"maxFileBytes"`
+	MaxFiles        int  `json:"maxFiles"`
+	MaxInputTokens  int  `json:"maxInputTokens"`
+	MaxOutputTokens int  `json:"maxOutputTokens"`
+	MaxPageBytes    int  `json:"maxPageBytes"`
+	MaxRawBytes     int  `json:"maxRawBytes"`
+	MaxReferences   int  `json:"maxReferences"`
+	MaxResultBytes  int  `json:"maxResultBytes"`
+	MaxSnippetBytes int  `json:"maxSnippetBytes"`
+	MaxStageBytes   int  `json:"maxStageBytes"`
+	RetainContent   bool `json:"retainContent"`
+	TimeoutSeconds  int  `json:"timeoutSeconds"`
+}
+
+// ReviewProvenance defines model for ReviewProvenance.
+type ReviewProvenance struct {
+	ContentExpiresAt time.Time                  `json:"contentExpiresAt"`
+	FixtureId        string                     `json:"fixtureId"`
+	GithubMode       ReviewProvenanceGithubMode `json:"githubMode"`
+	ModelMode        ReviewProvenanceModelMode  `json:"modelMode"`
+}
+
+// ReviewProvenanceGithubMode defines model for ReviewProvenance.GithubMode.
+type ReviewProvenanceGithubMode string
+
+// ReviewProvenanceModelMode defines model for ReviewProvenance.ModelMode.
+type ReviewProvenanceModelMode string
+
+// ReviewPublicationFinding defines model for ReviewPublicationFinding.
+type ReviewPublicationFinding struct {
+	Body        string `json:"body"`
+	FindingId   string `json:"findingId"`
+	Fingerprint string `json:"fingerprint"`
+	Line        *int   `json:"line"`
+	Path        string `json:"path"`
+}
+
+// ReviewPublicationPlan defines model for ReviewPublicationPlan.
+type ReviewPublicationPlan struct {
+	Findings []ReviewPublicationFinding `json:"findings"`
+	HeadSha  string                     `json:"headSha"`
+	Marker   string                     `json:"marker"`
+	Mode     ReviewPublicationPlanMode  `json:"mode"`
+	PlanHash string                     `json:"planHash"`
+	PrNumber int                        `json:"prNumber"`
+	RunId    string                     `json:"runId"`
+	Tenant   TenantRef                  `json:"tenant"`
+}
+
+// ReviewPublicationPlanMode defines model for ReviewPublicationPlan.Mode.
+type ReviewPublicationPlanMode string
+
+// ReviewPublicationReceipt defines model for ReviewPublicationReceipt.
+type ReviewPublicationReceipt struct {
+	AuthorAppId int                           `json:"authorAppId"`
+	CheckId     *string                       `json:"checkId"`
+	CommentIds  []string                      `json:"commentIds"`
+	HeadSha     string                        `json:"headSha"`
+	Marker      string                        `json:"marker"`
+	Mode        ReviewPublicationReceiptMode  `json:"mode"`
+	ReviewId    *string                       `json:"reviewId"`
+	State       ReviewPublicationReceiptState `json:"state"`
+}
+
+// ReviewPublicationReceiptMode defines model for ReviewPublicationReceipt.Mode.
+type ReviewPublicationReceiptMode string
+
+// ReviewPublicationReceiptState defines model for ReviewPublicationReceipt.State.
+type ReviewPublicationReceiptState string
+
+// ReviewPublicationSummary defines model for ReviewPublicationSummary.
+type ReviewPublicationSummary struct {
+	OccupiedSlots int                           `json:"occupiedSlots"`
+	Receipt       ReviewPublicationReceipt      `json:"receipt"`
+	State         ReviewPublicationSummaryState `json:"state"`
+}
+
+// ReviewPublicationSummaryState defines model for ReviewPublicationSummary.State.
+type ReviewPublicationSummaryState string
+
+// ReviewPullList defines model for ReviewPullList.
+type ReviewPullList struct {
+	Items      []ReviewPullSummary `json:"items"`
+	NextCursor *string             `json:"nextCursor"`
+}
+
+// ReviewPullSummary defines model for ReviewPullSummary.
+type ReviewPullSummary struct {
+	HeadSha   string           `json:"headSha"`
+	LatestRun ReviewRunSummary `json:"latestRun"`
+	PrNumber  int              `json:"prNumber"`
+	Title     string           `json:"title"`
+}
+
+// ReviewResult defines model for ReviewResult.
+type ReviewResult struct {
+	CallIds     []string               `json:"callIds"`
+	Candidates  []ReviewCandidate      `json:"candidates"`
+	ContextHash string                 `json:"contextHash"`
+	Coverage    ReviewCoverage         `json:"coverage"`
+	Decisions   []VerificationDecision `json:"decisions"`
+	Kind        ReviewResultKind       `json:"kind"`
+	Lease       ReviewLease            `json:"lease"`
+	ResultId    string                 `json:"resultId"`
+}
+
+// ReviewResultKind defines model for ReviewResult.Kind.
+type ReviewResultKind string
+
+// ReviewRunDetail defines model for ReviewRunDetail.
+type ReviewRunDetail struct {
+	ContentExpired      bool                      `json:"contentExpired"`
+	Costs               ReviewCostSummary         `json:"costs"`
+	Coverage            ReviewCoverage            `json:"coverage"`
+	Filtered            []ReviewFilteredCandidate `json:"filtered"`
+	Findings            []ReviewFinding           `json:"findings"`
+	NeedsReconciliation bool                      `json:"needsReconciliation"`
+	Publication         ReviewPublicationSummary  `json:"publication"`
+	ReasonCode          *string                   `json:"reasonCode"`
+	RunId               string                    `json:"runId"`
+	Snapshot            ReviewSnapshot            `json:"snapshot"`
+	Status              RunState                  `json:"status"`
+}
+
+// ReviewRunList defines model for ReviewRunList.
+type ReviewRunList struct {
+	Items      []ReviewRunSummary `json:"items"`
+	NextCursor *string            `json:"nextCursor"`
+}
+
+// ReviewRunSummary defines model for ReviewRunSummary.
+type ReviewRunSummary struct {
+	CreatedAt           time.Time            `json:"createdAt"`
+	HeadSha             string               `json:"headSha"`
+	Mode                ReviewRunSummaryMode `json:"mode"`
+	NeedsReconciliation bool                 `json:"needsReconciliation"`
+	ReasonCode          *string              `json:"reasonCode"`
+	RunId               string               `json:"runId"`
+	Status              RunState             `json:"status"`
+}
+
+// ReviewRunSummaryMode defines model for ReviewRunSummary.Mode.
+type ReviewRunSummaryMode string
+
+// ReviewSkippedFile defines model for ReviewSkippedFile.
+type ReviewSkippedFile struct {
+	ChangedLines int    `json:"changedLines"`
+	Path         string `json:"path"`
+	ReasonCode   string `json:"reasonCode"`
+}
+
+// ReviewSnapshot defines model for ReviewSnapshot.
+type ReviewSnapshot struct {
+	GenerationPromptVersion   ReviewSnapshotGenerationPromptVersion   `json:"generationPromptVersion"`
+	Identity                  ReviewIdentity                          `json:"identity"`
+	MemorySetVersion          ReviewSnapshotMemorySetVersion          `json:"memorySetVersion"`
+	ModelConfigVersion        string                                  `json:"modelConfigVersion"`
+	Policy                    ReviewPolicy                            `json:"policy"`
+	PriceVersion              string                                  `json:"priceVersion"`
+	Provenance                ReviewProvenance                        `json:"provenance"`
+	RepositoryConfigVersion   int                                     `json:"repositoryConfigVersion"`
+	TrustedRulesSha           ReviewSnapshotTrustedRulesSha           `json:"trustedRulesSha"`
+	VerificationPromptVersion ReviewSnapshotVerificationPromptVersion `json:"verificationPromptVersion"`
+}
+
+// ReviewSnapshotGenerationPromptVersion defines model for ReviewSnapshot.GenerationPromptVersion.
+type ReviewSnapshotGenerationPromptVersion string
+
+// ReviewSnapshotMemorySetVersion defines model for ReviewSnapshot.MemorySetVersion.
+type ReviewSnapshotMemorySetVersion string
+
+// ReviewSnapshotTrustedRulesSha defines model for ReviewSnapshot.TrustedRulesSha.
+type ReviewSnapshotTrustedRulesSha string
+
+// ReviewSnapshotVerificationPromptVersion defines model for ReviewSnapshot.VerificationPromptVersion.
+type ReviewSnapshotVerificationPromptVersion string
+
+// ReviewStagePayload defines model for ReviewStagePayload.
+type ReviewStagePayload struct {
+	Candidates   ReviewCandidates   `json:"candidates"`
+	Context      ReviewContextPage  `json:"context"`
+	Verification ReviewVerification `json:"verification"`
+}
+
+// ReviewStageRecord defines model for ReviewStageRecord.
+type ReviewStageRecord struct {
+	CallId         *string                `json:"callId"`
+	ExpiresAt      time.Time              `json:"expiresAt"`
+	OutputHash     string                 `json:"outputHash"`
+	Payload        ReviewStagePayload     `json:"payload"`
+	Stage          ReviewStageRecordStage `json:"stage"`
+	StageInputHash string                 `json:"stageInputHash"`
+}
+
+// ReviewStageRecordStage defines model for ReviewStageRecord.Stage.
+type ReviewStageRecordStage string
+
+// ReviewTaskActionRequest defines model for ReviewTaskActionRequest.
+type ReviewTaskActionRequest struct {
+	Lease      ReviewLease `json:"lease"`
+	ReasonCode string      `json:"reasonCode"`
+}
+
+// ReviewTaskEnvelope defines model for ReviewTaskEnvelope.
+type ReviewTaskEnvelope struct {
+	HeadSha                string                          `json:"headSha"`
+	Kind                   ReviewTaskEnvelopeKind          `json:"kind"`
+	MessageId              string                          `json:"messageId"`
+	NotificationGeneration int                             `json:"notificationGeneration"`
+	RunId                  string                          `json:"runId"`
+	SchemaVersion          ReviewTaskEnvelopeSchemaVersion `json:"schemaVersion"`
+	TaskId                 string                          `json:"taskId"`
+	Tenant                 TenantRef                       `json:"tenant"`
+	Traceparent            *string                         `json:"traceparent,omitempty"`
+	Tracestate             *string                         `json:"tracestate,omitempty"`
+}
+
+// ReviewTaskEnvelopeKind defines model for ReviewTaskEnvelope.Kind.
+type ReviewTaskEnvelopeKind string
+
+// ReviewTaskEnvelopeSchemaVersion defines model for ReviewTaskEnvelope.SchemaVersion.
+type ReviewTaskEnvelopeSchemaVersion int
+
+// ReviewVerification defines model for ReviewVerification.
+type ReviewVerification struct {
+	Decisions []VerificationDecision `json:"decisions"`
+}
+
+// RootCauseStatement defines model for RootCauseStatement.
+type RootCauseStatement struct {
+	Consequence string `json:"consequence"`
+	Trigger     string `json:"trigger"`
 }
 
 // RunListResponse defines model for RunListResponse.
@@ -334,6 +1498,9 @@ type RunSnapshot struct {
 	TrustedRulesSha         string `json:"trustedRulesSha"`
 }
 
+// RunState defines model for RunState.
+type RunState string
+
 // RunSummary defines model for RunSummary.
 type RunSummary struct {
 	CheckId   *int             `json:"checkId,omitempty"`
@@ -349,6 +1516,18 @@ type RunSummary struct {
 // RunSummaryStatus defines model for RunSummary.Status.
 type RunSummaryStatus string
 
+// SaveReviewStageRequest defines model for SaveReviewStageRequest.
+type SaveReviewStageRequest struct {
+	CallId         *string                     `json:"callId"`
+	Lease          ReviewLease                 `json:"lease"`
+	Payload        ReviewStagePayload          `json:"payload"`
+	Stage          SaveReviewStageRequestStage `json:"stage"`
+	StageInputHash string                      `json:"stageInputHash"`
+}
+
+// SaveReviewStageRequestStage defines model for SaveReviewStageRequest.Stage.
+type SaveReviewStageRequestStage string
+
 // SessionResponse defines model for SessionResponse.
 type SessionResponse struct {
 	CsrfToken string `json:"csrfToken"`
@@ -363,6 +1542,20 @@ type SetRepositoryEnabledRequest struct {
 	ConfigVersion int  `json:"configVersion"`
 	Enabled       bool `json:"enabled"`
 }
+
+// SettleModelCallRequest defines model for SettleModelCallRequest.
+type SettleModelCallRequest struct {
+	CallId           string                        `json:"callId"`
+	ExpectedRevision int                           `json:"expectedRevision"`
+	Lease            ReviewLease                   `json:"lease"`
+	Outcome          SettleModelCallRequestOutcome `json:"outcome"`
+	ReasonCode       *string                       `json:"reasonCode"`
+	SafeResponseHash *string                       `json:"safeResponseHash"`
+	Usage            ModelUsage                    `json:"usage"`
+}
+
+// SettleModelCallRequestOutcome defines model for SettleModelCallRequest.Outcome.
+type SettleModelCallRequestOutcome string
 
 // TaskEnvelope defines model for TaskEnvelope.
 type TaskEnvelope struct {
@@ -402,6 +1595,17 @@ type TenantRef struct {
 	RepositoryId   int `json:"repositoryId"`
 }
 
+// VerificationDecision defines model for VerificationDecision.
+type VerificationDecision struct {
+	CandidateId string                      `json:"candidateId"`
+	Evidence    []EvidenceRef               `json:"evidence"`
+	ReasonCode  string                      `json:"reasonCode"`
+	Verdict     VerificationDecisionVerdict `json:"verdict"`
+}
+
+// VerificationDecisionVerdict defines model for VerificationDecision.Verdict.
+type VerificationDecisionVerdict string
+
 // WebhookResponse defines model for WebhookResponse.
 type WebhookResponse struct {
 	Accepted bool `json:"accepted"`
@@ -417,6 +1621,22 @@ type AcceptGitHubWebhookParams struct {
 	XHubSignature256 string `json:"X-Hub-Signature-256"`
 }
 
+// GetReviewPullListParams defines parameters for GetReviewPullList.
+type GetReviewPullListParams struct {
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+}
+
+// GetReviewRunListParams defines parameters for GetReviewRunList.
+type GetReviewRunListParams struct {
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+}
+
+// ConfirmReviewResultParams defines parameters for ConfirmReviewResult.
+type ConfirmReviewResultParams struct {
+	RunId     *string `form:"runId,omitempty" json:"runId,omitempty"`
+	InputHash *string `form:"inputHash,omitempty" json:"inputHash,omitempty"`
+}
+
 // ReadConnectionResultParams defines parameters for ReadConnectionResult.
 type ReadConnectionResultParams struct {
 	RunId      string `form:"runId" json:"runId"`
@@ -429,6 +1649,39 @@ type AcceptGitHubWebhookJSONRequestBody AcceptGitHubWebhookJSONBody
 
 // SetRepositoryEnabledJSONRequestBody defines body for SetRepositoryEnabled for application/json ContentType.
 type SetRepositoryEnabledJSONRequestBody = SetRepositoryEnabledRequest
+
+// ReviewReviewTaskActionRequestblockJSONRequestBody defines body for ReviewReviewTaskActionRequestblock for application/json ContentType.
+type ReviewReviewTaskActionRequestblockJSONRequestBody = ReviewTaskActionRequest
+
+// ReviewClaimReviewRequestclaimJSONRequestBody defines body for ReviewClaimReviewRequestclaim for application/json ContentType.
+type ReviewClaimReviewRequestclaimJSONRequestBody = ClaimReviewRequest
+
+// ReviewReadReviewContextRequestcontextJSONRequestBody defines body for ReviewReadReviewContextRequestcontext for application/json ContentType.
+type ReviewReadReviewContextRequestcontextJSONRequestBody = ReadReviewContextRequest
+
+// ReviewReviewTaskActionRequestfailJSONRequestBody defines body for ReviewReviewTaskActionRequestfail for application/json ContentType.
+type ReviewReviewTaskActionRequestfailJSONRequestBody = ReviewTaskActionRequest
+
+// ReviewReviewLeaseheartbeatJSONRequestBody defines body for ReviewReviewLeaseheartbeat for application/json ContentType.
+type ReviewReviewLeaseheartbeatJSONRequestBody = ReviewLease
+
+// ReviewReserveModelCallRequestmodelcallsreserveJSONRequestBody defines body for ReviewReserveModelCallRequestmodelcallsreserve for application/json ContentType.
+type ReviewReserveModelCallRequestmodelcallsreserveJSONRequestBody = ReserveModelCallRequest
+
+// ReviewDispatchModelCallRequestmodelcallscallIddispatchJSONRequestBody defines body for ReviewDispatchModelCallRequestmodelcallscallIddispatch for application/json ContentType.
+type ReviewDispatchModelCallRequestmodelcallscallIddispatchJSONRequestBody = DispatchModelCallRequest
+
+// ReviewSettleModelCallRequestmodelcallscallIdsettleJSONRequestBody defines body for ReviewSettleModelCallRequestmodelcallscallIdsettle for application/json ContentType.
+type ReviewSettleModelCallRequestmodelcallscallIdsettleJSONRequestBody = SettleModelCallRequest
+
+// ReviewCommitReviewRequestresultJSONRequestBody defines body for ReviewCommitReviewRequestresult for application/json ContentType.
+type ReviewCommitReviewRequestresultJSONRequestBody = CommitReviewRequest
+
+// ReviewSaveReviewStageRequeststagesJSONRequestBody defines body for ReviewSaveReviewStageRequeststages for application/json ContentType.
+type ReviewSaveReviewStageRequeststagesJSONRequestBody = SaveReviewStageRequest
+
+// ReviewReadReviewStageRequeststagesreadJSONRequestBody defines body for ReviewReadReviewStageRequeststagesread for application/json ContentType.
+type ReviewReadReviewStageRequeststagesreadJSONRequestBody = ReadReviewStageRequest
 
 // ClaimTaskJSONRequestBody defines body for ClaimTask for application/json ContentType.
 type ClaimTaskJSONRequestBody = ClaimRequest

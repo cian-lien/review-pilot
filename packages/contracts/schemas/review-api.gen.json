@@ -1,0 +1,2472 @@
+{
+  "components": {
+    "schemas": {
+      "TenantRef": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "installationId",
+          "repositoryId"
+        ],
+        "properties": {
+          "installationId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "repositoryId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "RunSnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "identity",
+          "modelConfigVersion",
+          "repositoryConfigVersion",
+          "memorySetVersion",
+          "trustedRulesSha"
+        ],
+        "properties": {
+          "identity": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tenant",
+              "prNumber",
+              "baseSha",
+              "headSha",
+              "pipelineVersion",
+              "generation"
+            ],
+            "properties": {
+              "tenant": {
+                "$ref": "#/components/schemas/TenantRef"
+              },
+              "prNumber": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "baseSha": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{40,64}$"
+              },
+              "headSha": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{40,64}$"
+              },
+              "pipelineVersion": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "modelConfigVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "repositoryConfigVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "memorySetVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "trustedRulesSha": {
+            "type": "string",
+            "maxLength": 40
+          }
+        }
+      },
+      "TaskEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schemaVersion",
+          "messageId",
+          "taskId",
+          "runId",
+          "tenant",
+          "headSha",
+          "kind",
+          "notificationGeneration"
+        ],
+        "properties": {
+          "schemaVersion": {
+            "enum": [
+              1
+            ],
+            "type": "integer"
+          },
+          "messageId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "taskId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "runId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/TenantRef"
+          },
+          "headSha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40,64}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "connection-check",
+              "evolution"
+            ]
+          },
+          "notificationGeneration": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "traceparent": {
+            "type": "string",
+            "maxLength": 55,
+            "pattern": "^00-[0-9a-f]{32}-[0-9a-f]{16}-0[01]$"
+          },
+          "tracestate": {
+            "type": "string",
+            "maxLength": 512
+          }
+        }
+      },
+      "TaskLease": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "taskId",
+          "runId",
+          "leaseToken",
+          "attempt",
+          "expiresAt",
+          "snapshot",
+          "inputHash",
+          "executionEpoch"
+        ],
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "runId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "leaseToken": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "attempt": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/RunSnapshot"
+          },
+          "inputHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "executionEpoch": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "ClaimRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "workerId",
+          "envelope"
+        ],
+        "properties": {
+          "workerId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "envelope": {
+            "$ref": "#/components/schemas/TaskEnvelope"
+          }
+        }
+      },
+      "ClaimResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "outcome"
+        ],
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "claimed",
+              "busy",
+              "not-ready",
+              "finished",
+              "cancelled",
+              "exhausted",
+              "superseded"
+            ]
+          },
+          "lease": {
+            "$ref": "#/components/schemas/TaskLease"
+          }
+        }
+      },
+      "ConnectionResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "resultId",
+          "taskId",
+          "runId",
+          "leaseToken",
+          "executionEpoch",
+          "inputHash",
+          "resultHash",
+          "kind"
+        ],
+        "properties": {
+          "resultId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "taskId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "runId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "leaseToken": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "executionEpoch": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "inputHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "resultHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "connection-check"
+            ]
+          }
+        }
+      },
+      "CommitResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "outcome"
+        ],
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "accepted",
+              "already-accepted"
+            ]
+          }
+        }
+      },
+      "APIError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "requestId"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "requestId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "phase",
+          "aiReviewEnabled"
+        ],
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "foundation"
+            ]
+          },
+          "aiReviewEnabled": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        }
+      },
+      "BootstrapResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "foundation"
+            ]
+          },
+          "aiReviewEnabled": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "missingConfiguration": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "installUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "phase",
+          "aiReviewEnabled",
+          "missingConfiguration"
+        ]
+      },
+      "SessionResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "user": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "login": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "login"
+            ]
+          },
+          "csrfToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "user",
+          "csrfToken"
+        ]
+      },
+      "RepositorySummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant": {
+            "$ref": "#/components/schemas/TenantRef"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "public": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "configVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "canManage": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "tenant",
+          "fullName",
+          "public",
+          "enabled",
+          "configVersion",
+          "canManage"
+        ]
+      },
+      "RepositoryListResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "repositories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RepositorySummary"
+            }
+          }
+        },
+        "required": [
+          "repositories"
+        ]
+      },
+      "RunSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/TenantRef"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "prNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "headSha": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Queued",
+              "Indexing",
+              "Reviewing",
+              "Verifying",
+              "Publishing",
+              "Completed",
+              "Partial",
+              "Stale",
+              "Cancelled",
+              "Failed"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "checkId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "tenant",
+          "fullName",
+          "prNumber",
+          "headSha",
+          "status",
+          "createdAt"
+        ]
+      },
+      "RunListResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "runs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RunSummary"
+            }
+          },
+          "aiReviewEnabled": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "runs",
+          "aiReviewEnabled"
+        ]
+      },
+      "SetRepositoryEnabledRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "configVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "enabled",
+          "configVersion"
+        ]
+      },
+      "WebhookResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "accepted"
+        ],
+        "properties": {
+          "accepted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReviewTaskEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schemaVersion",
+          "messageId",
+          "taskId",
+          "runId",
+          "tenant",
+          "headSha",
+          "kind",
+          "notificationGeneration"
+        ],
+        "properties": {
+          "schemaVersion": {
+            "type": "integer",
+            "enum": [
+              2
+            ]
+          },
+          "messageId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "taskId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "runId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/TenantRef"
+          },
+          "headSha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40,64}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "ai-review"
+            ]
+          },
+          "notificationGeneration": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "traceparent": {
+            "type": "string",
+            "maxLength": 55,
+            "pattern": "^00-[0-9a-f]{32}-[0-9a-f]{16}-0[01]$"
+          },
+          "tracestate": {
+            "type": "string",
+            "maxLength": 512
+          }
+        }
+      },
+      "RunState": {
+        "type": "string",
+        "enum": [
+          "Queued",
+          "Indexing",
+          "Reviewing",
+          "Verifying",
+          "Publishing",
+          "Completed",
+          "Partial",
+          "Stale",
+          "Cancelled",
+          "Failed"
+        ]
+      },
+      "ReviewPolicy": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "maxChangedLines",
+          "maxFiles",
+          "maxFileBytes",
+          "maxRawBytes",
+          "maxPageBytes",
+          "maxStageBytes",
+          "maxResultBytes",
+          "maxCandidates",
+          "maxReferences",
+          "maxSnippetBytes",
+          "maxInputTokens",
+          "maxOutputTokens",
+          "timeoutSeconds",
+          "retainContent"
+        ],
+        "properties": {
+          "maxChangedLines": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1500
+          },
+          "maxFiles": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 64
+          },
+          "maxFileBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 131072
+          },
+          "maxRawBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2097152
+          },
+          "maxPageBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 262144
+          },
+          "maxStageBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 262144
+          },
+          "maxResultBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65536
+          },
+          "maxCandidates": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "maxReferences": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "maxSnippetBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2048
+          },
+          "maxInputTokens": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12000
+          },
+          "maxOutputTokens": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4096
+          },
+          "timeoutSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 60
+          },
+          "retainContent": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReviewIdentity": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tenant",
+          "prNumber",
+          "baseSha",
+          "headSha",
+          "pipelineVersion",
+          "generation",
+          "repositoryFullName",
+          "prTitle"
+        ],
+        "properties": {
+          "tenant": {
+            "$ref": "#/components/schemas/TenantRef"
+          },
+          "prNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "baseSha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40,64}$"
+          },
+          "headSha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40,64}$"
+          },
+          "pipelineVersion": {
+            "type": "string",
+            "enum": [
+              "review-v1"
+            ]
+          },
+          "generation": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "repositoryFullName": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "prTitle": {
+            "type": "string",
+            "maxLength": 512
+          }
+        }
+      },
+      "ReviewProvenance": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "modelMode",
+          "githubMode",
+          "fixtureId",
+          "contentExpiresAt"
+        ],
+        "properties": {
+          "modelMode": {
+            "type": "string",
+            "enum": [
+              "fake",
+              "real"
+            ]
+          },
+          "githubMode": {
+            "type": "string",
+            "enum": [
+              "fake",
+              "real"
+            ]
+          },
+          "fixtureId": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "contentExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ReviewSnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "identity",
+          "modelConfigVersion",
+          "priceVersion",
+          "repositoryConfigVersion",
+          "generationPromptVersion",
+          "verificationPromptVersion",
+          "memorySetVersion",
+          "trustedRulesSha",
+          "policy",
+          "provenance"
+        ],
+        "properties": {
+          "identity": {
+            "$ref": "#/components/schemas/ReviewIdentity"
+          },
+          "modelConfigVersion": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "priceVersion": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "repositoryConfigVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "generationPromptVersion": {
+            "type": "string",
+            "enum": [
+              "review-generation-v1"
+            ]
+          },
+          "verificationPromptVersion": {
+            "type": "string",
+            "enum": [
+              "review-verification-v1"
+            ]
+          },
+          "memorySetVersion": {
+            "type": "string",
+            "enum": [
+              "none"
+            ]
+          },
+          "trustedRulesSha": {
+            "type": "string",
+            "enum": [
+              "none"
+            ]
+          },
+          "policy": {
+            "$ref": "#/components/schemas/ReviewPolicy"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ReviewProvenance"
+          }
+        }
+      },
+      "ReviewLease": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "taskId",
+          "runId",
+          "tenant",
+          "headSha",
+          "inputHash",
+          "leaseToken",
+          "leaseExpiresAt",
+          "executionEpoch",
+          "attempt",
+          "snapshot"
+        ],
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "runId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/TenantRef"
+          },
+          "headSha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40,64}$"
+          },
+          "inputHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "leaseToken": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "leaseExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "executionEpoch": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "attempt": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/ReviewSnapshot"
+          }
+        }
+      },
+      "ReviewSkippedFile": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "reasonCode",
+          "changedLines"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "reasonCode": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "changedLines": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "ReviewCoverage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "complete",
+          "totalFiles",
+          "readFiles",
+          "totalChangedLines",
+          "coveredChangedLines",
+          "rawBytes",
+          "skipped",
+          "limitations"
+        ],
+        "properties": {
+          "complete": {
+            "type": "boolean"
+          },
+          "totalFiles": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "readFiles": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "totalChangedLines": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "coveredChangedLines": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "rawBytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "skipped": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewSkippedFile"
+            },
+            "maxItems": 64
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "maxItems": 16
+          }
+        }
+      },
+      "ReviewFileContent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "state",
+          "sha",
+          "contentHash",
+          "text",
+          "bytes"
+        ],
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "available",
+              "deleted",
+              "binary",
+              "missing",
+              "denied",
+              "too-large"
+            ]
+          },
+          "sha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40,64}$"
+          },
+          "contentHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "nullable": true
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 131072,
+            "nullable": true
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 131072
+          }
+        }
+      },
+      "ReviewChangedFile": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "previousPath",
+          "status",
+          "additions",
+          "deletions",
+          "patch",
+          "base",
+          "head"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "previousPath": {
+            "type": "string",
+            "maxLength": 1024,
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "added",
+              "modified",
+              "removed",
+              "renamed"
+            ]
+          },
+          "additions": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "deletions": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "patch": {
+            "type": "string",
+            "maxLength": 131072,
+            "nullable": true
+          },
+          "base": {
+            "$ref": "#/components/schemas/ReviewFileContent"
+          },
+          "head": {
+            "$ref": "#/components/schemas/ReviewFileContent"
+          }
+        }
+      },
+      "EvidenceRef": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidenceId",
+          "path",
+          "sha",
+          "startLine",
+          "endLine",
+          "contentHash"
+        ],
+        "properties": {
+          "evidenceId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "path": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "sha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40,64}$"
+          },
+          "startLine": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "endLine": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "contentHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      },
+      "CodeEvidence": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ref",
+          "tenant",
+          "snippet",
+          "readState",
+          "redacted"
+        ],
+        "properties": {
+          "ref": {
+            "$ref": "#/components/schemas/EvidenceRef"
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/TenantRef"
+          },
+          "snippet": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "readState": {
+            "type": "string",
+            "enum": [
+              "available"
+            ]
+          },
+          "redacted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReviewContextPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "manifestId",
+          "contextHash",
+          "cursor",
+          "nextCursor",
+          "complete",
+          "files",
+          "evidence",
+          "coverage"
+        ],
+        "properties": {
+          "manifestId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "contextHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "nullable": true
+          },
+          "cursor": {
+            "type": "string",
+            "maxLength": 256,
+            "nullable": true
+          },
+          "nextCursor": {
+            "type": "string",
+            "maxLength": 256,
+            "nullable": true
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewChangedFile"
+            },
+            "maxItems": 64
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CodeEvidence"
+            },
+            "maxItems": 1024
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/ReviewCoverage"
+          }
+        }
+      },
+      "RootCauseStatement": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "trigger",
+          "consequence"
+        ],
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "consequence": {
+            "type": "string",
+            "maxLength": 512
+          }
+        }
+      },
+      "ReviewCandidate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidateId",
+          "title",
+          "severity",
+          "category",
+          "failureScenario",
+          "impact",
+          "introducedByPR",
+          "evidence",
+          "suggestedVerification",
+          "rootCauseStatement"
+        ],
+        "properties": {
+          "candidateId": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 240
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "concurrency",
+              "validation",
+              "authorization",
+              "lifecycle",
+              "error-handling",
+              "data-integrity",
+              "other"
+            ]
+          },
+          "failureScenario": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "impact": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "introducedByPR": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "maxItems": 5
+          },
+          "suggestedVerification": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "rootCauseStatement": {
+            "$ref": "#/components/schemas/RootCauseStatement"
+          }
+        }
+      },
+      "ReviewCandidates": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidates"
+        ],
+        "properties": {
+          "candidates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewCandidate"
+            },
+            "maxItems": 10
+          }
+        }
+      },
+      "VerificationDecision": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidateId",
+          "verdict",
+          "reasonCode",
+          "evidence"
+        ],
+        "properties": {
+          "candidateId": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "abstain"
+            ]
+          },
+          "reasonCode": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "maxItems": 5
+          }
+        }
+      },
+      "ReviewVerification": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "decisions"
+        ],
+        "properties": {
+          "decisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VerificationDecision"
+            },
+            "maxItems": 10
+          }
+        }
+      },
+      "ModelUsage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "inputTokens",
+          "outputTokens"
+        ],
+        "properties": {
+          "inputTokens": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "outputTokens": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          }
+        }
+      },
+      "ModelCall": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "callId",
+          "reservationId",
+          "purpose",
+          "ordinal",
+          "requestHash",
+          "state",
+          "priceVersion",
+          "currency",
+          "reservedCostMicros",
+          "actualCostMicros",
+          "usage",
+          "revision",
+          "sendAuthorized",
+          "reasonCode"
+        ],
+        "properties": {
+          "callId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "reservationId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "generate",
+              "verify"
+            ]
+          },
+          "ordinal": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "requestHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "reserved",
+              "dispatching",
+              "settled",
+              "released",
+              "uncertain"
+            ]
+          },
+          "priceVersion": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 4
+          },
+          "reservedCostMicros": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$",
+            "maxLength": 19
+          },
+          "actualCostMicros": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$",
+            "maxLength": 19,
+            "nullable": true
+          },
+          "usage": {
+            "$ref": "#/components/schemas/ModelUsage",
+            "nullable": true
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "sendAuthorized": {
+            "type": "boolean"
+          },
+          "reasonCode": {
+            "type": "string",
+            "maxLength": 64,
+            "nullable": true
+          }
+        }
+      },
+      "ReviewStagePayload": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "context",
+          "candidates",
+          "verification"
+        ],
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/ReviewContextPage",
+            "nullable": true
+          },
+          "candidates": {
+            "$ref": "#/components/schemas/ReviewCandidates",
+            "nullable": true
+          },
+          "verification": {
+            "$ref": "#/components/schemas/ReviewVerification",
+            "nullable": true
+          }
+        }
+      },
+      "ReviewStageRecord": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stage",
+          "stageInputHash",
+          "outputHash",
+          "callId",
+          "payload",
+          "expiresAt"
+        ],
+        "properties": {
+          "stage": {
+            "type": "string",
+            "enum": [
+              "context",
+              "candidates",
+              "verification"
+            ]
+          },
+          "stageInputHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "outputHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "callId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "nullable": true
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ReviewStagePayload"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ReviewResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "lease",
+          "resultId",
+          "contextHash",
+          "candidates",
+          "decisions",
+          "coverage",
+          "callIds"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "ai-review"
+            ]
+          },
+          "lease": {
+            "$ref": "#/components/schemas/ReviewLease"
+          },
+          "resultId": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "contextHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "candidates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewCandidate"
+            },
+            "maxItems": 10
+          },
+          "decisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VerificationDecision"
+            },
+            "maxItems": 10
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/ReviewCoverage"
+          },
+          "callIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            "maxItems": 4
+          }
+        }
+      },
+      "ReviewFinding": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "findingId",
+          "fingerprint",
+          "candidate",
+          "evidence",
+          "publicationStatus",
+          "reasonCode",
+          "contentExpired"
+        ],
+        "properties": {
+          "findingId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "candidate": {
+            "$ref": "#/components/schemas/ReviewCandidate"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CodeEvidence"
+            },
+            "maxItems": 5
+          },
+          "publicationStatus": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "published",
+              "not-published",
+              "uncertain"
+            ]
+          },
+          "reasonCode": {
+            "type": "string",
+            "maxLength": 64,
+            "nullable": true
+          },
+          "contentExpired": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReviewFilteredCandidate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidateId",
+          "title",
+          "reasonCode",
+          "evidence"
+        ],
+        "properties": {
+          "candidateId": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 240
+          },
+          "reasonCode": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "maxItems": 5
+          }
+        }
+      },
+      "ReviewCostSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "currency",
+          "priceVersion",
+          "calls",
+          "knownCostMicros",
+          "heldCostMicros",
+          "needsReconciliation",
+          "monthlyWarning",
+          "dailyResetsAt"
+        ],
+        "properties": {
+          "currency": {
+            "type": "string",
+            "maxLength": 4
+          },
+          "priceVersion": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "calls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelCall"
+            },
+            "maxItems": 4
+          },
+          "knownCostMicros": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$",
+            "maxLength": 19
+          },
+          "heldCostMicros": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$",
+            "maxLength": 19
+          },
+          "needsReconciliation": {
+            "type": "boolean"
+          },
+          "monthlyWarning": {
+            "type": "boolean"
+          },
+          "dailyResetsAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ReviewPublicationFinding": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "findingId",
+          "fingerprint",
+          "path",
+          "line",
+          "body"
+        ],
+        "properties": {
+          "findingId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "path": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "line": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "nullable": true
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 8192
+          }
+        }
+      },
+      "ReviewPublicationPlan": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "runId",
+          "tenant",
+          "prNumber",
+          "headSha",
+          "planHash",
+          "marker",
+          "findings",
+          "mode"
+        ],
+        "properties": {
+          "runId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/TenantRef"
+          },
+          "prNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "headSha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40,64}$"
+          },
+          "planHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "marker": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewPublicationFinding"
+            },
+            "maxItems": 3
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "fake",
+              "real"
+            ]
+          }
+        }
+      },
+      "ReviewPublicationReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "reviewId",
+          "commentIds",
+          "checkId",
+          "headSha",
+          "authorAppId",
+          "marker",
+          "state",
+          "mode"
+        ],
+        "properties": {
+          "reviewId": {
+            "type": "string",
+            "maxLength": 64,
+            "nullable": true
+          },
+          "commentIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "maxItems": 3
+          },
+          "checkId": {
+            "type": "string",
+            "maxLength": 64,
+            "nullable": true
+          },
+          "headSha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40,64}$"
+          },
+          "authorAppId": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "marker": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "uncertain",
+              "not-written"
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "fake",
+              "real"
+            ]
+          }
+        }
+      },
+      "ReviewPublicationSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "state",
+          "occupiedSlots",
+          "receipt"
+        ],
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "published",
+              "cancelled",
+              "failed",
+              "uncertain"
+            ]
+          },
+          "occupiedSlots": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "receipt": {
+            "$ref": "#/components/schemas/ReviewPublicationReceipt",
+            "nullable": true
+          }
+        }
+      },
+      "ReviewRunSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "runId",
+          "headSha",
+          "status",
+          "needsReconciliation",
+          "reasonCode",
+          "createdAt",
+          "mode"
+        ],
+        "properties": {
+          "runId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "headSha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40,64}$"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RunState"
+          },
+          "needsReconciliation": {
+            "type": "boolean"
+          },
+          "reasonCode": {
+            "type": "string",
+            "maxLength": 64,
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "fake",
+              "real"
+            ]
+          }
+        }
+      },
+      "ReviewRunDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "runId",
+          "status",
+          "needsReconciliation",
+          "reasonCode",
+          "snapshot",
+          "findings",
+          "filtered",
+          "coverage",
+          "costs",
+          "publication",
+          "contentExpired"
+        ],
+        "properties": {
+          "runId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RunState"
+          },
+          "needsReconciliation": {
+            "type": "boolean"
+          },
+          "reasonCode": {
+            "type": "string",
+            "maxLength": 64,
+            "nullable": true
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/ReviewSnapshot"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewFinding"
+            },
+            "maxItems": 10
+          },
+          "filtered": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewFilteredCandidate"
+            },
+            "maxItems": 10
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/ReviewCoverage"
+          },
+          "costs": {
+            "$ref": "#/components/schemas/ReviewCostSummary"
+          },
+          "publication": {
+            "$ref": "#/components/schemas/ReviewPublicationSummary"
+          },
+          "contentExpired": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReviewPullSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "prNumber",
+          "title",
+          "headSha",
+          "latestRun"
+        ],
+        "properties": {
+          "prNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "headSha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40,64}$"
+          },
+          "latestRun": {
+            "$ref": "#/components/schemas/ReviewRunSummary"
+          }
+        }
+      },
+      "ReviewPullList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewPullSummary"
+            },
+            "maxItems": 20
+          },
+          "nextCursor": {
+            "type": "string",
+            "maxLength": 512,
+            "nullable": true
+          }
+        }
+      },
+      "ReviewRunList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewRunSummary"
+            },
+            "maxItems": 20
+          },
+          "nextCursor": {
+            "type": "string",
+            "maxLength": 512,
+            "nullable": true
+          }
+        }
+      },
+      "ClaimReviewRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "envelope",
+          "workerId"
+        ],
+        "properties": {
+          "envelope": {
+            "$ref": "#/components/schemas/ReviewTaskEnvelope"
+          },
+          "workerId": {
+            "type": "string",
+            "maxLength": 128
+          }
+        }
+      },
+      "ClaimReviewResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "outcome",
+          "lease"
+        ],
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "claimed",
+              "busy",
+              "accepted",
+              "cancelled",
+              "terminal",
+              "blocked"
+            ],
+            "x-enum-varnames": [
+              "ReviewClaimed",
+              "ReviewBusy",
+              "ReviewFinished",
+              "ReviewCancelled",
+              "ReviewTerminal",
+              "ReviewBlocked"
+            ]
+          },
+          "lease": {
+            "$ref": "#/components/schemas/ReviewLease",
+            "nullable": true
+          }
+        }
+      },
+      "ReadReviewContextRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lease",
+          "cursor"
+        ],
+        "properties": {
+          "lease": {
+            "$ref": "#/components/schemas/ReviewLease"
+          },
+          "cursor": {
+            "type": "string",
+            "maxLength": 256,
+            "nullable": true
+          }
+        }
+      },
+      "ReserveModelCallRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lease",
+          "purpose",
+          "ordinal",
+          "requestHash",
+          "inputTokenLimit",
+          "outputTokenLimit"
+        ],
+        "properties": {
+          "lease": {
+            "$ref": "#/components/schemas/ReviewLease"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "generate",
+              "verify"
+            ]
+          },
+          "ordinal": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "requestHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "inputTokenLimit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12000
+          },
+          "outputTokenLimit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4096
+          }
+        }
+      },
+      "DispatchModelCallRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lease",
+          "callId",
+          "expectedRevision"
+        ],
+        "properties": {
+          "lease": {
+            "$ref": "#/components/schemas/ReviewLease"
+          },
+          "callId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "SettleModelCallRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lease",
+          "callId",
+          "expectedRevision",
+          "outcome",
+          "usage",
+          "safeResponseHash",
+          "reasonCode"
+        ],
+        "properties": {
+          "lease": {
+            "$ref": "#/components/schemas/ReviewLease"
+          },
+          "callId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "succeeded",
+              "failed",
+              "not-sent",
+              "uncertain"
+            ]
+          },
+          "usage": {
+            "$ref": "#/components/schemas/ModelUsage",
+            "nullable": true
+          },
+          "safeResponseHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "nullable": true
+          },
+          "reasonCode": {
+            "type": "string",
+            "maxLength": 64,
+            "nullable": true
+          }
+        }
+      },
+      "ReadReviewStageRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lease",
+          "stage",
+          "stageInputHash"
+        ],
+        "properties": {
+          "lease": {
+            "$ref": "#/components/schemas/ReviewLease"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "context",
+              "candidates",
+              "verification"
+            ]
+          },
+          "stageInputHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      },
+      "ReadReviewStageResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "found",
+          "record"
+        ],
+        "properties": {
+          "found": {
+            "type": "boolean"
+          },
+          "record": {
+            "$ref": "#/components/schemas/ReviewStageRecord",
+            "nullable": true
+          }
+        }
+      },
+      "SaveReviewStageRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lease",
+          "stage",
+          "stageInputHash",
+          "callId",
+          "payload"
+        ],
+        "properties": {
+          "lease": {
+            "$ref": "#/components/schemas/ReviewLease"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "context",
+              "candidates",
+              "verification"
+            ]
+          },
+          "stageInputHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "callId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "nullable": true
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ReviewStagePayload"
+          }
+        }
+      },
+      "CommitReviewRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "result"
+        ],
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/ReviewResult"
+          }
+        }
+      },
+      "ReviewCommitResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "outcome",
+          "resultId",
+          "resultHash"
+        ],
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "accepted",
+              "already-accepted"
+            ],
+            "x-enum-varnames": [
+              "ReviewAccepted",
+              "ReviewAlreadyAccepted"
+            ]
+          },
+          "resultId": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "resultHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      },
+      "ReviewTaskActionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lease",
+          "reasonCode"
+        ],
+        "properties": {
+          "lease": {
+            "$ref": "#/components/schemas/ReviewLease"
+          },
+          "reasonCode": {
+            "type": "string",
+            "maxLength": 64
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "WorkerBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

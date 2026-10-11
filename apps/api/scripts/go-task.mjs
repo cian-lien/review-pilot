@@ -2,13 +2,14 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
+const [task, ...extra] = process.argv.slice(2);
+const isolatedTest = task === 'test' && process.env.REVIEW_TEST_ISOLATED === '1';
 try {
-  process.loadEnvFile(new URL('../../../.env', import.meta.url));
+  if (!isolatedTest) process.loadEnvFile(new URL('../../../.env', import.meta.url));
 } catch (error) {
   if (error.code !== 'ENOENT') throw error;
 }
 const root = fileURLToPath(new URL('..', import.meta.url));
-const [task, ...extra] = process.argv.slice(2);
 for (const name of [
   'DATABASE_URL',
   'RABBITMQ_URL',
@@ -18,7 +19,7 @@ for (const name of [
   'REVIEW_WORKER_SERVICE_TOKEN',
   'EVOLUTION_WORKER_SERVICE_TOKEN',
 ]) {
-  if (!process.env[name + '_FILE']) continue;
+  if (isolatedTest || !process.env[name + '_FILE']) continue;
   const value = readFileSync(process.env[name + '_FILE'], 'utf8').trim();
   if (!value || value.length > 65536) throw new Error('INVALID_SECRET_FILE');
   process.env[name] = value;
