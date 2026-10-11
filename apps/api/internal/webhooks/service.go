@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"regexp"
+	"reviewpilot.local/api/internal/config"
 	"reviewpilot.local/api/internal/contracts"
 	"reviewpilot.local/api/internal/fault"
 	"reviewpilot.local/api/internal/github"
@@ -19,6 +20,7 @@ import (
 type Service struct {
 	DB              *gorm.DB
 	PipelineVersion string
+	Review          *config.ReviewConfig
 }
 
 func New(db *gorm.DB, pipeline string) *Service { return &Service{DB: db, PipelineVersion: pipeline} }
@@ -32,6 +34,7 @@ type repository struct {
 	Private  *bool  `json:"private"`
 }
 type pull struct {
+	Title     string    `json:"title"`
 	Number    int       `json:"number"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Base      struct {
@@ -248,8 +251,12 @@ func (s *Service) enqueue(tx *gorm.DB, input delivery) error {
 	if err := tx.Exec("INSERT INTO pull_requests(installation_id,repository_id,number,base_sha,head_sha,remote_updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(installation_id,repository_id,number) DO UPDATE SET base_sha=EXCLUDED.base_sha,head_sha=EXCLUDED.head_sha,remote_updated_at=EXCLUDED.remote_updated_at WHERE pull_requests.remote_updated_at<EXCLUDED.remote_updated_at", tenant.InstallationId, tenant.RepositoryId, pr.Number, pr.Base.SHA, pr.Head.SHA, pr.UpdatedAt).Error; err != nil {
 		return err
 	}
+	pipeline := s.PipelineVersion
+	if s.Review != nil && s.Review.Mode != "disabled" {
+		pipeline = "review-v1"
+	}
 	var previous []persistence.Run
-	if err := tx.Where("installation_id=? AND repository_id=? AND pr_number=? AND head_sha=? AND pipeline_version=?", tenant.InstallationId, tenant.RepositoryId, pr.Number, pr.Head.SHA, s.PipelineVersion).Order("generation DESC").Limit(1).Find(&previous).Error; err != nil {
+	if err := tx.Where("installation_id=? AND repository_id=? AND pr_number=? AND head_sha=? AND pipeline_version=?", tenant.InstallationId, tenant.RepositoryId, pr.Number, pr.Head.SHA, pipeline).Order("generation DESC").Limit(1).Find(&previous).Error; err != nil {
 		return err
 	}
 	generation := 0
@@ -267,10 +274,25 @@ func (s *Service) enqueue(tx *gorm.DB, input delivery) error {
 	snapshot.Identity.BaseSha = pr.Base.SHA
 	snapshot.Identity.HeadSha = pr.Head.SHA
 	snapshot.Identity.Generation = generation
-	snapshot.Identity.PipelineVersion = s.PipelineVersion
+	snapshot.Identity.PipelineVersion = pipeline
 	body, _ := json.Marshal(snapshot)
+	if pipeline == "review-v1" {
+		c := s.Review
+		review := contracts.ReviewSnapshot{Identity: contracts.ReviewIdentity{Tenant: tenant, PrNumber: pr.Number, BaseSha: pr.Base.SHA, HeadSha: pr.Head.SHA, PipelineVersion: "review-v1", Generation: generation, RepositoryFullName: repo.FullName, PrTitle: contracts.RedactReview(pr.Title)}, ModelConfigVersion: c.Model.ModelConfigVersion, PriceVersion: c.Model.PriceVersion, RepositoryConfigVersion: repo.ConfigVersion, GenerationPromptVersion: "review-generation-v1", VerificationPromptVersion: "review-verification-v1", MemorySetVersion: "none", TrustedRulesSha: "none", Policy: c.Policy, Provenance: contracts.ReviewProvenance{ModelMode: contracts.ReviewProvenanceModelMode(c.Mode), GithubMode: "real", FixtureId: c.Model.FixtureID, ContentExpiresAt: time.Now().Add(30 * 24 * time.Hour)}}
+		if c.Mode == "fake" {
+			review.Provenance.GithubMode = "fake"
+		}
+		if len(review.Identity.PrTitle) > 240 {
+			review.Identity.PrTitle = "Pull request"
+		}
+		body, _ = json.Marshal(review)
+		var checked contracts.ReviewSnapshot
+		if err := contracts.DecodeReview("ReviewSnapshot", body, &checked, 16384); err != nil {
+			return err
+		}
+	}
 	runID, taskID := jobs.UUID(), jobs.UUID()
-	if err := tx.Exec("INSERT INTO review_runs(id,installation_id,repository_id,pr_number,base_sha,head_sha,pipeline_version,generation,snapshot) VALUES(?,?,?,?,?,?,?,?,?::jsonb)", runID, tenant.InstallationId, tenant.RepositoryId, pr.Number, pr.Base.SHA, pr.Head.SHA, s.PipelineVersion, generation, string(body)).Error; err != nil {
+	if err := tx.Exec("INSERT INTO review_runs(id,installation_id,repository_id,pr_number,base_sha,head_sha,pipeline_version,generation,snapshot) VALUES(?,?,?,?,?,?,?,?,?::jsonb)", runID, tenant.InstallationId, tenant.RepositoryId, pr.Number, pr.Base.SHA, pr.Head.SHA, pipeline, generation, string(body)).Error; err != nil {
 		return err
 	}
 	if err := tx.Exec("INSERT INTO jobs(id,run_id,available_at) VALUES(?,?,clock_timestamp()+interval '2 seconds')", taskID, runID).Error; err != nil {
@@ -280,7 +302,7 @@ func (s *Service) enqueue(tx *gorm.DB, input delivery) error {
 	if err := tx.First(&job, "id=?", taskID).Error; err != nil {
 		return err
 	}
-	run := persistence.Run{ID: runID, InstallationID: int64(tenant.InstallationId), RepositoryID: int64(tenant.RepositoryId), HeadSHA: pr.Head.SHA}
+	run := persistence.Run{ID: runID, InstallationID: int64(tenant.InstallationId), RepositoryID: int64(tenant.RepositoryId), HeadSHA: pr.Head.SHA, PipelineVersion: pipeline}
 	return jobs.Schedule(tx, job, run, job.AvailableAt)
 }
 func itoa(value int) string { return fmt.Sprint(value) }

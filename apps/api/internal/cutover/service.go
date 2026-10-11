@@ -85,6 +85,11 @@ func (s *Service) read(ctx context.Context, tx *gorm.DB) (Report, []observation,
 	}
 	observations := make([]observation, 0, len(runs))
 	for _, r := range runs {
+		// Legacy consumers cannot represent S2 model or publication uncertainty.
+		if r.PipelineVersion == "review-v1" {
+			report.UnreconciledCheckCount++
+			continue
+		}
 		if s.Inspect == nil {
 			report.UnreconciledCheckCount++
 			continue
@@ -247,6 +252,9 @@ func (s *Service) Switch(ctx context.Context, expectedEpoch int64, target string
 				var r persistence.Run
 				if err = tx.First(&r, "id=?", j.RunID).Error; err != nil {
 					return err
+				}
+				if r.PipelineVersion == "review-v1" {
+					continue
 				}
 				if r.Status == "Completed" || r.Status == "Cancelled" || r.Status == "Stale" || r.Status == "Failed" {
 					continue

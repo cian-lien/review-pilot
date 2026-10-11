@@ -11,6 +11,7 @@ import (
 
 const Exchange = "reviewpilot.tasks.v1"
 const ReviewQueue = "reviewpilot.review.v1"
+const AIReviewQueue = "reviewpilot.review.v2"
 const EvolutionQueue = "reviewpilot.evolution.v1"
 const QuarantineQueue = "reviewpilot.quarantine.v1"
 
@@ -44,7 +45,7 @@ func Topology(channel *amqp.Channel) error {
 	if err := channel.ExchangeDeclare(Exchange, "direct", true, false, false, false, nil); err != nil {
 		return err
 	}
-	for queue, key := range map[string]string{ReviewQueue: "connection-check", EvolutionQueue: "evolution"} {
+	for queue, key := range map[string]string{ReviewQueue: "connection-check", AIReviewQueue: "ai-review", EvolutionQueue: "evolution"} {
 		if _, err := channel.QueueDeclare(queue, true, false, false, false, nil); err != nil {
 			return err
 		}

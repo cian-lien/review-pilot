@@ -98,6 +98,7 @@ func main() {
 		slog.Error("REVIEW_CONFIG_INVALID")
 		os.Exit(1)
 	}
+	webhookService.Review = &reviewCfg
 	reviewcontext.Register(internal, reviewcontext.New(taskService.DB, service.Gateway, reviewCfg.Policy), cfg)
 	budgets.Register(internal, budgets.New(taskService.DB), cfg)
 	reviewstages.Register(internal, reviewstages.New(taskService.DB), cfg)

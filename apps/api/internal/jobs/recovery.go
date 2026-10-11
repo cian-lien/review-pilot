@@ -13,6 +13,9 @@ import (
 
 // Schedule is transaction-only: the generation and notification become visible together.
 func Schedule(tx *gorm.DB, j persistence.Job, r persistence.Run, available time.Time) error {
+	if r.PipelineVersion == "review-v1" {
+		return ScheduleReview(tx, j, r, available)
+	}
 	ctx, span := observability.FromContext(tx.Statement.Context).Start(tx.Statement.Context, "task.created", observability.Fields{RunID: r.ID, TaskID: j.ID})
 	defer span.End()
 	generation := j.NotificationGeneration + 1
@@ -69,9 +72,6 @@ func (s *Service) Recover(ctx context.Context) error {
 			if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&r, "id=?", j.RunID).Error; err != nil {
 				return err
 			}
-			if r.PipelineVersion == "review-v1" {
-				continue
-			} // v2 notification is enabled with its consumer in Task 6.
 			if j.Attempts >= j.MaxAttempts {
 				if err := tx.Exec("UPDATE jobs SET status='failed',lease_token=NULL,lease_expires_at=NULL WHERE id=?", j.ID).Error; err != nil {
 					return err

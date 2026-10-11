@@ -39,6 +39,7 @@ func (s *Service) Cleanup(ctx context.Context, now time.Time, limit int) (Cleanu
 			query string
 			count *int64
 		}{
+			{"WITH due AS(SELECT p.run_id FROM publication_requests p JOIN review_runs r ON r.id=p.run_id WHERE r.pipeline_version='review-v1' AND (r.snapshot->'provenance'->>'contentExpiresAt')::timestamptz<=? AND p.review_plan IS NOT NULL ORDER BY p.run_id LIMIT ? FOR UPDATE OF p SKIP LOCKED) UPDATE publication_requests p SET review_plan=NULL,review_plan_erased=true FROM due d WHERE p.run_id=d.run_id", &counts.FindingContents},
 			{"WITH due AS(SELECT id FROM review_findings WHERE expires_at<=? AND (candidate IS NOT NULL OR evidence IS NOT NULL) ORDER BY expires_at LIMIT ? FOR UPDATE SKIP LOCKED) UPDATE review_findings a SET candidate=NULL,evidence=NULL,root_key='{}' FROM due d WHERE a.id=d.id", &counts.FindingContents},
 			{"WITH due AS(SELECT run_id,candidate_id FROM review_filtered_candidates WHERE expires_at<=? AND (title IS NOT NULL OR evidence IS NOT NULL) ORDER BY expires_at LIMIT ? FOR UPDATE SKIP LOCKED) UPDATE review_filtered_candidates a SET title=NULL,evidence=NULL FROM due d WHERE a.run_id=d.run_id AND a.candidate_id=d.candidate_id", &counts.FindingContents},
 			{"WITH due AS(SELECT x.task_id FROM job_results x JOIN jobs j ON j.id=x.task_id JOIN review_runs r ON r.id=j.run_id WHERE r.pipeline_version='review-v1' AND COALESCE((SELECT m.expires_at FROM review_context_manifests m WHERE m.run_id=r.id),x.accepted_at+interval '30 days')<=? AND x.payload<>'{}'::jsonb ORDER BY x.accepted_at LIMIT ? FOR UPDATE OF x SKIP LOCKED) UPDATE job_results x SET payload='{}' FROM due d WHERE x.task_id=d.task_id", &counts.FindingContents},
@@ -58,6 +59,7 @@ func (s *Service) Cleanup(ctx context.Context, now time.Time, limit int) (Cleanu
 		}
 		// Unknown financial holds are deliberately not part of content or metadata TTL cleanup.
 		for _, query := range []string{
+			"DELETE FROM review_publication_facts WHERE run_id IN(SELECT run_id FROM review_publication_facts WHERE updated_at<? ORDER BY updated_at LIMIT ?)",
 			"DELETE FROM review_filtered_candidates WHERE (run_id,candidate_id) IN(SELECT run_id,candidate_id FROM review_filtered_candidates WHERE created_at<? ORDER BY created_at LIMIT ?)",
 			"DELETE FROM review_findings WHERE id IN(SELECT id FROM review_findings WHERE created_at<? ORDER BY created_at LIMIT ?)",
 			"DELETE FROM review_coverage WHERE run_id IN(SELECT run_id FROM review_coverage WHERE created_at<? ORDER BY created_at LIMIT ?)",
@@ -111,7 +113,14 @@ func (s *Service) DeleteRepository(ctx context.Context, tenant contracts.TenantR
 			if err := tx.Exec("UPDATE jobs SET status='cancelled',lease_token=NULL,lease_expires_at=NULL WHERE run_id=?", run.ID).Error; err != nil {
 				return err
 			}
-			if err := tx.Exec("UPDATE publication_requests SET state='cancelled',lease_token=NULL,lease_expires_at=NULL WHERE run_id=?", run.ID).Error; err != nil {
+			if err := tx.Exec("UPDATE publication_requests SET state=CASE WHEN review_write_started OR check_write_started THEN 'uncertain' ELSE 'cancelled' END,review_plan=NULL,lease_token=NULL,lease_expires_at=NULL WHERE run_id=?", run.ID).Error; err != nil {
+				return err
+			}
+			// Keep only non-content occupancy so deletion cannot authorize duplicate external writes.
+			if err := tx.Exec("UPDATE pr_review_slots SET run_id=NULL,state=CASE WHEN state='reserved' THEN 'uncertain' ELSE state END WHERE run_id=?", run.ID).Error; err != nil {
+				return err
+			}
+			if err := tx.Exec("DELETE FROM review_publication_facts WHERE run_id=?", run.ID).Error; err != nil {
 				return err
 			}
 			for _, query := range []string{"DELETE FROM review_findings WHERE run_id=?", "DELETE FROM review_filtered_candidates WHERE run_id=?", "DELETE FROM review_coverage WHERE run_id=?", "DELETE FROM review_evidence WHERE run_id=?", "DELETE FROM review_stage_artifacts WHERE run_id=?", "DELETE FROM review_context_manifests WHERE run_id=?", "UPDATE job_results SET payload='{}' WHERE task_id IN(SELECT id FROM jobs WHERE run_id=?)"} {

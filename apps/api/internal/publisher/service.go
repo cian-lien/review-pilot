@@ -35,12 +35,14 @@ type lease struct {
 	FullName string
 }
 type request struct {
-	RunID          string
-	State          string
-	Attempts       int
-	LeaseToken     *string
-	LeaseExpiresAt *time.Time
-	AvailableAt    time.Time
+	ReviewWriteStarted bool
+	CheckWriteStarted  bool
+	RunID              string
+	State              string
+	Attempts           int
+	LeaseToken         *string
+	LeaseExpiresAt     *time.Time
+	AvailableAt        time.Time
 }
 
 func (request) TableName() string { return "publication_requests" }
@@ -57,7 +59,7 @@ func (s *Service) claim(ctx context.Context, runID string) (*lease, error) {
 		if runtime.Mode != "go" {
 			return nil
 		}
-		query := tx.Clauses(clause.Locking{Strength: "UPDATE", Options: "SKIP LOCKED"}).Where("(state='pending' OR (state='running' AND lease_expires_at<=clock_timestamp())) AND available_at<=clock_timestamp()").Order("available_at,run_id")
+		query := tx.Clauses(clause.Locking{Strength: "UPDATE", Options: "SKIP LOCKED"}).Where("(state IN ('pending','uncertain') OR (state='running' AND lease_expires_at<=clock_timestamp())) AND available_at<=clock_timestamp() AND EXISTS(SELECT 1 FROM review_runs r WHERE r.id=publication_requests.run_id AND r.status='Publishing')").Order("available_at,run_id")
 		if runID != "" {
 			query = query.Where("run_id=?", runID)
 		}
@@ -73,7 +75,7 @@ func (s *Service) claim(ctx context.Context, runID string) (*lease, error) {
 		if err := tx.First(&run, "id=?", req.RunID).Error; err != nil {
 			return err
 		}
-		if req.Attempts >= 5 {
+		if req.Attempts >= 5 && !req.ReviewWriteStarted && !req.CheckWriteStarted && req.State != "uncertain" {
 			if err := tx.Exec("UPDATE publication_requests SET state='failed',lease_token=NULL,lease_expires_at=NULL,last_error_code='PUBLICATION_RETRIES_EXHAUSTED' WHERE run_id=?", run.ID).Error; err != nil {
 				return err
 			}
@@ -96,6 +98,9 @@ func (s *Service) ProcessNext(ctx context.Context) (bool, error) {
 	l, err := s.claim(ctx, "")
 	if err != nil || l == nil {
 		return false, err
+	}
+	if l.Run.PipelineVersion == "review-v1" {
+		return true, s.publishReview(ctx, *l)
 	}
 	err = s.publish(ctx, *l)
 	if err != nil {

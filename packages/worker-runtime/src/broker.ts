@@ -3,6 +3,9 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { connect, type ChannelModel, type ConfirmChannel } from 'amqplib';
 import { RestClient } from './client';
 import { processDelivery } from './consumer';
+import { ReviewRestClient } from './review-client';
+import { processReviewDelivery, workerModelGateway } from './review-consumer';
+import { runReviewPipeline } from '@reviewpilot/review-engine';
 import { safeLog } from '@reviewpilot/observability';
 const queue = 'reviewpilot.review.v1',
   quarantine = 'reviewpilot.quarantine.v1';
@@ -11,6 +14,11 @@ export async function runReviewWorker(signal: AbortSignal): Promise<void> {
     process.env.INTERNAL_API_URL!,
     process.env.REVIEW_WORKER_SERVICE_TOKEN!,
     'review-' + randomUUID(),
+  );
+  const reviewClient = new ReviewRestClient(
+    process.env.INTERNAL_API_URL!,
+    process.env.REVIEW_WORKER_SERVICE_TOKEN!,
+    'review-v2-' + randomUUID(),
   );
   while (!signal.aborted) {
     let connection: ChannelModel | undefined;
@@ -39,65 +47,85 @@ export async function runReviewWorker(signal: AbortSignal): Promise<void> {
       await channel.assertExchange('reviewpilot.tasks.v1', 'direct', { durable: true });
       await channel.assertQueue(queue, { durable: true });
       await channel.bindQueue(queue, 'reviewpilot.tasks.v1', 'connection-check');
+      await channel.assertQueue('reviewpilot.review.v2', { durable: true });
+      await channel.bindQueue('reviewpilot.review.v2', 'reviewpilot.tasks.v1', 'ai-review');
       await channel.assertQueue(quarantine, { durable: true });
-      await channel.prefetch(1);
+      // RabbitMQ's global limit and this shared serial chain cover both consumers.
+      await channel.prefetch(1, true);
+      let serial = Promise.resolve();
       // Serial processing follows prefetch=1; no automatic acknowledgement.
-      await channel.consume(
-        queue,
-        (message) => {
-          if (!message) return;
-          void (async () => {
-            let input: unknown;
-            try {
-              if (message.content.length > 16384) throw new Error();
-              input = JSON.parse(message.content.toString('utf8'));
-            } catch {
-              input = null;
-            }
-            let disposition = await processDelivery(input, client);
-            for (
-              let attempt = 0;
-              disposition === 'retry' && attempt < 2 && !signal.aborted;
-              attempt++
-            ) {
-              await delay(1000 * 2 ** attempt, undefined, { signal }).catch(() => {});
-              if (!signal.aborted) disposition = await processDelivery(input, client);
-            }
-            if (signal.aborted) return;
-            if (disposition === 'retry') {
-              // A closed channel redelivers after reconnect backoff; never hot nack/requeue.
-              await connection!.close();
-              return;
-            }
-            if (disposition === 'quarantine') {
-              // Deliberately do not retain invalid raw input, secrets or arbitrary source.
-              let returned = false;
-              const onReturn = () => {
-                returned = true;
-              };
-              channel!.on('return', onReturn);
-              try {
-                await new Promise<void>((resolve, reject) => {
-                  channel!.sendToQueue(
-                    quarantine,
-                    Buffer.from('{"code":"INVALID_TASK_MESSAGE"}'),
-                    { persistent: true, mandatory: true, contentType: 'application/json' },
-                    (error) => (error ? reject(new Error('QUARANTINE_FAILED')) : resolve()),
-                  );
-                });
-                if (returned) throw new Error('QUARANTINE_UNROUTABLE');
-              } finally {
-                channel!.off('return', onReturn);
-              }
-            }
-            channel!.ack(message);
-          })().catch(() => {
-            safeLog({ service: 'worker-review', code: 'DELIVERY_UNCONFIRMED' });
-            void connection?.close().catch(() => {});
-          });
-        },
-        { noAck: false },
-      );
+      for (const currentQueue of [queue, 'reviewpilot.review.v2'])
+        await channel.consume(
+          currentQueue,
+          (message) => {
+            if (!message) return;
+            serial = serial
+              .then(async () => {
+                let input: unknown;
+                try {
+                  if (message.content.length > 16384) throw new Error();
+                  input = JSON.parse(message.content.toString('utf8'));
+                } catch {
+                  input = null;
+                }
+                const process = () =>
+                  currentQueue === queue
+                    ? processDelivery(input, client)
+                    : processReviewDelivery(
+                        input,
+                        reviewClient,
+                        (request) =>
+                          runReviewPipeline({
+                            ...request,
+                            gateway: workerModelGateway(reviewClient),
+                          }),
+                        signal,
+                      );
+                let disposition = await process();
+                for (
+                  let attempt = 0;
+                  disposition === 'retry' && attempt < 2 && !signal.aborted;
+                  attempt++
+                ) {
+                  await delay(1000 * 2 ** attempt, undefined, { signal }).catch(() => {});
+                  if (!signal.aborted) disposition = await process();
+                }
+                if (signal.aborted) return;
+                if (disposition === 'retry') {
+                  // A closed channel redelivers after reconnect backoff; never hot nack/requeue.
+                  await connection!.close();
+                  return;
+                }
+                if (disposition === 'quarantine') {
+                  // Deliberately do not retain invalid raw input, secrets or arbitrary source.
+                  let returned = false;
+                  const onReturn = () => {
+                    returned = true;
+                  };
+                  channel!.on('return', onReturn);
+                  try {
+                    await new Promise<void>((resolve, reject) => {
+                      channel!.sendToQueue(
+                        quarantine,
+                        Buffer.from('{"code":"INVALID_TASK_MESSAGE"}'),
+                        { persistent: true, mandatory: true, contentType: 'application/json' },
+                        (error) => (error ? reject(new Error('QUARANTINE_FAILED')) : resolve()),
+                      );
+                    });
+                    if (returned) throw new Error('QUARANTINE_UNROUTABLE');
+                  } finally {
+                    channel!.off('return', onReturn);
+                  }
+                }
+                channel!.ack(message);
+              })
+              .catch(() => {
+                safeLog({ service: 'worker-review', code: 'DELIVERY_UNCONFIRMED' });
+                void connection?.close().catch(() => {});
+              });
+          },
+          { noAck: false },
+        );
       safeLog({ service: 'worker-review', code: 'REVIEW_WORKER_READY' });
       await closed;
     } catch {

@@ -29,7 +29,7 @@ func RootFingerprint(candidate contracts.ReviewCandidate, facts []contracts.Code
 		AnchorHash  string `json:"anchorHash"`
 		Trigger     string `json:"trigger"`
 		Consequence string `json:"consequence"`
-	}{"root-v1", string(candidate.Category), facts[0].Ref.Path, jobs.Hash([]byte(anchor)), normalize(contracts.RedactReview(candidate.RootCauseStatement.Trigger)), normalize(contracts.RedactReview(candidate.RootCauseStatement.Consequence))}
+	}{"fingerprint-v1", string(candidate.Category), facts[0].Ref.Path, jobs.Hash([]byte(anchor)), normalize(contracts.RedactReview(candidate.RootCauseStatement.Trigger)), normalize(contracts.RedactReview(candidate.RootCauseStatement.Consequence))}
 	body, _ := json.Marshal(key)
 	return jobs.Hash(body), body
 }

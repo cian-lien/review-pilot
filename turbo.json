@@ -89,6 +89,7 @@
       "cache": false,
       "persistent": true,
       "passThroughEnv": [
+        "REVIEW_MODE", "REVIEW_REAL_ALLOWED", "REVIEW_MODEL_CONFIG_FILE", "GITHUB_REVIEW_PUBLISH_ENABLED",
         "DATABASE_URL",
         "RABBITMQ_URL",
         "APP_URL",
@@ -139,6 +140,7 @@
       "cache": false,
       "persistent": true,
       "passThroughEnv": [
+        "REVIEW_MODE", "REVIEW_REAL_ALLOWED", "REVIEW_MODEL_CONFIG_FILE", "GITHUB_REVIEW_PUBLISH_ENABLED",
         "APP_URL",
         "API_BIND_ADDR",
         "INTERNAL_BIND_ADDR",
@@ -162,6 +164,7 @@
       "cache": false,
       "persistent": true,
       "passThroughEnv": [
+        "REVIEW_MODE", "REVIEW_REAL_ALLOWED", "REVIEW_MODEL_CONFIG_FILE", "GITHUB_REVIEW_PUBLISH_ENABLED",
         "APP_URL",
         "API_BIND_ADDR",
         "INTERNAL_BIND_ADDR",

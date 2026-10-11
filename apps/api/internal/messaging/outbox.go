@@ -61,7 +61,15 @@ func (r *Relay) Flush(ctx context.Context, limit int) error {
 	}
 	for _, e := range events {
 		var envelope contracts.TaskEnvelope
-		if json.Unmarshal(e.Payload, &envelope) != nil {
+		var review contracts.ReviewTaskEnvelope
+		if e.Kind == "ai-review" {
+			if contracts.DecodeReview("ReviewTaskEnvelope", e.Payload, &review, 16384) != nil {
+				return errors.New("INVALID_OUTBOX_MESSAGE")
+			}
+			envelope.RunId = review.RunId
+			envelope.TaskId = review.TaskId
+			envelope.Traceparent = review.Traceparent
+		} else if json.Unmarshal(e.Payload, &envelope) != nil || !jobs.ValidEnvelope(envelope) {
 			return errors.New("INVALID_OUTBOX_MESSAGE")
 		}
 		observer := r.Observer
@@ -77,6 +85,10 @@ func (r *Relay) Flush(ctx context.Context, limit int) error {
 			envelope.Traceparent = &propagated
 		}
 		body, marshalErr := json.Marshal(envelope)
+		if e.Kind == "ai-review" {
+			review.Traceparent = envelope.Traceparent
+			body, marshalErr = json.Marshal(review)
+		}
 		if marshalErr != nil {
 			span.End()
 			return errors.New("INVALID_OUTBOX_MESSAGE")
