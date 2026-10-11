@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <Link href="/repositories" className="brand">
             ReviewPilot<span>代码审查助手</span>
           </Link>
-          <span className="phase">S1 · GitHub 接入</span>
+          <span className="phase">S2 · 证据优先审查</span>
         </header>
         <div className="shell">
           <aside>
@@ -23,12 +23,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Link href="/repositories" className="nav-active">
               仓库与任务
             </Link>
-            <p className="nav-pending">审查详情 · S2</p>
             <p className="nav-pending">规则与记忆 · S4</p>
             <p className="aside-note">
-              目前仅验证 GitHub 接入。
+              AI 审查默认关闭。
               <br />
-              不会调用模型或执行 PR 代码。
+              模拟与真实结果明确区分；不执行 PR 代码。
             </p>
           </aside>
           <main>

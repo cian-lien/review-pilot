@@ -103,6 +103,7 @@ func main() {
 	budgets.Register(internal, budgets.New(taskService.DB), cfg)
 	reviewstages.Register(internal, reviewstages.New(taskService.DB), cfg)
 	reviews.Register(internal, reviews.New(taskService.DB), cfg)
+	reviews.RegisterQueries(public, reviews.NewQuery(taskService.DB, service))
 	servers := []*http.Server{
 		{Addr: cfg.APIBindAddr, Handler: public, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 64 << 10},
 		{Addr: cfg.InternalBindAddr, Handler: internal, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 64 << 10},

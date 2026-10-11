@@ -8,6 +8,7 @@
     "build": "node scripts/next.mjs build",
     "start": "node scripts/next.mjs start",
     "typecheck": "tsc --noEmit",
+    "lint":"eslint src",
     "typegen": "node scripts/next.mjs typegen",
     "test:unit": "vitest run",
     "ui": "pnpm dlx shadcn@4.21.1",

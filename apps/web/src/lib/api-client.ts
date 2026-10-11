@@ -70,6 +70,18 @@ export function createAPIClient(fetcher: typeof fetch) {
     getSession: () => request<DTO['SessionResponse']>('/api/session'),
     listRepositories: () => request<DTO['RepositoryListResponse']>('/api/repositories'),
     listRuns: () => request<DTO['RunListResponse']>('/api/runs'),
+    listPulls: (tenant: DTO['TenantRef'], cursor?: string) =>
+      request<DTO['ReviewPullList']>(
+        `/api/repositories/${tenant.installationId}/${tenant.repositoryId}/pulls${cursor ? '?cursor=' + encodeURIComponent(cursor) : ''}`,
+      ),
+    listReviewRuns: (tenant: DTO['TenantRef'], number: number, cursor?: string) =>
+      request<DTO['ReviewRunList']>(
+        `/api/repositories/${tenant.installationId}/${tenant.repositoryId}/pulls/${number}/runs${cursor ? '?cursor=' + encodeURIComponent(cursor) : ''}`,
+      ),
+    getReviewRun: (tenant: DTO['TenantRef'], number: number, runId: string) =>
+      request<DTO['ReviewRunDetail']>(
+        `/api/repositories/${tenant.installationId}/${tenant.repositoryId}/pulls/${number}/runs/${encodeURIComponent(runId)}`,
+      ),
     syncRepositories: (csrfToken: string) =>
       request<void>('/api/repositories/sync', post(csrfToken)),
     setEnabled: (input: SetEnabledInput) => {

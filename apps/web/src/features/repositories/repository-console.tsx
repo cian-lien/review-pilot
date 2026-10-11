@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { components } from '@reviewpilot/contracts';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -214,6 +215,13 @@ export function RepositoryConsole() {
                           >
                             {repo.fullName}
                           </a>
+                          <p>
+                            <Link
+                              href={`/repositories/${repo.tenant.installationId}/${repo.tenant.repositoryId}/pulls`}
+                            >
+                              查看代码审查 PR →
+                            </Link>
+                          </p>
                         </TableCell>
                         <TableCell>
                           <Badge variant={repo.enabled ? 'secondary' : 'outline'}>
